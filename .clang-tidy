@@ -1,0 +1,46 @@
+---
+Checks: 
+                        'llvm-*,
+                        ,-llvm-header-guard,
+                        ,-llvm-include-order,
+                        ,-llvm-namespace-comment,
+                        ,cert-*,
+                        ,-cert-err58-cpp,
+                        ,performance-*,
+                        ,google-*,
+                        ,-google-readability-namespace-comments,
+                        ,-google-explicit-constructor,
+                        ,-google-readability-braces-around-statements,
+                        ,-google-runtime-references,
+                        ,modernize-*,
+                        ,readability-*,
+                        ,-readability-braces-around-statements,
+                        ,-readability-named-parameter,
+                        ,-readability-else-after-return,
+                        ,bugprone-*,
+                        ,hicpp-*,
+                        ,-hicpp-explicit-conversions,
+                        ,-hicpp-noexcept-move'
+WarningsAsErrors:       ''
+HeaderFilterRegex:      '.*'
+AnalyzeTemporaryDtors:  false
+FormatStyle:            file
+User:                   mocabe
+CheckOptions:
+  - key:             readability-identifier-naming.ClassCase
+    value:           CamelCase
+  - key:             readability-identifier-naming.EnumCase
+    value:           CamelCase
+  - key:             readability-identifier-naming.FunctionCase
+    value:           lower_case
+  - key:             readability-identifier-naming.MemberCase
+    value:           lower_case
+  - key:             readability-identifier-naming.PrivateMemberPrefix
+    value:           m_
+  - key:             readability-identifier-naming.ParameterCase
+    value:           lower_case
+  - key:             readability-identifier-naming.UnionCase
+    value:           CamelCase
+  - key:             readability-identifier-naming.VariableCase
+    value:           lower_case
+...
