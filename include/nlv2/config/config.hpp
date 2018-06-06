@@ -15,7 +15,7 @@
 // import SIMD detect macros
 #include "intrin.hpp"
 
-namespace Neco::lang::v2 {
+namespace Neco::lang {
 
 // debug macros
 #if defined(NDEBUG)
@@ -146,4 +146,4 @@ namespace Neco::lang::v2 {
     std::numeric_limits<double>::is_iec559, "Size of double should be 64bit");
   using double_t = double;
 
-} // namespace Neco::lang::v2
+} // namespace Neco::lang
