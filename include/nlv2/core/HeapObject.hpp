@@ -19,17 +19,16 @@
 
 /// size of additional buffer in heap object header
 #if defined(OBJECT_HEADER_EXTEND_BYTES)
-namespace Neco::lang {
+namespace NECO_LANG_NS::detail {
   constexpr size_t object_header_extend_bytes = OBJECT_HEADER_EXTEND_BYTES;
 }
 #else
-namespace Neco::lang {
+namespace NECO_LANG_NS::detail {
   constexpr size_t object_header_extend_bytes = 0;
 }
 #endif
 
-namespace Neco::lang {
-
+namespace NECO_LANG_NS::detail {
   // Base class for heap-allocated objects
   struct HeapObject;
   // heap-allocated object of type T
@@ -144,16 +143,21 @@ namespace Neco::lang {
       return &m_ptr->value;
     }
     /// operator bool
-    explicit operator bool() const noexcept { return m_ptr != nullptr; }
+    explicit operator bool() const noexcept {
+      return m_ptr != nullptr;
+    }
     /// use_count
     /// \requires Object is not null.
-    size_t use_count() const noexcept { return m_ptr->refcount.atomic; }
+    size_t use_count() const noexcept {
+      return m_ptr->refcount.atomic;
+    }
     /// swap data
     void swap(ObjectPtr<value_type>& obj) noexcept {
       std::swap(obj.m_ptr, m_ptr);
     }
     /// operator=
-    ObjectPtr<value_type>& operator=(const ObjectPtr<value_type>& obj) noexcept {
+    ObjectPtr<value_type>& operator=(
+      const ObjectPtr<value_type>& obj) noexcept {
       ObjectPtr(obj).swap(*this);
       return *this;
     }
@@ -174,9 +178,13 @@ namespace Neco::lang {
 
   public:
     /// operator*
-    auto& operator*() const noexcept { return *value(); }
+    auto& operator*() const noexcept {
+      return *value();
+    }
     /// operator->
-    auto operator->() const noexcept { return value(); }
+    auto operator-> () const noexcept {
+      return value();
+    }
   };
 
   /// Object info table
@@ -257,5 +265,4 @@ namespace Neco::lang {
   ObjectPtr<T> make_object(Args&&... args) {
     return new T{std::forward<Args>(args)...};
   }
-
-} // namespace Neco::lang
+} // namespace NECO_LANG_NS::detail

@@ -12,10 +12,26 @@
 #include <limits>
 #include <type_traits>
 
+// namespace
+#ifndef NECO_LANG_NS
+#  define NECO_LANG_NS Neco::lang
+#endif
+
 // import SIMD detect macros
 #include "intrin.hpp"
 
-namespace Neco::lang {
+// namespace config
+namespace NECO_LANG_NS {
+  namespace detail {
+    /// interface namespace
+    namespace interface {}
+    using namespace interface;
+  } // namespace detail
+  // make interface visible
+  using namespace detail::interface;
+} // namespace NECO_LANG_NS
+
+namespace NECO_LANG_NS::detail {
 
 // debug macros
 #if defined(NDEBUG)
@@ -145,5 +161,4 @@ namespace Neco::lang {
   static_assert(
     std::numeric_limits<double>::is_iec559, "Size of double should be 64bit");
   using double_t = double;
-
-} // namespace Neco::lang
+} // namespace NECO_LANG_NS::detail

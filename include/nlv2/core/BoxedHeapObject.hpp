@@ -11,7 +11,7 @@
 
 /// \file BoxedHeapObject.hpp
 
-namespace Neco::lang {
+namespace NECO_LANG_NS::detail {
 
   // forward decl
   template <class T, class = void>
@@ -135,4 +135,4 @@ namespace Neco::lang {
        object_header_extend_bytes,          //
        vtbl_destroy_func<BoxedHeapObject>,  //
        vtbl_clone_func<BoxedHeapObject>};
-} // namespace Neco::lang
+} // namespace NECO_LANG_NS::detail

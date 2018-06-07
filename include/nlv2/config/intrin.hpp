@@ -12,7 +12,7 @@
 #  include <x86intrin.h>
 #endif
 
-namespace Neco::lang {
+namespace NECO_LANG_NS::detail {
 
 /// is MMX enabled?
 #if defined(__MMX__)
@@ -90,5 +90,4 @@ namespace Neco::lang {
 #else
   constexpr bool has_AVX2 = false;
 #endif
-
-} // namespace Neco::lang
+} // namespace NECO_LANG_NS::detail

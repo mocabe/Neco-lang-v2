@@ -11,7 +11,7 @@
 // false_v
 #include "../config/config.hpp"
 
-namespace Neco::lang {
+namespace NECO_LANG_NS::detail {
 
   // ------------------------------------------
   // Utility
@@ -171,7 +171,7 @@ namespace Neco::lang {
   // ------------------------------------------
   // Constr
   // ------------------------------------------
-  
+
   /// Type constraint
   template <class T1, class T2>
   struct constr {
@@ -430,4 +430,4 @@ namespace Neco::lang {
   /// has_var_v
   template <class T>
   static constexpr bool has_TmVar_v = is_var_v<typename T::term>;
-} // namespace Neco::lang
+} // namespace NECO_LANG_NS::detail
