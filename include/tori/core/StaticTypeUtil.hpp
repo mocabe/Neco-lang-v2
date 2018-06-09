@@ -440,6 +440,19 @@ namespace TORI_NS::detail {
   static constexpr bool is_TmVar_v = is_TmVar<T>::value;
   /// has_var_v
   template <class T>
-  static constexpr bool has_TmVar_v = is_TmValue_v<typename T::term>;
+  static constexpr bool has_TmVar_v = is_TmVar_v<typename T::term>;
+
+  template <class T>
+  struct tag_of {};
+  template <class Tag>
+  struct tag_of<TmValue<Tag>> {
+    using type = Tag;
+  };
+  template <class Tag>
+  struct tag_of<TmVar<Tag>> {
+    using type = Tag;
+  };
+  template <class T>
+  using tag_of_t = typename tag_of<T>::type;
 
 } // namespace TORI_NS::detail

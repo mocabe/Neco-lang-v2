@@ -9,3 +9,4 @@
 #include "core/StaticTypeUtil.hpp"
 #include "core/HeapObject.hpp"
 #include "core/BoxedHeapObject.hpp"
+#include "core/TypeGen.hpp"

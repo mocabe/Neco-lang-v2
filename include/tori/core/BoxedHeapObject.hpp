@@ -11,12 +11,6 @@
 
 /// \file BoxedHeapObject.hpp
 
-namespace TORI_NS {
-  // forward decl
-  template <class T, class = void>
-  struct object_type; // see TypeGen.hpp
-} // namespace TORI
-
 namespace TORI_NS::detail {
 
   /// tag type to initialize object with 0 reference count
@@ -26,6 +20,9 @@ namespace TORI_NS::detail {
   namespace interface {
     /// static_construct
     inline constexpr static_construct_t static_construct = static_construct_t();
+    // forward decl
+    template <class T, class = void>
+    struct object_type; // see TypeGen.hpp
   } // namespace interface
 
   /// \brief vtable function to delete object

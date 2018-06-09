@@ -34,13 +34,11 @@ namespace TORI_NS::detail {
   struct ValueType;
   // arrow type
   struct ArrowType;
-  // recursive type
-  struct RecType;
   // type variable
-  struct AutoType;
+  struct VarType;
 
   // TypeValue
-  using TypeValue = std::variant<ValueType, ArrowType, RecType, AutoType>;
+  using TypeValue = std::variant<ValueType, ArrowType, VarType>;
 
   // interface
   namespace interface {
