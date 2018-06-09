@@ -33,7 +33,6 @@ namespace TORI_NS::detail {
     static_assert(
       std::is_nothrow_destructible_v<T>, "should have nothrow destructor");
     auto *p = static_cast<T *>(obj);
-    assert(p->info_table->obj_size == sizeof(T));
     delete p;
   }
 
@@ -96,8 +95,8 @@ namespace TORI_NS::detail {
       /// Copy ctor
       constexpr BoxedHeapObject(const BoxedHeapObject &obj)
         : HeapObject{obj}, value{obj.value} {}
-      /// Copy ctor
-      constexpr BoxedHeapObject(const BoxedHeapObject &&obj)
+      /// Move ctor
+      constexpr BoxedHeapObject(BoxedHeapObject &&obj)
         : HeapObject{obj}, value{std::move(obj.value)} {}
 
       /// operator=
