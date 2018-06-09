@@ -11,18 +11,22 @@
 
 /// \file BoxedHeapObject.hpp
 
-namespace NECO_LANG_NS::detail {
-
+namespace TORI_NS {
   // forward decl
   template <class T, class = void>
   struct object_type; // see TypeGen.hpp
+} // namespace TORI
+
+namespace TORI_NS::detail {
 
   /// tag type to initialize object with 0 reference count
   struct static_construct_t {
     explicit static_construct_t() = default;
   };
-  /// static_construct
-  inline constexpr static_construct_t static_construct = static_construct_t();
+  namespace interface {
+    /// static_construct
+    inline constexpr static_construct_t static_construct = static_construct_t();
+  } // namespace interface
 
   /// \brief vtable function to delete object
   ///
@@ -50,89 +54,93 @@ namespace NECO_LANG_NS::detail {
     } catch (...) { return nullptr; }
   }
 
-  /// \brief Heap-allocated object generator.
-  /// \param T value type
-  /// \param AllocatorTemplate allocator
-  template <class T, template <class> class AllocatorTemplate>
-  struct BoxedHeapObject : HeapObject {
-    /// value type
-    using value_type = T;
-    /// allocator type
-    using allocator_type = AllocatorTemplate<BoxedHeapObject>;
-    /// term
-    using term = TmValue<BoxedHeapObject>;
+  namespace interface {
 
-    /// info table initializer
-    struct info_table_initializer {
-      /// static object info table
-      static const ObjectInfoTable info_table;
+    /// \brief Heap-allocated object generator.
+    /// \param T value type
+    /// \param AllocatorTemplate allocator
+    template <class T, template <class> class AllocatorTemplate>
+    struct BoxedHeapObject : HeapObject {
+      /// value type
+      using value_type = T;
+      /// allocator type
+      using allocator_type = AllocatorTemplate<BoxedHeapObject>;
+      /// term
+      using term = TmValue<BoxedHeapObject>;
+
+      /// info table initializer
+      struct info_table_initializer {
+        /// static object info table
+        static const ObjectInfoTable info_table;
+      };
+
+      /// Ctor
+      template <
+        class U,
+        class... Args,
+        class = std::enable_if_t<
+          !std::is_same_v<std::decay_t<U>, BoxedHeapObject> &&
+          !std::is_same_v<std::decay_t<U>, static_construct_t>>>
+      constexpr BoxedHeapObject(U &&u, Args &&... args)
+        : HeapObject{1u, &info_table_initializer::info_table}
+        , value{std::forward<U>(u), std::forward<Args>(args)...} {}
+
+      /// Ctor (static initialization)
+      template <class... Args>
+      constexpr BoxedHeapObject(static_construct_t, Args &&... args)
+        : BoxedHeapObject(std::forward<Args>(args)...) {
+        // set refcount ZERO to avoid deletion
+        refcount.atomic = 0;
+      }
+
+      /// Ctor
+      constexpr BoxedHeapObject()
+        : HeapObject{1u, &info_table_initializer::info_table}, value{} {}
+      /// Copy ctor
+      constexpr BoxedHeapObject(const BoxedHeapObject &obj)
+        : HeapObject{obj}, value{obj.value} {}
+      /// Copy ctor
+      constexpr BoxedHeapObject(const BoxedHeapObject &&obj)
+        : HeapObject{obj}, value{std::move(obj.value)} {}
+
+      /// operator=
+      BoxedHeapObject &operator=(const BoxedHeapObject &obj) {
+        HeapObject::operator=(obj);
+        value = obj.value;
+      }
+      /// operator=
+      BoxedHeapObject &operator=(BoxedHeapObject &&obj) {
+        HeapObject::operator=(obj);
+        value = std::move(obj.value);
+      }
+      /// operator new
+      void *operator new(std::size_t n) {
+        AllocatorTemplate<BoxedHeapObject> allocator;
+        return allocator.allocate(n);
+      }
+      /// operator delete
+      void operator delete(void *p) noexcept {
+        AllocatorTemplate<BoxedHeapObject> allocator;
+        allocator.deallocate(static_cast<BoxedHeapObject *>(p), 1);
+      }
+      /// operator delete
+      void operator delete(void *p, std::size_t n) noexcept {
+        AllocatorTemplate<BoxedHeapObject> allocator;
+        allocator.deallocate(static_cast<BoxedHeapObject *>(p), n);
+      }
+      /// value
+      T value;
     };
 
-    /// Ctor
-    template <
-      class U,
-      class... Args,
-      class = std::enable_if_t<
-        !std::is_same_v<std::decay_t<U>, BoxedHeapObject> &&
-        !std::is_same_v<std::decay_t<U>, static_construct_t>>>
-    constexpr BoxedHeapObject(U &&u, Args &&... args)
-      : HeapObject{1u, &info_table_initializer::info_table}
-      , value{std::forward<U>(u), std::forward<Args>(args)...} {}
+    // Initialize object header
+    template <class T, template <class> class AllocatorTemplate>
+    const ObjectInfoTable BoxedHeapObject<T, AllocatorTemplate>::
+      info_table_initializer::info_table = {
+        object_type<BoxedHeapObject>::get(), //
+        sizeof(BoxedHeapObject),             //
+        object_header_extend_bytes,          //
+        vtbl_destroy_func<BoxedHeapObject>,  //
+        vtbl_clone_func<BoxedHeapObject>};
 
-    /// Ctor (static initialization)
-    template <class... Args>
-    constexpr BoxedHeapObject(static_construct_t, Args &&... args)
-      : BoxedHeapObject(std::forward<Args>(args)...) {
-      // set refcount ZERO to avoid deletion
-      refcount.atomic = 0;
-    }
-
-    /// Ctor
-    constexpr BoxedHeapObject()
-      : HeapObject{1u, &info_table_initializer::info_table}, value{} {}
-    /// Copy ctor
-    constexpr BoxedHeapObject(const BoxedHeapObject &obj)
-      : HeapObject{obj}, value{obj.value} {}
-    /// Copy ctor
-    constexpr BoxedHeapObject(const BoxedHeapObject &&obj)
-      : HeapObject{obj}, value{std::move(obj.value)} {}
-
-    /// operator=
-    BoxedHeapObject &operator=(const BoxedHeapObject &obj) {
-      HeapObject::operator=(obj);
-      value = obj.value;
-    }
-    /// operator=
-    BoxedHeapObject &operator=(BoxedHeapObject &&obj) {
-      HeapObject::operator=(obj);
-      value = std::move(obj.value);
-    }
-    /// operator new
-    void *operator new(std::size_t n) {
-      AllocatorTemplate<BoxedHeapObject> allocator;
-      return allocator.allocate(n);
-    }
-    /// operator delete
-    void operator delete(void *p) noexcept {
-      AllocatorTemplate<BoxedHeapObject> allocator;
-      allocator.deallocate(static_cast<BoxedHeapObject *>(p), 1);
-    }
-    /// operator delete
-    void operator delete(void *p, std::size_t n) noexcept {
-      AllocatorTemplate<BoxedHeapObject> allocator;
-      allocator.deallocate(static_cast<BoxedHeapObject *>(p), n);
-    }
-    /// value
-    T value;
-  };
-
-  // Initialize object header
-  template <class T, template <class> class AllocatorTemplate>
-  const ObjectInfoTable
-    BoxedHeapObject<T, AllocatorTemplate>::info_table_initializer::info_table =
-      {object_type<BoxedHeapObject>::get(), //
-       sizeof(BoxedHeapObject),             //
-       object_header_extend_bytes,          //
-       vtbl_destroy_func<BoxedHeapObject>,  //
-       vtbl_clone_func<BoxedHeapObject>};
-} // namespace NECO_LANG_NS::detail
+  } // namespace interface
+} // namespace TORI_NS::detail

@@ -11,7 +11,7 @@
 // false_v
 #include "../config/config.hpp"
 
-namespace NECO_LANG_NS::detail {
+namespace TORI_NS::detail {
 
   // ------------------------------------------
   // Utility
@@ -111,10 +111,7 @@ namespace NECO_LANG_NS::detail {
 
   /// TmApply
   template <class T1, class T2>
-  struct TmApply {
-    using t1 = T1;
-    using t2 = T2;
-  };
+  struct TmApply {};
   /// TmClosure
   template <class... Ts>
   struct TmClosure {};
@@ -128,6 +125,10 @@ namespace NECO_LANG_NS::detail {
   struct TmVar {
     using type = var<Tag>;
   };
+
+  /// TmFix
+  template <class C>
+  struct TmFix {};
 
   // ------------------------------------------
   // Subst
@@ -369,6 +370,18 @@ namespace NECO_LANG_NS::detail {
       concat_tuple_t<typename _t1::c, typename _t2::c>,
       constr<typename _t1::type, arrow<typename _t2::type, type>>>;
   };
+  template <class T, class Gen>
+  struct recon<TmFix<T>, Gen> {
+    // recon T 
+    using _t = recon<T, Gen>;
+    using _t_t = typename _t::type;
+    using _t_gen = typename _t::gen;
+    using _t_c = typename _t::c;
+    //
+    using type = genvar_t<_t_gen>;
+    using gen = nextgen_t<_t_gen>;
+    using c = append_tuple_t<_t_c, constr<_t_t, arrow<type, type>>>;
+  };
 
   /// Get type of term
   template <class Term>
@@ -385,49 +398,48 @@ namespace NECO_LANG_NS::detail {
   // ------------------------------------------
   // Util
   // ------------------------------------------
-  namespace detail {
-    template <class T>
-    struct is_apply : std::false_type {};
-    template <class T1, class T2>
-    struct is_apply<TmApply<T1, T2>> : std::true_type {};
+  template <class T>
+  struct is_TmApply : std::false_type {};
+  template <class T1, class T2>
+  struct is_TmApply<TmApply<T1, T2>> : std::true_type {};
 
-    template <class T>
-    struct is_value : std::false_type {};
-    template <class Tag>
-    struct is_value<TmValue<Tag>> : std::true_type {};
+  template <class T>
+  struct is_TmValue : std::false_type {};
+  template <class Tag>
+  struct is_TmValue<TmValue<Tag>> : std::true_type {};
 
-    template <class T>
-    struct is_closure : std::false_type {};
-    template <class... Ts>
-    struct is_closure<TmClosure<Ts...>> : std::true_type {};
+  template <class T>
+  struct is_TmClosure : std::false_type {};
+  template <class... Ts>
+  struct is_TmClosure<TmClosure<Ts...>> : std::true_type {};
 
-    template <class T>
-    struct is_var : std::false_type {};
-    template <class Tag>
-    struct is_var<TmVar<Tag>> : std::true_type {};
-  } // namespace detail
+  template <class T>
+  struct is_TmVar : std::false_type {};
+  template <class Tag>
+  struct is_TmVar<TmVar<Tag>> : std::true_type {};
   /// is_apply_v
   template <class T>
-  static constexpr bool is_TmApply_v = detail::is_apply<T>::value;
+  static constexpr bool is_TmApply_v = is_TmApply<T>::value;
   /// has_apply_v
   template <class T>
-  static constexpr bool is_TmApply_v = is_apply_v<typename T::term>;
+  static constexpr bool has_TmApply_v = is_TmApply_v<typename T::term>;
   /// is_value_v
   template <class T>
-  static constexpr bool is_TmValue_v = detail::is_value<T>::value;
+  static constexpr bool is_TmValue_v = is_TmValue<T>::value;
   /// has_value_v
   template <class T>
-  static constexpr bool has_TmValue_v = is_value_v<typename T::term>;
+  static constexpr bool has_TmValue_v = is_TmValue_v<typename T::term>;
   /// is_closure_v
   template <class T>
-  static constexpr bool is_TmClosure_v = detail::is_closure<T>::value;
+  static constexpr bool is_TmClosure_v = is_TmClosure<T>::value;
   /// has_closure_v
   template <class T>
-  static constexpr bool has_TmClosure_v = is_closure_v<typename T::term>;
+  static constexpr bool has_TmClosure_v = is_TmClosure_v<typename T::term>;
   /// is_var_v
   template <class T>
-  static constexpr bool is_TmVar_v = detail::is_var<T>::value;
+  static constexpr bool is_TmVar_v = is_TmVar<T>::value;
   /// has_var_v
   template <class T>
-  static constexpr bool has_TmVar_v = is_var_v<typename T::term>;
-} // namespace NECO_LANG_NS::detail
+  static constexpr bool has_TmVar_v = is_TmValue_v<typename T::term>;
+
+} // namespace TORI_NS::detail

@@ -2,7 +2,7 @@
 // This code is licensed under MIT license.
 
 /// \file
-/// Neco-lang config
+/// Tori config
 
 #pragma once
 
@@ -13,15 +13,15 @@
 #include <type_traits>
 
 // namespace
-#ifndef NECO_LANG_NS
-#  define NECO_LANG_NS Neco::lang
+#ifndef TORI_NS
+#  define TORI_NS tori
 #endif
 
 // import SIMD detect macros
 #include "intrin.hpp"
 
 // namespace config
-namespace NECO_LANG_NS {
+namespace TORI_NS {
   namespace detail {
     /// interface namespace
     namespace interface {}
@@ -29,9 +29,9 @@ namespace NECO_LANG_NS {
   } // namespace detail
   // make interface visible
   using namespace detail::interface;
-} // namespace NECO_LANG_NS
+} // namespace TORI_NS
 
-namespace NECO_LANG_NS::detail {
+namespace TORI_NS::detail {
 
 // debug macros
 #if defined(NDEBUG)
@@ -131,34 +131,36 @@ namespace NECO_LANG_NS::detail {
   static_assert(sizeof(void*) == 8);
   static_assert(sizeof(overloaded<>) == 1);
 
-  using int8_t = std::int8_t;
-  using int16_t = std::int16_t;
-  using int32_t = std::int32_t;
-  using int64_t = std::int64_t;
+  namespace interface {
+    using int8_t = std::int8_t;
+    using int16_t = std::int16_t;
+    using int32_t = std::int32_t;
+    using int64_t = std::int64_t;
 
-  using uint8_t = std::uint8_t;
-  using uint16_t = std::uint16_t;
-  using uint32_t = std::uint32_t;
-  using uint64_t = std::uint64_t;
+    using uint8_t = std::uint8_t;
+    using uint16_t = std::uint16_t;
+    using uint32_t = std::uint32_t;
+    using uint64_t = std::uint64_t;
 
-  using int_t = int32_t;
-  using uint_t = uint32_t;
-  using long_t = int64_t;
-  using ulong_t = uint64_t;
+    using int_t = int32_t;
+    using uint_t = uint32_t;
+    using long_t = int64_t;
+    using ulong_t = uint64_t;
 
-  using size_t = std::size_t;
-  static_assert(std::is_same_v<size_t, uint64_t>);
+    using size_t = std::size_t;
+    static_assert(std::is_same_v<size_t, uint64_t>);
 
-  using nullptr_t = std::nullptr_t;
+    using nullptr_t = std::nullptr_t;
 
-  static_assert(sizeof(bool) == 1, "bool should be 8bit");
-  using bool_t = bool;
+    static_assert(sizeof(bool) == 1, "bool should be 8bit");
+    using bool_t = bool;
 
-  static_assert(
-    std::numeric_limits<float>::is_iec559, "Size of float should be 32bit");
-  using float_t = float;
+    static_assert(
+      std::numeric_limits<float>::is_iec559, "Size of float should be 32bit");
+    using float_t = float;
 
-  static_assert(
-    std::numeric_limits<double>::is_iec559, "Size of double should be 64bit");
-  using double_t = double;
-} // namespace NECO_LANG_NS::detail
+    static_assert(
+      std::numeric_limits<double>::is_iec559, "Size of double should be 64bit");
+    using double_t = double;
+  } // namespace interface
+} // namespace TORI_NS::detail

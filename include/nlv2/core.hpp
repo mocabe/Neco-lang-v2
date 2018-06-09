@@ -5,3 +5,7 @@
 
 // load config
 #include "config/config.hpp"
+
+#include "core/StaticTypeUtil.hpp"
+#include "core/HeapObject.hpp"
+#include "core/BoxedHeapObject.hpp"

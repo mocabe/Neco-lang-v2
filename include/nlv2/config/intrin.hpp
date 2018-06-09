@@ -12,7 +12,7 @@
 #  include <x86intrin.h>
 #endif
 
-namespace NECO_LANG_NS::detail {
+namespace TORI_NS::detail {
 
 /// is MMX enabled?
 #if defined(__MMX__)
@@ -90,4 +90,4 @@ namespace NECO_LANG_NS::detail {
 #else
   constexpr bool has_AVX2 = false;
 #endif
-} // namespace NECO_LANG_NS::detail
+} // namespace TORI_NS::detail
