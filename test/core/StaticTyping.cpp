@@ -83,5 +83,20 @@ int main() {
     static_assert(
       std::is_same_v<type_of_t<ff>, arrow<value<int>, value<bool>>>);
   }
-
+  {
+    static_assert(subtype_v<value<HeapObject>, value<Type>>);
+    static_assert(subtype_v<
+                  arrow<value<Type>, value<Type>>,
+                  arrow<value<HeapObject>, value<Type>>>);
+    static_assert(subtype_v<
+                  arrow<value<Type>, value<HeapObject>>,
+                  arrow<value<Type>, value<Type>>>);
+  }
+  {
+    static_assert(
+      std::is_same_v<
+        type_of_t<TmApply<
+          TmClosure<TmValue<HeapObject>, TmValue<Type>>, TmValue<Type>>>,
+        value<Type>>);
+  }
 }

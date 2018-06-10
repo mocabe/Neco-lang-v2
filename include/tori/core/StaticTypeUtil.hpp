@@ -170,6 +170,25 @@ namespace TORI_NS::detail {
   using subst_all_t = typename subst_all<TyArrows, Ty>::type;
 
   // ------------------------------------------
+  // Subtype
+  // ------------------------------------------
+  template <class T1, class T2>
+  struct subtype : std::false_type {};
+
+  template <class Tag1, class Tag2>
+  struct subtype<value<Tag1>, value<Tag2>> {
+    static constexpr bool value = std::is_base_of_v<Tag1, Tag2>;
+  };
+
+  template <class T11, class T12, class T21, class T22>
+  struct subtype<arrow<T11, T12>, arrow<T21, T22>> {
+    static constexpr bool value =
+      subtype<T21, T11>::value && subtype<T12, T22>::value;
+  };
+  template <class T1, class T2>
+  static constexpr bool subtype_v = subtype<T1, T2>::value;
+
+  // ------------------------------------------
   // Constr
   // ------------------------------------------
 
@@ -237,18 +256,19 @@ namespace TORI_NS::detail {
     static_assert(
       false_v<ConstrList>, "Unification error: Unsolvable constraints");
   };
-  // error
-  template <class Tag1, class Tag2, class... Cs>
-  struct unify<std::tuple<constr<value<Tag1>, value<Tag2>>, Cs...>> {
-    using t1 = typename value<Tag1>::_error_here;
-    using t2 = typename value<Tag2>::_error_here;
-    static_assert(false_v<>, "Unification error: Type missmatch");
-  };
   // helper
   template <class Var, class T, class Tail, bool B = !occurs_v<Var, T>>
   struct unify_h {
     static_assert(false_v<T>, "Unification error: Circular constraints");
   };
+  // helper2
+  template <class Tag1, class Tag2, class Tail, bool B = !subtype_v<Tag1, Tag2>>
+  struct unify_h2 {
+    using t1 = typename value<Tag1>::_error_here;
+    using t2 = typename value<Tag2>::_error_here;
+    static_assert(false_v<>, "Unification error: Type missmatch");
+  };
+
   // helper
   template <class Var, class T, class Tail>
   struct unify_h<Var, T, Tail, true> {
@@ -256,10 +276,20 @@ namespace TORI_NS::detail {
       typename unify<subst_constr_all_t<tyarrow<Var, T>, Tail>>::type,
       tyarrow<Var, T>>;
   };
+  // helper2
+  template <class Tag1, class Tag2, class Tail>
+  struct unify_h2<Tag1, Tag2, Tail, true> {
+    using type = typename unify<Tail>::type;
+  };
+
   // empty set
   template <>
   struct unify<std::tuple<>> {
     using type = std::tuple<>;
+  };
+  template <class Tag1, class Tag2, class... Cs>
+  struct unify<std::tuple<constr<value<Tag1>, value<Tag2>>, Cs...>> {
+    using type = typename unify_h2<Tag1, Tag2, std::tuple<Cs...>>::type;
   };
   template <class Tag1, class Tag2, class... Cs>
   struct unify<std::tuple<constr<var<Tag1>, var<Tag2>>, Cs...>> {
@@ -281,10 +311,6 @@ namespace TORI_NS::detail {
       std::is_same_v<var<Tag>, T2>,
       typename unify<std::tuple<Cs...>>::type,
       typename unify_h<var<Tag>, T2, std::tuple<Cs...>>::type>;
-  };
-  template <class Tag, class... Cs>
-  struct unify<std::tuple<constr<value<Tag>, value<Tag>>, Cs...>> {
-    using type = typename unify<std::tuple<Cs...>>::type;
   };
   template <class S1, class S2, class T1, class T2, class... Cs>
   struct unify<std::tuple<constr<arrow<S1, S2>, arrow<T1, T2>>, Cs...>> {
