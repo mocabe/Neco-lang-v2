@@ -18,3 +18,4 @@
 #include "core/Primitive.hpp"
 #include "core/Unit.hpp"
 #include "core/Fix.hpp"
+#include "core/Apply.hpp"
