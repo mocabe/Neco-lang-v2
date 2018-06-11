@@ -20,12 +20,12 @@ namespace TORI_NS {
   /// type
   template <>
   struct object_type_traits<Type> {
-    static constexpr char name[] = "_type";
+    static constexpr char name[] = "_Type";
   };
   /// HeapObject
   template <>
   struct object_type_traits<HeapObject> {
-    static constexpr char name[] = "_top";
+    static constexpr char name[] = "_HeapObject";
   };
 } // namespace TORI_NS
 
@@ -96,7 +96,7 @@ namespace TORI_NS::detail {
   };
   /// Any type
   struct VarType {
-    const uint64_t id;
+    uint64_t id;
   };
 
 

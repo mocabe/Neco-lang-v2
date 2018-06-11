@@ -294,21 +294,21 @@ namespace TORI_NS::detail {
   template <class Tag1, class Tag2, class... Cs>
   struct unify_<std::tuple<constr<var<Tag1>, var<Tag2>>, Cs...>> {
     using type = std::conditional_t<
-      std::is_same_v<var<Tag1>, var<Tag2>>,
+      subtype_v<var<Tag1>, var<Tag2>>,
       typename unify_<std::tuple<Cs...>>::type,
       typename unify_h<var<Tag1>, var<Tag2>, std::tuple<Cs...>>::type>;
   };
   template <class T1, class Tag, class... Cs>
   struct unify_<std::tuple<constr<T1, var<Tag>>, Cs...>> {
     using type = std::conditional_t<
-      std::is_same_v<T1, var<Tag>>,
+      subtype_v<T1, var<Tag>>,
       typename unify_<std::tuple<Cs...>>::type,
       typename unify_h<var<Tag>, T1, std::tuple<Cs...>>::type>;
   };
   template <class Tag, class T2, class... Cs>
   struct unify_<std::tuple<constr<var<Tag>, T2>, Cs...>> {
     using type = std::conditional_t<
-      std::is_same_v<var<Tag>, T2>,
+      subtype_v<var<Tag>, T2>,
       typename unify_<std::tuple<Cs...>>::type,
       typename unify_h<var<Tag>, T2, std::tuple<Cs...>>::type>;
   };
@@ -331,21 +331,21 @@ namespace TORI_NS::detail {
   struct taggen {};
 
   template <class GenTag>
-  struct genvar {};
+  struct genvar_ {};
 
   template <size_t N>
-  struct genvar<taggen<N>> {
+  struct genvar_<taggen<N>> {
     using type = var<taggen<N>>;
     using next = taggen<N + 1>;
   };
 
   /// Generate new type variable
   template <class Gen>
-  using genvar_t = typename genvar<Gen>::type;
+  using genvar_t = typename genvar_<Gen>::type;
 
   /// Get next tag generator
   template <class Gen>
-  using nextgen_t = typename genvar<Gen>::next;
+  using nextgen_t = typename genvar_<Gen>::next;
 
   template <class T, class Gen>
   struct recon_ {};
