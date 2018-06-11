@@ -14,3 +14,4 @@
 #include "core/CString.hpp"
 #include "core/Exception.hpp"
 #include "core/ValueCast.hpp"
+#include "core/ClosureCast.hpp"
