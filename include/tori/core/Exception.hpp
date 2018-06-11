@@ -6,7 +6,7 @@
 /// \file General exception classes
 
 #include "BoxedHeapObject.hpp"
-#include "CString.hpp"
+#include "String.hpp"
 #include <exception>
 
 namespace TORI_NS::detail {
@@ -37,7 +37,7 @@ namespace TORI_NS::detail {
   /// TypeErrorValue
   struct TypeErrorValue {
     /// error message
-    ObjectPtr<CString> msg;
+    ObjectPtr<String> msg;
     /// source node
     ObjectPtr<> src;
   };
@@ -79,7 +79,7 @@ namespace TORI_NS::detail {
   /// EvlaErrorValue
   struct EvalErrorValue {
     /// error message
-    ObjectPtr<CString> msg;
+    ObjectPtr<String> msg;
     /// source node
     ObjectPtr<> src;
   };
@@ -137,16 +137,7 @@ namespace TORI_NS::detail {
 } // namespace TORI_NS::detail
 
 namespace TORI_NS {
-  template <>
-  struct object_type_traits<Exception> {
-    static constexpr char name[] = "_Exception";
-  };
-  template <>
-  struct object_type_traits<TypeError> {
-    static constexpr char name[] = "_TypeError";
-  };
-  template <>
-  struct object_type_traits<EvalError> {
-    static constexpr char name[] = "_EvalError";
-  };
+  TORI_DECL_TYPE(Exception)
+  TORI_DECL_TYPE(TypeError)
+  TORI_DECL_TYPE(EvalError)
 }

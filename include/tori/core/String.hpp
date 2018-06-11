@@ -6,22 +6,22 @@
 #include <string>
 
 namespace TORI_NS::detail {
-  class CStringValue {
+  class StringValue {
   public:
-    CStringValue(const std::string& str) {
+    StringValue(const std::string& str) {
       m_ptr = new char[str.size() + 1];
       std::copy(str.c_str(), str.c_str() + str.size() + 1, m_ptr);
     }
-    CStringValue(const CStringValue& other) {
+    StringValue(const StringValue& other) {
       auto len = std::strlen(other.m_ptr);
       m_ptr = new char[len + 1];
       std::copy(other.m_ptr, other.m_ptr + len + 1, m_ptr);
     }
-    CStringValue(CStringValue&& other) {
+    StringValue(StringValue&& other) {
       m_ptr = other.m_ptr;
       other.m_ptr = nullptr;
     }
-    ~CStringValue() noexcept {
+    ~StringValue() noexcept {
       delete[] m_ptr;
     }
     const char* c_str() const noexcept {
@@ -33,8 +33,12 @@ namespace TORI_NS::detail {
   };
 
   namespace interface {
-    /// CString
-    using CString = BoxedHeapObject<CStringValue>;
+    /// String
+    using String = BoxedHeapObject<StringValue>;
   } // namespace interface
 
 } // namespace TORI_NS::detail
+
+namespace TORI_NS {
+  TORI_DECL_TYPE(String)
+} // namespace TORI_NS

@@ -13,20 +13,21 @@
 #include <exception>
 #include <array>
 
+// decl system types
+#define TORI_DECL_TYPE(TYPE)                  \
+  template <>                                 \
+  struct object_type_traits<TYPE> {           \
+    static constexpr char name[] = "_" #TYPE; \
+  };
+
 namespace TORI_NS {
   /// object type traits
   template <class T>
   struct object_type_traits;
   /// type
-  template <>
-  struct object_type_traits<Type> {
-    static constexpr char name[] = "_Type";
-  };
+  TORI_DECL_TYPE(Type)
   /// HeapObject
-  template <>
-  struct object_type_traits<HeapObject> {
-    static constexpr char name[] = "_HeapObject";
-  };
+  TORI_DECL_TYPE(HeapObject)
 } // namespace TORI_NS
 
 namespace TORI_NS::detail {

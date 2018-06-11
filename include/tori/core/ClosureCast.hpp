@@ -108,11 +108,8 @@ namespace TORI_NS::detail {
     }
     return nullptr;
   }
-} // namespace Neco::lang
+} // namespace TORI_NS::detail
 
 namespace TORI_NS {
-  template <>
-  struct object_type_traits<BadClosureCast> {
-    static constexpr char name[] = "_BadClosureCast";
-  };
-} // namespace Neco::object
+  TORI_DECL_TYPE(BadClosureCast)
+} // namespace TORI_NS

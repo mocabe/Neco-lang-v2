@@ -116,8 +116,5 @@ namespace TORI_NS::detail {
 } // namespace TORI_NS::detail
 
 namespace TORI_NS {
-  template <>
-  struct object_type_traits<BadValueCast> {
-    static constexpr char name[] = "_BadValueCast";
-  };
+  TORI_DECL_TYPE(BadValueCast)
 } // namespace TORI_NS
