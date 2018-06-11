@@ -10,3 +10,6 @@
 #include "core/HeapObject.hpp"
 #include "core/BoxedHeapObject.hpp"
 #include "core/TypeGen.hpp"
+#include "core/DynamicTypeUtil.hpp"
+#include "core/CString.hpp"
+#include "core/Exception.hpp"
