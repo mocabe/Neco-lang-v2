@@ -17,3 +17,4 @@
 #include "core/ClosureCast.hpp"
 #include "core/Primitive.hpp"
 #include "core/Unit.hpp"
+#include "core/Fix.hpp"
