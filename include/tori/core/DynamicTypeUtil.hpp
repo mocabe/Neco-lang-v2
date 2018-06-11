@@ -232,4 +232,16 @@ namespace TORI_NS::detail {
     return ObjectPtr<const Type>(var);
   }
 
+  // ------------------------------------------
+  // Util
+  // ------------------------------------------
+
+  /// has_type
+  template <class T>
+  bool has_type(const ObjectPtr<>& obj) {
+    if (!obj) return false;
+    if (subtype(get_type(obj), object_type<T>::get())) return true;
+    return false;
+  }
+
 } // namespace TORI_NS::detail

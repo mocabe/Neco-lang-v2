@@ -13,3 +13,4 @@
 #include "core/DynamicTypeUtil.hpp"
 #include "core/CString.hpp"
 #include "core/Exception.hpp"
+#include "core/ValueCast.hpp"
