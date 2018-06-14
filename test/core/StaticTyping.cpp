@@ -42,8 +42,8 @@ int main() {
 
   { // apply
     using tm1 = TmApply<TmClosure<TmValue<int>, TmValue<int>>, TmValue<int>>;
-    using tp = typename recon<tm1, taggen<0>>::type;
-    using c = typename recon<tm1, taggen<0>>::c;
+    using tp = recon_type_t<tm1>;
+    using c = recon_constr_t<tm1>;
     using u = unify_t<c>;
     static_assert(std::is_same_v<value<int>, subst_all_t<u, tp>>);
   }
@@ -51,8 +51,8 @@ int main() {
     using tm1 = TmApply<
       TmClosure<TmClosure<TmValue<double>, TmValue<int>>, TmValue<int>>,
       TmClosure<TmValue<double>, TmValue<int>>>;
-    using tp = typename recon<tm1, taggen<0>>::type;
-    using c = typename recon<tm1, taggen<0>>::c;
+    using tp = recon_type_t<tm1>;
+    using c = recon_constr_t<tm1>;
     using u = unify_t<c>;
     static_assert(std::is_same_v<value<int>, subst_all_t<u, tp>>);
   }
@@ -60,8 +60,8 @@ int main() {
     using tm1 = TmApply<
       TmClosure<TmClosure<TmValue<double>, TmVar<class X>>, TmVar<class X>>,
       TmClosure<TmValue<double>, TmValue<int>>>;
-    using tp = typename recon<tm1, taggen<0>>::type;
-    using c = typename recon<tm1, taggen<0>>::c;
+    using tp = recon_type_t<tm1>;
+    using c = recon_constr_t<tm1>;
     using u = unify_t<c>;
     static_assert(std::is_same_v<value<int>, subst_all_t<u, tp>>);
   }
@@ -72,8 +72,8 @@ int main() {
     using tm1 = TmApply<
       TmClosure<TmClosure<TmValue<double>, TmVar<class X>>, TmVar<class X>>,
       TmClosure<TmValue<double>, TmValue<int>>>;
-    using tp = typename recon<tm1, taggen<0>>::type;
-    using c = typename recon<tm1, taggen<0>>::c;
+    using tp = recon_type_t<tm1>;
+    using c = recon_constr_t<tm1>;
     using u = unify_t<c>;
     static_assert(std::is_same_v<value<int>, subst_all_t<u, tp>>);
   }
@@ -98,5 +98,8 @@ int main() {
         type_of_t<TmApply<
           TmClosure<TmValue<HeapObject>, TmValue<Type>>, TmValue<Type>>>,
         value<Type>>);
+  }
+  { 
+    static_assert(std::is_same_v<type_of_t<TmVar<class X>>, var<class X>>); 
   }
 }

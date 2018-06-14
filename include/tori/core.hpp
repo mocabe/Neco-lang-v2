@@ -20,3 +20,4 @@
 #include "core/Fix.hpp"
 #include "core/Apply.hpp"
 #include "core/Thunk.hpp"
+#include "core/Function.hpp"

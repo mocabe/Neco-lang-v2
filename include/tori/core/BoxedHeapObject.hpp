@@ -21,7 +21,7 @@ namespace TORI_NS::detail {
     /// static_construct
     inline constexpr static_construct_t static_construct = static_construct_t();
     // forward decl
-    template <class T, class = void>
+    template <class T>
     struct object_type; // see TypeGen.hpp
   } // namespace interface
 

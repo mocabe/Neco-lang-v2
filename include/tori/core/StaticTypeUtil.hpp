@@ -469,6 +469,33 @@ namespace TORI_NS::detail {
   static constexpr bool has_TmVar_v = is_TmVar_v<typename T::term>;
 
   template <class T>
+  struct is_value_type_ : std::false_type {};
+
+  template <class Tag>
+  struct is_value_type_<value<Tag>> : std::true_type {};
+  /// is_value_v
+  template <class T>
+  static constexpr bool is_value_type_v = is_value_type_<T>::value;
+
+  template <class T>
+  struct is_arrow_type_ : std::false_type {};
+
+  template <class T1, class T2>
+  struct is_arrow_type_<arrow<T1, T2>> : std::true_type {};
+  /// is_arrow_type_v
+  template <class T>
+  static constexpr bool is_arrow_type_v = is_arrow_type_<T>::value;
+
+  template <class T>
+  struct is_vartype_ : std::false_type {};
+
+  template <class Tag>
+  struct is_vartype_<var<Tag>> : std::true_type {};
+  /// is_vartype_v
+  template <class T>
+  static constexpr bool is_vartype_v = is_vartype_<T>::value;
+
+  template <class T>
   struct tag_of {};
   template <class Tag>
   struct tag_of<TmValue<Tag>> {
@@ -480,5 +507,25 @@ namespace TORI_NS::detail {
   };
   template <class T>
   using tag_of_t = typename tag_of<T>::type;
+
+  template <class T>
+  struct to_tuple {};
+
+  template <class... Ts>
+  struct to_tuple<TmClosure<Ts...>> {
+    using type = std::tuple<Ts...>;
+  };
+
+  template <class T>
+  using to_tuple_t = typename to_tuple<T>::type;
+
+  template <class T>
+  struct to_TmClosure {};
+  template <class... Ts>
+  struct to_TmClosure<std::tuple<Ts...>> {
+    using type = TmClosure<Ts...>;
+  };
+  template <class T>
+  using to_TmClosure_t = typename to_TmClosure<T>::type;
 
 } // namespace TORI_NS::detail

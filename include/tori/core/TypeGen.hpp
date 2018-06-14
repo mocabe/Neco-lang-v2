@@ -45,10 +45,6 @@ namespace TORI_NS::detail {
     struct Auto {
       /// term
       using term = TmVar<Tag>;
-      // to make distinct address for each tag
-      static constexpr const int _id_gen = 42;
-      /// Id
-      static constexpr const void* const id = &_id_gen;
     };
 
   } // namespace interface
@@ -125,8 +121,8 @@ namespace TORI_NS::detail {
   template <class T, class... Ts>
   struct arrow_type;
 
-  template <class T, class... Ts>
-  struct arrow_type<T, TmClosure<Ts...>> {
+  template <class... Ts>
+  struct arrow_type<TmClosure<Ts...>> {
     static constexpr const Type* type = &arrow_type_impl<Ts...>::type;
   };
 
@@ -134,33 +130,45 @@ namespace TORI_NS::detail {
   template <class T>
   struct vartype {
     static const Type type;
+    // to make distinct address for each tag
+    static constexpr const int _id_gen = 42;
+    /// Id
+    static constexpr const void* const id = &_id_gen;
+  };
+
+  template <class T, class = void>
+  struct object_type_h {};
+
+  // value
+  template <class T>
+  struct object_type_h<T, std::enable_if_t<is_TmValue_v<T>>> {
+    static constexpr const Type* type = &value_type<T>::type;
+    static ObjectPtr<const Type> get() {
+      return type;
+    }
+  };
+  // closure
+  template <class T>
+  struct object_type_h<T, std::enable_if_t<is_TmClosure_v<T>>> {
+    static constexpr const Type* type = arrow_type<T>::type;
+    static ObjectPtr<const Type> get() {
+      return type;
+    }
+  };
+  // var
+  template <class T>
+  struct object_type_h<T, std::enable_if_t<is_TmVar_v<T>>> {
+    static constexpr const Type* type = &vartype<T>::type;
+    static ObjectPtr<const Type> get() {
+      return type;
+    }
   };
 
   namespace interface {
     /// object type generator
-    template <class T, class>
-    struct object_type {};
-
-    // value
     template <class T>
-    struct object_type<T, std::enable_if_t<has_TmValue_v<T>>> {
-      static constexpr const Type* type = &value_type<T>::type;
-      static ObjectPtr<const Type> get() {
-        return type;
-      }
-    };
-    // closure
-    template <class T>
-    struct object_type<T, std::enable_if_t<has_TmClosure_v<T>>> {
-      static constexpr const Type* type = arrow_type<T, typename T::term>::type;
-      static ObjectPtr<const Type> get() {
-        return type;
-      }
-    };
-    // var
-    template <class T>
-    struct object_type<T, std::enable_if_t<has_TmVar_v<T>>> {
-      static constexpr const Type* type = &vartype<T>::type;
+    struct object_type {
+      static constexpr const Type* type = object_type_h<typename T::term>::type;
       static ObjectPtr<const Type> get() {
         return type;
       }
@@ -183,24 +191,24 @@ namespace TORI_NS::detail {
 
   /// aligned buffer
   template <class T>
-  alignas(32) constexpr const auto vt_name =
-    name_to_buffer(object_type_traits<tag_of_t<typename T::term>>::name);
+  alignas(32) constexpr const
+    auto vt_name = name_to_buffer(object_type_traits<tag_of_t<T>>::name);
 
   template <class T>
   const Type value_type<T>::type{static_construct, ValueType{&vt_name<T>}};
 
   template <class T>
   const Type vartype<T>::type{static_construct,
-                              VarType{uint64_t{std::uintptr_t(T::id)}}};
+                              VarType{uint64_t{std::uintptr_t(id)}}};
 
   template <class T, class... Ts>
   const Type arrow_type_impl<T, Ts...>::type{
     static_construct_t{},
-    ArrowType{object_type<T>::type, &arrow_type_impl<Ts...>::type}};
+    ArrowType{object_type_h<T>::type, &arrow_type_impl<Ts...>::type}};
 
   template <class T1, class T2>
   const Type arrow_type_impl<T1, T2>::type{
     static_construct_t{},
-    ArrowType{object_type<T1>::type, object_type<T2>::type}};
+    ArrowType{object_type_h<T1>::type, object_type_h<T2>::type}};
 
 } // namespace TORI_NS::detail
