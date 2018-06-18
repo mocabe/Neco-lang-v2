@@ -101,7 +101,7 @@ namespace TORI_NS::detail {
     const ObjectPtr<const Type>& t1, const ObjectPtr<const Type>& t2) {
     if (same_type(t1, t2)) return true;
     if (same_type(object_type<HeapObject>::get(), t2)) return true;
-    if (is_arrow_type(t1), is_arrow_type(t2)) {
+    if (is_arrow_type(t1) && is_arrow_type(t2)) {
       auto& t1c = std::get_if<ArrowType>(t1.value())->captured;
       auto& t1r = std::get_if<ArrowType>(t1.value())->returns;
       auto& t2c = std::get_if<ArrowType>(t2.value())->captured;
@@ -123,8 +123,9 @@ namespace TORI_NS::detail {
     auto& to = ta.to;
     if (std::get_if<ValueType>(in.value())) {
       if (same_type(in, from)) return to;
+      return in;
     }
-    if (std::get_if<ArrowType>(in.value())) {
+    if (std::get_if<VarType>(in.value())) {
       if (same_type(in, from)) return to;
       return in;
     }
@@ -141,6 +142,15 @@ namespace TORI_NS::detail {
   ObjectPtr<const Type> subst_type(
     const TyArrow& ta, const ObjectPtr<const Type>& in) {
     return subst_type_impl(ta, in);
+  }
+
+  ObjectPtr<const Type> subst_type_all(
+    const std::vector<TyArrow>& tas, const ObjectPtr<const Type>& ty) {
+    auto t = ty;
+    for (auto tyArrow : tas) {
+      t = subst_type(tyArrow, t);
+    }
+    return t;
   }
 
   // ------------------------------------------
@@ -190,17 +200,23 @@ namespace TORI_NS::detail {
       auto c = cs.back();
       cs.pop_back();
       if (subtype(c.t1, c.t2)) continue;
-      if (!occurs(c.t1, c.t2)) {
-        auto arr = TyArrow{c.t1, c.t2};
-        subst_constr_all(arr, cs);
-        ta.push_back(arr);
-        continue;
+      if (is_vartype(c.t2)) {
+        if (!occurs(c.t2, c.t1)) {
+          auto arr = TyArrow{c.t2, c.t1};
+          cs = subst_constr_all(arr, cs);
+          ta.push_back(arr);
+          continue;
+        }
+        throw std::runtime_error("Unification error: Circular constraints");
       }
-      if (!occurs(c.t2, c.t1)) {
-        auto arr = TyArrow{c.t2, c.t1};
-        subst_constr_all(arr, cs);
-        ta.push_back(arr);
-        continue;
+      if (is_vartype(c.t1)) {
+        if (!occurs(c.t1, c.t2)) {
+          auto arr = TyArrow{c.t1, c.t2};
+          cs = subst_constr_all(arr, cs);
+          ta.push_back(arr);
+          continue;
+        }
+        throw std::runtime_error("Unification error: Circular constraints");
       }
       if (auto arrow1 = std::get_if<ArrowType>(c.t1.value())) {
         if (auto arrow2 = std::get_if<ArrowType>(c.t2.value())) {
