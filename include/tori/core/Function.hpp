@@ -96,14 +96,14 @@ namespace TORI_NS::detail {
 
     /// get nth argument
     ObjectPtr<Thunk>& args(size_t n) {
-      constexpr size_t offset = detail::offset_of_member(&Closure1::args);
+      constexpr size_t offset = offset_of_member(&Closure1::args);
       static_assert(offset % sizeof(ObjectPtr<Thunk>) == 0);
       return ((ObjectPtr<Thunk>*)this)[offset / sizeof(ObjectPtr<Thunk>) + n];
     }
 
     /// get nth argument
     const ObjectPtr<Thunk>& args(size_t n) const {
-      constexpr size_t offset = detail::offset_of_member(&Closure1::args);
+      constexpr size_t offset = offset_of_member(&Closure1::args);
       static_assert(offset % sizeof(ObjectPtr<Thunk>) == 0);
       return ((ObjectPtr<Thunk>*)this)[offset / sizeof(ObjectPtr<Thunk>) + n];
     }
@@ -124,7 +124,7 @@ namespace TORI_NS::detail {
    * Arguments will be filled from back to front as thunk.
    * So, first argument of closure will be LAST element of array for arguments.
    * If all arguments are passed, arity becomes zero and the closure is ready to
-   * execute code.
+   * execute code. All argument thunks are initialized as nullptr.
    */
   template <std::size_t N>
   struct ClosureN : Closure<> {

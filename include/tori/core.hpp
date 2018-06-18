@@ -22,3 +22,5 @@
 #include "core/Thunk.hpp"
 #include "core/Function.hpp"
 #include "core/Eval.hpp"
+#include "core/Type.hpp"
+#include "core/Util.hpp"

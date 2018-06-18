@@ -87,14 +87,36 @@ namespace TORI_NS::detail {
     };
   } // namespace interface
 
+  template <class T>
+  struct is_valid_app_arg : std::false_type {};
+  template <class T>
+  struct is_valid_app_arg<T*> {
+    static constexpr bool value = std::is_base_of_v<HeapObject, T>;
+  };
+  template <class T>
+  struct is_valid_app_arg<Expected<T>> : std::true_type {};
+  template <class T>
+  struct is_valid_app_arg<ObjectPtr<T>> : std::true_type {};
+  template <class T>
+  static constexpr bool is_valid_app_arg_v =
+    is_valid_app_arg<std::decay_t<T>>::value;
+
   namespace interface {
     /// static apply operator
-    template <class T1, class T2>
+    template <
+      class T1,
+      class T2,
+      class =
+        std::enable_if_t<is_valid_app_arg_v<T1> && is_valid_app_arg_v<T2>>>
     auto operator<<(T1&& lhs, T2&& rhs) {
       return ObjectPtr{new Apply{std::forward<T1>(lhs), std::forward<T2>(rhs)}};
     }
     /// dynamic apply operator
-    template <class T1, class T2>
+    template <
+      class T1,
+      class T2,
+      class =
+        std::enable_if_t<is_valid_app_arg_v<T1> && is_valid_app_arg_v<T2>>>
     ObjectPtr<> operator>>(T1&& lhs, T2&& rhs) {
       return new ApplyR{ObjectPtr<>(std::forward<T1>(lhs)),
                         ObjectPtr<>(std::forward<T2>(rhs))};
