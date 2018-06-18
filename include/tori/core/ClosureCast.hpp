@@ -82,7 +82,8 @@ namespace TORI_NS::detail {
     /// dynamically cast object to specified closure type.
     /// \returns nullptr when fail.
     template <class T>
-    [[nodiscard]] ObjectPtr<T> closure_cast_if(const ObjectPtr<>& obj) noexcept {
+    [[nodiscard]] ObjectPtr<T> closure_cast_if(
+      const ObjectPtr<>& obj) noexcept {
       static_assert(has_TmClosure_v<T>, "T is not closure type");
       assert(obj);
       if (has_type<T>(obj)) {

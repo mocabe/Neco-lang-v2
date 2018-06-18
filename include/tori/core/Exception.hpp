@@ -45,7 +45,7 @@ namespace TORI_NS::detail {
   namespace interface {
     // TypeError
     using TypeError = BoxedHeapObject<TypeErrorValue>;
-  }
+  } // namespace interface
 
   /// type_error
   class type_error : public std::logic_error {
@@ -87,7 +87,7 @@ namespace TORI_NS::detail {
   namespace interface {
     /// EvalError
     using EvalError = BoxedHeapObject<EvalErrorValue>;
-  }
+  } // namespace interface
 
   class eval_error : public std::logic_error {
   public:
@@ -140,4 +140,4 @@ namespace TORI_NS {
   TORI_DECL_TYPE(Exception)
   TORI_DECL_TYPE(TypeError)
   TORI_DECL_TYPE(EvalError)
-}
+} // namespace TORI_NS

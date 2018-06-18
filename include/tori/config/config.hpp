@@ -92,7 +92,7 @@ namespace TORI_NS::detail {
 
   // for unused variable
   template <class... Args>
-  void unused(Args...) {}
+  void ignore(Args...) {}
 
   // for std::variant
   template <class T>

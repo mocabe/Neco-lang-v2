@@ -231,7 +231,8 @@ namespace TORI_NS::detail {
   struct occurs_ {};
   template <class X, class T1, class T2>
   struct occurs_<X, arrow<T1, T2>> {
-    static constexpr bool value = occurs_<X, T1>::value || occurs_<X, T2>::value;
+    static constexpr bool value =
+      occurs_<X, T1>::value || occurs_<X, T2>::value;
   };
   template <class X, class Tag>
   struct occurs_<X, value<Tag>> {
@@ -398,7 +399,7 @@ namespace TORI_NS::detail {
   };
   template <class T, class Gen>
   struct recon_<TmFix<T>, Gen> {
-    // recon T 
+    // recon T
     using _t = recon_<T, Gen>;
     using _t_t = typename _t::type;
     using _t_gen = typename _t::gen;

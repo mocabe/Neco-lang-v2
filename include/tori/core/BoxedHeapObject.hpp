@@ -23,6 +23,7 @@ namespace TORI_NS::detail {
     // forward decl
     template <class T>
     struct object_type; // see TypeGen.hpp
+
   } // namespace interface
 
   /// \brief vtable function to delete object

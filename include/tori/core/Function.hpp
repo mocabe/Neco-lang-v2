@@ -143,7 +143,6 @@ namespace TORI_NS::detail {
     }
   };
 
-  
   // ------------------------------------------
   // Eval wrapper
   // ------------------------------------------
@@ -293,7 +292,8 @@ namespace TORI_NS::detail {
         ReturnType(ReturnType&& other) : value{std::move(other.value)} {}
 
         const ObjectPtr<> value;
-    };
+      };
+
     private:
       using ClosureN<sizeof...(Ts) - 1>::nth_arg_thunk;
       using ClosureN<sizeof...(Ts) - 1>::args;

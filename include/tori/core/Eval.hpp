@@ -89,7 +89,7 @@ namespace TORI_NS::detail {
   namespace interface {
     /// evaluation
     template <class TObjectPtr>
-    [[nodiscard]] ObjectPtr<> eval(TObjectPtr&& obj) {
+    [[nodiscard]] ObjectPtr<> eval(TObjectPtr && obj) {
       ObjectPtr<> _obj(std::forward<TObjectPtr>(obj));
       return detail::_eval_rec(_obj);
     }
@@ -104,7 +104,7 @@ namespace TORI_NS::detail {
 
     /// evaluation
     template <class T>
-    [[nodiscard]] ObjectPtr<T> eval(Expected<T>&& e) {
+    [[nodiscard]] ObjectPtr<T> eval(Expected<T> && e) {
       auto r = eval(std::move(e.obj));
       ++r->refcount.atomic;
       return static_cast<T*>(r.head());

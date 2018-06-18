@@ -92,6 +92,7 @@ namespace TORI_NS::detail {
   }
 
   namespace interface {
+    /// check type equality
     [[nodiscard]] bool same_type(
       const ObjectPtr<const Type>& lhs, const ObjectPtr<const Type>& rhs) {
       if (lhs.head() == rhs.head()) return true;

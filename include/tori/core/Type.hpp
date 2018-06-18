@@ -36,11 +36,11 @@ namespace TORI_NS::detail {
     // var -> var, []
     if (has_vartype(obj)) return get_type(obj);
     // arrow -> arrow, []
-    if(has_arrow_type(obj)) return get_type(obj);
+    if (has_arrow_type(obj)) return get_type(obj);
 
     assert(false);
     return get_type(obj);
-  } 
+  }
 
   [[nodiscard]] std::pair<const ObjectPtr<const Type>, std::vector<Constr>> 
     recon(const ObjectPtr<>& obj) {
