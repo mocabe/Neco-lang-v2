@@ -4,6 +4,7 @@
 #pragma once
 
 #include "TypeGen.hpp"
+#include "Exception.hpp"
 
 namespace TORI_NS::detail {
 
@@ -195,7 +196,7 @@ namespace TORI_NS::detail {
   // Unify
   // ------------------------------------------
 
-  void unify_impl(std::vector<Constr>& cs, std::vector<TyArrow>& ta) {
+  void unify_impl(std::vector<Constr>& cs, std::vector<TyArrow>& ta, const ObjectPtr<>& src) {
     while (!cs.empty()) {
       auto c = cs.back();
       cs.pop_back();
@@ -207,7 +208,7 @@ namespace TORI_NS::detail {
           ta.push_back(arr);
           continue;
         }
-        throw std::runtime_error("Unification error: Circular constraints");
+        throw type_error("Unification error: Circular constraints", src);
       }
       if (is_vartype(c.t1)) {
         if (!occurs(c.t1, c.t2)) {
@@ -216,7 +217,7 @@ namespace TORI_NS::detail {
           ta.push_back(arr);
           continue;
         }
-        throw std::runtime_error("Unification error: Circular constraints");
+        throw type_error("Unification error: Circular constraints", src);
       }
       if (auto arrow1 = std::get_if<ArrowType>(c.t1.value())) {
         if (auto arrow2 = std::get_if<ArrowType>(c.t2.value())) {
@@ -225,15 +226,18 @@ namespace TORI_NS::detail {
           continue;
         }
       }
-      throw std::runtime_error("Unification error: Unsolvalbe constraints");
+      throw type_error("Unification error: Unsolvalbe constraints", src);
     }
   }
 
   /// unify
-  std::vector<TyArrow> unify(const std::vector<Constr>& cs) {
+  /// \param cs Type constraints
+  /// \param src Source node (for error handling)
+  std::vector<TyArrow> unify(
+    const std::vector<Constr>& cs, const ObjectPtr<>& src) {
     auto _cs = cs;
     std::vector<TyArrow> as;
-    unify_impl(_cs, as);
+    unify_impl(_cs, as, src);
     return as;
   }
 

@@ -50,7 +50,7 @@ namespace TORI_NS::detail {
     // type_of
     ObjectPtr<const Type> type_of(const ObjectPtr<>& obj) {
       auto [type, constr] = recon(obj);
-      return subst_type_all(unify(constr), type);
+      return subst_type_all(unify(constr, obj), type);
     }
   } // namespace interface
 
