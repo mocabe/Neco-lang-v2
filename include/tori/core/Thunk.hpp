@@ -9,6 +9,8 @@
 
 namespace TORI_NS::detail {
   struct ThunkValue {
+    ThunkValue(const ObjectPtr<>& v) : value{v} {}
+    ThunkValue(ObjectPtr<>&& v) : value{std::move(v)} {}
     ObjectPtr<> value;
     bool_t evaluated = false;
   };

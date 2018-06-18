@@ -12,7 +12,7 @@ namespace TORI_NS::detail {
     /// \notes NO null check.
     /// \notes use type_of() to get actual type of terms.
     ObjectPtr<const Type> get_type(const ObjectPtr<>& obj) {
-      assert(!obj);
+      assert(obj);
       return obj.info_table()->obj_type;
     }
 
@@ -87,7 +87,6 @@ namespace TORI_NS::detail {
     if (auto lany = std::get_if<VarType>(&left)) {
       if (auto rany = std::get_if<VarType>(&right)) return lany->id == rany->id;
     }
-    assert(false);
     return false;
   }
 

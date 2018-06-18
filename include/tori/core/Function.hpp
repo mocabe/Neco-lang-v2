@@ -95,17 +95,17 @@ namespace TORI_NS::detail {
 #endif
 
     /// get nth argument
-    ObjectPtr<>& args(size_t n) {
+    ObjectPtr<Thunk>& args(size_t n) {
       constexpr size_t offset = detail::offset_of_member(&Closure1::args);
       static_assert(offset % sizeof(ObjectPtr<Thunk>) == 0);
-      return ((ObjectPtr<Thunk>*)this)[offset / sizeof(ObjectPtr<Thunk>) + n]->value;
+      return ((ObjectPtr<Thunk>*)this)[offset / sizeof(ObjectPtr<Thunk>) + n];
     }
 
     /// get nth argument
-    const ObjectPtr<>& args(size_t n) const {
+    const ObjectPtr<Thunk>& args(size_t n) const {
       constexpr size_t offset = detail::offset_of_member(&Closure1::args);
       static_assert(offset % sizeof(ObjectPtr<Thunk>) == 0);
-      return ((ObjectPtr<Thunk>*)this)[offset / sizeof(ObjectPtr<Thunk>) + n]->value;
+      return ((ObjectPtr<Thunk>*)this)[offset / sizeof(ObjectPtr<Thunk>) + n];
     }
 
     /// Execute core with vtable function
@@ -221,7 +221,7 @@ namespace TORI_NS::detail {
         using _To = std::tuple_element_t<N, std::tuple<Ts...>>;
         using To = std::conditional_t<has_TmVar_v<_To>, HeapObject, _To>;
         auto& thunk = ClosureN<sizeof...(Ts) - 1>::template nth_arg_thunk<N>();
-        auto obj = eval_rec(thunk);
+        auto obj = eval(thunk);
         auto sw_cast = [](auto& _obj) {
           if constexpr (has_TmClosure_v<To>)
             return closure_cast<To>(std::forward<decltype(_obj)>(_obj));

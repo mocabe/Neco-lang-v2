@@ -43,71 +43,73 @@ namespace TORI_NS::detail {
     using BadClosureCast = BoxedHeapObject<detail::BadClosureCastValue>;
   } // namespace interface
 
-  /// closure_cast
-  ///
-  /// dynamically cast object to specified closure type.
-  /// \throws bad_value_cast when fail.
-  template <class T>
-  ObjectPtr<T> closure_cast(const ObjectPtr<>& obj) {
-    static_assert(has_TmClosure_v<T>, "T is not closure type");
-    assert(obj);
-    if (has_type<T>(obj)) {
-      // +1
-      if (obj.head()) ++(obj.head()->refcount.atomic);
-      return static_cast<T*>(obj.head());
+  namespace interface {
+    /// closure_cast
+    ///
+    /// dynamically cast object to specified closure type.
+    /// \throws bad_value_cast when fail.
+    template <class T>
+    ObjectPtr<T> closure_cast(const ObjectPtr<>& obj) {
+      static_assert(has_TmClosure_v<T>, "T is not closure type");
+      assert(obj);
+      if (has_type<T>(obj)) {
+        // +1
+        if (obj.head()) ++(obj.head()->refcount.atomic);
+        return static_cast<T*>(obj.head());
+      }
+      throw bad_closure_cast{get_type(obj), object_type<T>::get()};
     }
-    throw bad_closure_cast{get_type(obj), object_type<T>::get()};
-  }
 
-  /// closure_cast
-  ///
-  /// dynamically cast object to specified closure type.
-  /// \throws bad_value_cast when fail.
-  template <class T>
-  ObjectPtr<T> closure_cast(ObjectPtr<>&& obj) {
-    static_assert(has_TmClosure_v<T>, "T is not closure type");
-    assert(obj);
-    if (has_type<T>(obj)) {
-      // move
-      auto r = static_cast<T*>(obj.m_ptr);
-      obj.m_ptr = nullptr;
-      return r;
+    /// closure_cast
+    ///
+    /// dynamically cast object to specified closure type.
+    /// \throws bad_value_cast when fail.
+    template <class T>
+    ObjectPtr<T> closure_cast(ObjectPtr<>&& obj) {
+      static_assert(has_TmClosure_v<T>, "T is not closure type");
+      assert(obj);
+      if (has_type<T>(obj)) {
+        // move
+        auto r = static_cast<T*>(obj.m_ptr);
+        obj.m_ptr = nullptr;
+        return r;
+      }
+      throw bad_closure_cast{get_type(obj), object_type<T>::get()};
     }
-    throw bad_closure_cast{get_type(obj), object_type<T>::get()};
-  }
 
-  /// closure_cast_if
-  ///
-  /// dynamically cast object to specified closure type.
-  /// \returns nullptr when fail.
-  template <class T>
-  ObjectPtr<T> closure_cast_if(const ObjectPtr<>& obj) noexcept {
-    static_assert(has_TmClosure_v<T>, "T is not closure type");
-    assert(obj);
-    if (has_type<T>(obj)) {
-      // +1
-      if (obj.head()) ++(obj.head()->refcount.atomic);
-      return static_cast<T*>(obj.head());
+    /// closure_cast_if
+    ///
+    /// dynamically cast object to specified closure type.
+    /// \returns nullptr when fail.
+    template <class T>
+    ObjectPtr<T> closure_cast_if(const ObjectPtr<>& obj) noexcept {
+      static_assert(has_TmClosure_v<T>, "T is not closure type");
+      assert(obj);
+      if (has_type<T>(obj)) {
+        // +1
+        if (obj.head()) ++(obj.head()->refcount.atomic);
+        return static_cast<T*>(obj.head());
+      }
+      return nullptr;
     }
-    return nullptr;
-  }
 
-  /// closure_cast_if
-  ///
-  /// dynamically cast object to specified closure type.
-  /// \returns nullptr when fail.
-  template <class T>
-  ObjectPtr<T> closure_cast_if(ObjectPtr<>&& obj) noexcept {
-    static_assert(has_TmClosure_v<T>, "T is not closure type");
-    assert(obj);
-    if (has_type<T>(obj)) {
-      // move
-      auto r = static_cast<T*>(obj.m_ptr);
-      obj.m_ptr = nullptr;
-      return r;
+    /// closure_cast_if
+    ///
+    /// dynamically cast object to specified closure type.
+    /// \returns nullptr when fail.
+    template <class T>
+    ObjectPtr<T> closure_cast_if(ObjectPtr<>&& obj) noexcept {
+      static_assert(has_TmClosure_v<T>, "T is not closure type");
+      assert(obj);
+      if (has_type<T>(obj)) {
+        // move
+        auto r = static_cast<T*>(obj.m_ptr);
+        obj.m_ptr = nullptr;
+        return r;
+      }
+      return nullptr;
     }
-    return nullptr;
-  }
+  } // namespace interface
 } // namespace TORI_NS::detail
 
 namespace TORI_NS {

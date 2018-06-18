@@ -92,13 +92,13 @@ namespace TORI_NS::detail {
       friend ObjectPtr<U> value_cast(ObjectPtr<T>&&);
       /// move cast function
       template <class U>
-      friend ObjectPtr<U> value_cast_if(ObjectPtr<T>&&);
+      friend ObjectPtr<U> value_cast_if(ObjectPtr<T>&&) noexcept;
       /// move cast function
       template <class U>
       friend ObjectPtr<U> closure_cast(ObjectPtr<T>&&);
       /// move cast function
       template <class U>
-      friend ObjectPtr<U> closure_cast_if(ObjectPtr<T>&&);
+      friend ObjectPtr<U> closure_cast_if(ObjectPtr<T>&&) noexcept;
 
     public:
       using value_type = T;

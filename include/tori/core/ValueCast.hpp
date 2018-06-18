@@ -44,75 +44,77 @@ namespace TORI_NS::detail {
     using BadValueCast = BoxedHeapObject<detail::BadValueCastValue>;
   } // namespace interface
 
-  /// value_cast
-  ///
-  /// dynamically cast object to specified value type.
-  /// \throws bad_value_cast when fail.
-  template <class T>
-  ObjectPtr<T> value_cast(const ObjectPtr<>& obj) {
-    static_assert(has_TmValue_v<T>, "T is not value type");
-    assert(obj);
-    if (has_type<T>(obj)) {
-      // +1
-      if (obj.head()) ++(obj.head()->refcount.atomic);
-      return static_cast<T*>(obj.head());
-    } else {
-      throw bad_value_cast{object_type<T>::get(), get_type(obj)};
+  namespace interface {
+    /// value_cast
+    ///
+    /// dynamically cast object to specified value type.
+    /// \throws bad_value_cast when fail.
+    template <class T>
+    ObjectPtr<T> value_cast(const ObjectPtr<>& obj) {
+      static_assert(has_TmValue_v<T>, "T is not value type");
+      assert(obj);
+      if (has_type<T>(obj)) {
+        // +1
+        if (obj.head()) ++(obj.head()->refcount.atomic);
+        return static_cast<T*>(obj.head());
+      } else {
+        throw bad_value_cast{object_type<T>::get(), get_type(obj)};
+      }
     }
-  }
 
-  /// value_cast
-  ///
-  /// dynamically cast object to specified value type.
-  /// \throws bad_value_cast when fail.
-  template <class T>
-  ObjectPtr<T> value_cast(ObjectPtr<>&& obj) {
-    static_assert(has_TmValue_v<T>, "T is not value type");
-    assert(obj);
-    if (has_type<T>(obj)) {
-      // move
-      auto r = static_cast<T*>(obj.m_ptr);
-      obj.m_ptr = nullptr;
-      return r;
-    } else {
-      throw bad_value_cast{object_type<T>::get(), get_type(obj)};
+    /// value_cast
+    ///
+    /// dynamically cast object to specified value type.
+    /// \throws bad_value_cast when fail.
+    template <class T>
+    ObjectPtr<T> value_cast(ObjectPtr<>&& obj) {
+      static_assert(has_TmValue_v<T>, "T is not value type");
+      assert(obj);
+      if (has_type<T>(obj)) {
+        // move
+        auto r = static_cast<T*>(obj.m_ptr);
+        obj.m_ptr = nullptr;
+        return r;
+      } else {
+        throw bad_value_cast{object_type<T>::get(), get_type(obj)};
+      }
     }
-  }
 
-  /// value_cast_if
-  ///
-  /// dynamically cast object to specified value type.
-  /// \returns nullptr when fail.
-  template <class T>
-  ObjectPtr<T> value_cast_if(const ObjectPtr<>& obj) noexcept {
-    static_assert(has_TmValue_v<T>, "T is not value type");
-    assert(obj);
-    if (has_type<T>(obj)) {
-      // +1
-      if (obj.head()) ++(obj.head()->refcount.atomic);
-      return static_cast<T*>(obj.head());
-    } else {
-      return nullptr;
+    /// value_cast_if
+    ///
+    /// dynamically cast object to specified value type.
+    /// \returns nullptr when fail.
+    template <class T>
+    ObjectPtr<T> value_cast_if(const ObjectPtr<>& obj) noexcept {
+      static_assert(has_TmValue_v<T>, "T is not value type");
+      assert(obj);
+      if (has_type<T>(obj)) {
+        // +1
+        if (obj.head()) ++(obj.head()->refcount.atomic);
+        return static_cast<T*>(obj.head());
+      } else {
+        return nullptr;
+      }
     }
-  }
 
-  /// value_cast_if
-  ///
-  /// dynamically cast object to specified value type.
-  /// \returns nullptr when fail.
-  template <class T>
-  ObjectPtr<T> value_cast_if(ObjectPtr<>&& obj) noexcept {
-    static_assert(has_TmValue_v<T>, "T is not value type");
-    assert(obj);
-    if (has_type<T>(obj)) {
-      // move
-      auto r = static_cast<T*>(obj.m_ptr);
-      obj.m_ptr = nullptr;
-      return r;
-    } else {
-      return nullptr;
+    /// value_cast_if
+    ///
+    /// dynamically cast object to specified value type.
+    /// \returns nullptr when fail.
+    template <class T>
+    ObjectPtr<T> value_cast_if(ObjectPtr<>&& obj) noexcept {
+      static_assert(has_TmValue_v<T>, "T is not value type");
+      assert(obj);
+      if (has_type<T>(obj)) {
+        // move
+        auto r = static_cast<T*>(obj.m_ptr);
+        obj.m_ptr = nullptr;
+        return r;
+      } else {
+        return nullptr;
+      }
     }
-  }
+  } // namespace interface
 } // namespace TORI_NS::detail
 
 namespace TORI_NS {

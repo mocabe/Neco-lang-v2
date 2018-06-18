@@ -21,3 +21,4 @@
 #include "core/Apply.hpp"
 #include "core/Thunk.hpp"
 #include "core/Function.hpp"
+#include "core/Eval.hpp"
