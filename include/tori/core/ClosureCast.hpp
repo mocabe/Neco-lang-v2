@@ -49,7 +49,7 @@ namespace TORI_NS::detail {
     /// dynamically cast object to specified closure type.
     /// \throws bad_value_cast when fail.
     template <class T>
-    ObjectPtr<T> closure_cast(const ObjectPtr<>& obj) {
+    [[nodiscard]] ObjectPtr<T> closure_cast(const ObjectPtr<>& obj) {
       static_assert(has_TmClosure_v<T>, "T is not closure type");
       assert(obj);
       if (has_type<T>(obj)) {
@@ -65,7 +65,7 @@ namespace TORI_NS::detail {
     /// dynamically cast object to specified closure type.
     /// \throws bad_value_cast when fail.
     template <class T>
-    ObjectPtr<T> closure_cast(ObjectPtr<>&& obj) {
+    [[nodiscard]] ObjectPtr<T> closure_cast(ObjectPtr<>&& obj) {
       static_assert(has_TmClosure_v<T>, "T is not closure type");
       assert(obj);
       if (has_type<T>(obj)) {
@@ -82,7 +82,7 @@ namespace TORI_NS::detail {
     /// dynamically cast object to specified closure type.
     /// \returns nullptr when fail.
     template <class T>
-    ObjectPtr<T> closure_cast_if(const ObjectPtr<>& obj) noexcept {
+    [[nodiscard]] ObjectPtr<T> closure_cast_if(const ObjectPtr<>& obj) noexcept {
       static_assert(has_TmClosure_v<T>, "T is not closure type");
       assert(obj);
       if (has_type<T>(obj)) {
@@ -98,7 +98,7 @@ namespace TORI_NS::detail {
     /// dynamically cast object to specified closure type.
     /// \returns nullptr when fail.
     template <class T>
-    ObjectPtr<T> closure_cast_if(ObjectPtr<>&& obj) noexcept {
+    [[nodiscard]] ObjectPtr<T> closure_cast_if(ObjectPtr<>&& obj) noexcept {
       static_assert(has_TmClosure_v<T>, "T is not closure type");
       assert(obj);
       if (has_type<T>(obj)) {

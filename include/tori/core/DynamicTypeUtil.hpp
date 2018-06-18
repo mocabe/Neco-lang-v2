@@ -12,47 +12,47 @@ namespace TORI_NS::detail {
     /// \brief get **RAW** type of the object
     /// \notes NO null check.
     /// \notes use type_of() to get actual type of terms.
-    ObjectPtr<const Type> get_type(const ObjectPtr<>& obj) {
+    [[nodiscard]] ObjectPtr<const Type> get_type(const ObjectPtr<>& obj) {
       assert(obj);
       return obj.info_table()->obj_type;
     }
 
     /// is_value_type
-    bool is_value_type(const ObjectPtr<const Type>& tp) {
+    [[nodiscard]] bool is_value_type(const ObjectPtr<const Type>& tp) {
       if (std::get_if<ValueType>(tp.value()))
         return true;
       else
         return false;
     }
     /// is_arrow_type
-    bool is_arrow_type(const ObjectPtr<const Type>& tp) {
+    [[nodiscard]] bool is_arrow_type(const ObjectPtr<const Type>& tp) {
       if (std::get_if<ArrowType>(tp.value()))
         return true;
       else
         return false;
     }
     /// is_vartype
-    bool is_vartype(const ObjectPtr<const Type>& tp) {
+    [[nodiscard]] bool is_vartype(const ObjectPtr<const Type>& tp) {
       if (std::get_if<VarType>(tp.value()))
         return true;
       else
         return false;
     }
     /// has_value_type
-    bool has_value_type(const ObjectPtr<>& obj) {
+    [[nodiscard]] bool has_value_type(const ObjectPtr<>& obj) {
       return is_value_type(get_type(obj));
     }
     /// has_arrow_type
-    bool has_arrow_type(const ObjectPtr<>& obj) {
+    [[nodiscard]] bool has_arrow_type(const ObjectPtr<>& obj) {
       return is_arrow_type(get_type(obj));
     }
     /// has_vartype
-    bool has_vartype(const ObjectPtr<>& obj) {
+    [[nodiscard]] bool has_vartype(const ObjectPtr<>& obj) {
       return is_vartype(get_type(obj));
     }
   } // namespace interface
 
-  ObjectPtr<const Type> copy_type_impl(const ObjectPtr<const Type>& ptp) {
+  [[nodiscard]] ObjectPtr<const Type> copy_type_impl(const ObjectPtr<const Type>& ptp) {
     if (std::get_if<ValueType>(ptp.value())) { return ptp; }
     if (std::get_if<VarType>(ptp.value())) { return ptp; }
     if (auto arrow = std::get_if<ArrowType>(ptp.value())) {
@@ -67,12 +67,12 @@ namespace TORI_NS::detail {
 
   namespace interface {
     /// Deep copy type object
-    ObjectPtr<const Type> copy_type(const ObjectPtr<const Type>& tp) {
+    [[nodiscard]] ObjectPtr<const Type> copy_type(const ObjectPtr<const Type>& tp) {
       return copy_type_impl(tp);
     }
   } // namespace interface
 
-  bool same_type_impl(
+  [[nodiscard]] bool same_type_impl(
     const ObjectPtr<const Type>& lhs, const ObjectPtr<const Type>& rhs) {
     const auto& left = *lhs;
     const auto& right = *rhs;
@@ -91,14 +91,16 @@ namespace TORI_NS::detail {
     return false;
   }
 
-  bool same_type(
-    const ObjectPtr<const Type>& lhs, const ObjectPtr<const Type>& rhs) {
-    if (lhs.head() == rhs.head()) return true;
-    return same_type_impl(lhs, rhs);
-  }
+  namespace interface {
+    [[nodiscard]] bool same_type(
+      const ObjectPtr<const Type>& lhs, const ObjectPtr<const Type>& rhs) {
+      if (lhs.head() == rhs.head()) return true;
+      return same_type_impl(lhs, rhs);
+    }
+  } // namespace interface
 
   /// check subtype relation T1 :< T2
-  bool subtype(
+  [[nodiscard]] bool subtype(
     const ObjectPtr<const Type>& t1, const ObjectPtr<const Type>& t2) {
     if (same_type(t1, t2)) return true;
     if (same_type(object_type<HeapObject>::get(), t2)) return true;
@@ -118,7 +120,7 @@ namespace TORI_NS::detail {
     ObjectPtr<const Type> to;
   };
 
-  ObjectPtr<const Type> subst_type_impl(
+  [[nodiscard]] ObjectPtr<const Type> subst_type_impl(
     const TyArrow& ta, const ObjectPtr<const Type>& in) {
     auto& from = ta.from;
     auto& to = ta.to;
@@ -140,12 +142,12 @@ namespace TORI_NS::detail {
   }
 
   /// emulate type-substitution
-  ObjectPtr<const Type> subst_type(
-    const TyArrow& ta, const ObjectPtr<const Type>& in) {
+  [[nodiscard]] ObjectPtr<const Type> subst_type(
+      const TyArrow& ta, const ObjectPtr<const Type>& in) {
     return subst_type_impl(ta, in);
   }
 
-  ObjectPtr<const Type> subst_type_all(
+  [[nodiscard]] ObjectPtr<const Type> subst_type_all(
     const std::vector<TyArrow>& tas, const ObjectPtr<const Type>& ty) {
     auto t = ty;
     for (auto tyArrow : tas) {
@@ -165,12 +167,12 @@ namespace TORI_NS::detail {
   };
 
   /// subst_constr
-  Constr subst_constr(const TyArrow& ta, const Constr& constr) {
+  [[nodiscard]] Constr subst_constr(const TyArrow& ta, const Constr& constr) {
     return {subst_type(ta, constr.t1), subst_type(ta, constr.t2)};
   }
 
   /// subst_constr_all
-  std::vector<Constr> subst_constr_all(
+  [[nodiscard]] std::vector<Constr> subst_constr_all(
     const TyArrow& ta, const std::vector<Constr>& cs) {
     std::vector<Constr> ret;
     ret.reserve(cs.size());
@@ -184,7 +186,8 @@ namespace TORI_NS::detail {
   // ------------------------------------------
 
   /// occurs
-  bool occurs(const ObjectPtr<const Type>& x, const ObjectPtr<const Type>& t) {
+  [[nodiscard]] bool occurs(
+    const ObjectPtr<const Type>& x, const ObjectPtr<const Type>& t) {
     if (std::get_if<ValueType>(t.value())) return false;
     if (std::get_if<VarType>(t.value())) return same_type(x, t);
     if (auto arrow = std::get_if<ArrowType>(t.value()))
@@ -196,7 +199,8 @@ namespace TORI_NS::detail {
   // Unify
   // ------------------------------------------
 
-  void unify_impl(std::vector<Constr>& cs, std::vector<TyArrow>& ta, const ObjectPtr<>& src) {
+  void unify_impl(
+    std::vector<Constr>& cs, std::vector<TyArrow>& ta, const ObjectPtr<>& src) {
     while (!cs.empty()) {
       auto c = cs.back();
       cs.pop_back();
@@ -233,7 +237,7 @@ namespace TORI_NS::detail {
   /// unify
   /// \param cs Type constraints
   /// \param src Source node (for error handling)
-  std::vector<TyArrow> unify(
+  [[nodiscard]] std::vector<TyArrow> unify(
     const std::vector<Constr>& cs, const ObjectPtr<>& src) {
     auto _cs = cs;
     std::vector<TyArrow> as;
@@ -245,7 +249,7 @@ namespace TORI_NS::detail {
   // Recon
   // ------------------------------------------
 
-  ObjectPtr<const Type> genvar() {
+  [[nodiscard]] ObjectPtr<const Type> genvar() {
     auto var = make_object<Type>(VarType{0});
     std::get_if<VarType>(var.value())->id = uintptr_t(var.head());
     return ObjectPtr<const Type>(var);
@@ -255,12 +259,14 @@ namespace TORI_NS::detail {
   // Util
   // ------------------------------------------
 
-  /// has_type
-  template <class T>
-  bool has_type(const ObjectPtr<>& obj) {
-    if (!obj) return false;
-    if (subtype(get_type(obj), object_type<T>::get())) return true;
-    return false;
-  }
+  namespace interface {
+    /// has_type
+    template <class T>
+    [[nodiscard]] bool has_type(const ObjectPtr<>& obj) {
+      if (!obj) return false;
+      if (subtype(get_type(obj), object_type<T>::get())) return true;
+      return false;
+    }
+  } // namespace interface
 
 } // namespace TORI_NS::detail

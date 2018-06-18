@@ -169,7 +169,7 @@ namespace TORI_NS::detail {
     template <class T>
     struct object_type {
       static constexpr const Type* type = object_type_h<typename T::term>::type;
-      static ObjectPtr<const Type> get() {
+      [[nodiscard]] static ObjectPtr<const Type> get() {
         return type;
       }
     };

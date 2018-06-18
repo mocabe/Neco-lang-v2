@@ -14,7 +14,7 @@
 namespace TORI_NS::detail {
 
   /// eval implementation
-  ObjectPtr<> _eval_rec(const ObjectPtr<>& obj) {
+  [[nodiscard]] ObjectPtr<> _eval_rec(const ObjectPtr<>& obj) {
     // closure
     if (has_arrow_type(obj)) {
       auto c = static_cast<Closure<>*>(obj.head());
@@ -89,14 +89,14 @@ namespace TORI_NS::detail {
   namespace interface {
     /// evaluation
     template <class TObjectPtr>
-    ObjectPtr<> eval(TObjectPtr&& obj) {
+    [[nodiscard]] ObjectPtr<> eval(TObjectPtr&& obj) {
       ObjectPtr<> _obj(std::forward<TObjectPtr>(obj));
       return detail::_eval_rec(_obj);
     }
 
     /// evaluation
     template <class T>
-    ObjectPtr<T> eval(const Expected<T>& e) {
+    [[nodiscard]] ObjectPtr<T> eval(const Expected<T>& e) {
       auto r = eval(e.obj);
       ++r->refcount.atomic;
       return static_cast<T*>(r.head());
@@ -104,7 +104,7 @@ namespace TORI_NS::detail {
 
     /// evaluation
     template <class T>
-    ObjectPtr<T> eval(Expected<T>&& e) {
+    [[nodiscard]] ObjectPtr<T> eval(Expected<T>&& e) {
       auto r = eval(std::move(e.obj));
       ++r->refcount.atomic;
       return static_cast<T*>(r.head());

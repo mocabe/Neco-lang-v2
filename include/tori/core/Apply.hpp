@@ -108,7 +108,7 @@ namespace TORI_NS::detail {
       class T2,
       class =
         std::enable_if_t<is_valid_app_arg_v<T1> && is_valid_app_arg_v<T2>>>
-    auto operator<<(T1&& lhs, T2&& rhs) {
+    [[nodiscard]] auto operator<<(T1&& lhs, T2&& rhs) {
       return ObjectPtr{new Apply{std::forward<T1>(lhs), std::forward<T2>(rhs)}};
     }
     /// dynamic apply operator
@@ -117,7 +117,7 @@ namespace TORI_NS::detail {
       class T2,
       class =
         std::enable_if_t<is_valid_app_arg_v<T1> && is_valid_app_arg_v<T2>>>
-    ObjectPtr<> operator>>(T1&& lhs, T2&& rhs) {
+    [[nodiscard]] ObjectPtr<> operator>>(T1&& lhs, T2&& rhs) {
       return new ApplyR{ObjectPtr<>(std::forward<T1>(lhs)),
                         ObjectPtr<>(std::forward<T2>(rhs))};
     }

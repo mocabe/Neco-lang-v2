@@ -14,7 +14,8 @@
 
 namespace TORI_NS::detail {
 
-  const ObjectPtr<const Type> recon_impl(const ObjectPtr<>& obj, std::vector<Constr>& constr) {
+  [[nodiscard]] const ObjectPtr<const Type> recon_impl(
+    const ObjectPtr<>& obj, std::vector<Constr>& constr) {
     // apply(app,arg) ->
     if (auto apply = value_cast_if<ApplyR>(obj)) {
       if (auto fix = value_cast_if<Fix>(apply->app)) {
@@ -39,16 +40,17 @@ namespace TORI_NS::detail {
 
     assert(false);
     return get_type(obj);
-  }
-  std::pair<const ObjectPtr<const Type>, std::vector<Constr>> recon(
-    const ObjectPtr<>& obj) {
+  } 
+
+  [[nodiscard]] std::pair<const ObjectPtr<const Type>, std::vector<Constr>> 
+    recon(const ObjectPtr<>& obj) {
     std::vector<Constr> constr;
     return {recon_impl(obj, constr), constr};
   }
 
   namespace interface {
     // type_of
-    ObjectPtr<const Type> type_of(const ObjectPtr<>& obj) {
+    [[nodiscard]] ObjectPtr<const Type> type_of(const ObjectPtr<>& obj) {
       auto [type, constr] = recon(obj);
       return subst_type_all(unify(constr, obj), type);
     }
