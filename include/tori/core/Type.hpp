@@ -16,7 +16,8 @@ namespace TORI_NS::detail {
 
   [[nodiscard]] const ObjectPtr<const Type> recon_impl(
     const ObjectPtr<>& obj, std::vector<Constr>& constr) {
-    // apply(app,arg) ->
+    if (!obj) throw type_error("Null object", obj);
+    // Apply
     if (auto apply = value_cast_if<ApplyR>(obj)) {
       if (auto fix = value_cast_if<Fix>(apply->app)) {
         auto _t1 = recon_impl(apply->arg, constr);
@@ -31,6 +32,10 @@ namespace TORI_NS::detail {
         return _t;
       }
     }
+    // Thunk
+    if (auto thunk = value_cast_if<Thunk>(obj)) {
+      return recon_impl(thunk->value, constr);
+    }
     // value -> value, []
     if (has_value_type(obj)) return get_type(obj);
     // var -> var, []
@@ -41,9 +46,13 @@ namespace TORI_NS::detail {
     assert(false);
     return get_type(obj);
   }
+} // namespace TORI_NS::detail
 
-  [[nodiscard]] std::pair<const ObjectPtr<const Type>, std::vector<Constr>> 
-    recon(const ObjectPtr<>& obj) {
+namespace TORI_NS::detail {
+
+  /// recon
+  [[nodiscard]] std::pair<const ObjectPtr<const Type>, std::vector<Constr>>
+  recon(const ObjectPtr<>& obj) {
     std::vector<Constr> constr;
     return {recon_impl(obj, constr), constr};
   }
