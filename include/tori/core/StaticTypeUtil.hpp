@@ -348,8 +348,69 @@ namespace TORI_NS::detail {
   template <class Gen>
   using nextgen_t = typename genvar_<Gen>::next;
 
+  template <class T, class Gen, class Target>
+  struct genpoly_ {
+    using type = Target;
+    using gen = Gen;
+  };
+
+  template <class Tag, class Gen, class Target>
+  struct genpoly_<var<Tag>, Gen, Target> {
+    using _v = genvar_t<Gen>;
+    using gen = nextgen_t<Gen>;
+    using type = subst_t<tyarrow<var<Tag>, _v>, Target>;
+  };
+
+  template <class T1, class T2, class Gen, class Target>
+  struct genpoly_<arrow<T1, T2>, Gen, Target> {
+    using t1 = genpoly_<T1, Gen, Target>;
+    using t2 = genpoly_<T2, typename t1::gen, typename t1::type>;
+
+    using type = typename t1::type;
+    using gen = typename t1::gen;
+  };
+
+  template <class T, class Gen, class Target>
+  using genpoly_t = typename genpoly_<T, Gen, Target>::type;
+
+  template <class T, class Gen, class Target>
+  using genpoly_gen = typename genpoly_<T, Gen, Target>::gen;
+
   template <class T, class Gen>
   struct recon_ {};
+
+  template <class T, class Gen>
+  struct recon_h {
+    using type = typename recon_<T, Gen>::type;
+    using gen = typename recon_<T, Gen>::gen;
+    using c = typename recon_<T, Gen>::c;
+  };
+
+  template <class T, class ...Ts, class Gen>
+  struct recon_h<TmClosure<T, Ts...>, Gen> {
+    // t1
+    using _t1 = recon_h<T, Gen>;
+    using _t1_t = typename _t1::type;
+    using _t1_gen = typename _t1::gen;
+    using _t1_c = typename _t1::c;
+    // t2
+    using _t2 = recon_h<TmClosure<Ts...>, _t1_gen>;
+    using _t2_t = typename _t2::type;
+    using _t2_gen = typename _t2::gen;
+    using _t2_c = typename _t2::c;
+    // here we go...
+    using type = arrow<_t1_t, _t2_t>;
+    using gen = _t2_gen;
+    using c = _t2_c;
+  };
+  template <class T, class Gen>
+  struct recon_h<TmClosure<T>, Gen> {
+    // unwrap
+    using type = typename recon_<T, Gen>::type;
+    using gen = typename recon_<T, Gen>::gen;
+    using c = typename recon_<T, Gen>::c;
+  };
+
   template <class Tag, class Gen>
   struct recon_<TmValue<Tag>, Gen> {
     using type = typename TmValue<Tag>::type;
@@ -362,29 +423,14 @@ namespace TORI_NS::detail {
     using c = std::tuple<>;
     using gen = Gen;
   };
-  template <class T, class Gen>
-  struct recon_<TmClosure<T>, Gen> {
-    // unwrap
-    using type = typename recon_<T, Gen>::type;
-    using gen = typename recon_<T, Gen>::gen;
-    using c = typename recon_<T, Gen>::c;
-  };
-  template <class T, class... Ts, class Gen>
-  struct recon_<TmClosure<T, Ts...>, Gen> {
-    // t1
-    using _t1 = recon_<T, Gen>;
-    using _t1_t = typename _t1::type;
-    using _t1_gen = typename _t1::gen;
-    using _t1_c = typename _t1::c;
-    // t2
-    using _t2 = recon_<TmClosure<Ts...>, _t1_gen>;
-    using _t2_t = typename _t2::type;
-    using _t2_gen = typename _t2::gen;
-    using _t2_c = typename _t2::c;
-    // here we go...
-    using type = arrow<_t1_t, _t2_t>;
-    using gen = _t2_gen;
-    using c = _t2_c;
+  template <class... Ts, class Gen>
+  struct recon_<TmClosure<Ts...>, Gen> {
+    using rcn = recon_h<TmClosure<Ts...>, Gen>;
+    using t = typename rcn::type;
+    using g = typename rcn::gen;
+    using c = typename rcn::c;
+    using type = genpoly_t<t, g, t>;
+    using gen = genpoly_gen<t, g, t>;
   };
   template <class T1, class T2, class Gen>
   struct recon_<TmApply<T1, T2>, Gen> {
