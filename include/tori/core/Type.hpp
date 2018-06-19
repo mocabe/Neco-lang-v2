@@ -14,6 +14,45 @@
 
 namespace TORI_NS::detail {
 
+  void vars_impl(
+    const ObjectPtr<const Type>& tp, std::vector<ObjectPtr<const Type>>& vars) {
+    if (is_value_type(tp)) return;
+    if (is_vartype(tp)) {
+      return [&]() {
+        for (auto&& v : vars) {
+          if (same_type(v, tp)) return;
+        }
+        vars.push_back(tp);
+      }();
+    }
+    if (is_arrow_type(tp)) {
+      vars_impl(std::get_if<ArrowType>(tp.value())->captured, vars);
+      vars_impl(std::get_if<ArrowType>(tp.value())->returns, vars);
+      return;
+    }
+    assert(false);
+  };
+
+  // get list of type variables
+  [[nodiscard]] std::vector<ObjectPtr<const Type>> vars(
+    const ObjectPtr<const Type>& tp) {
+    std::vector<ObjectPtr<const Type>> vars;
+    vars_impl(tp, vars);
+    return vars;
+  };
+
+  /// create fresh polymorphic closure type
+  [[nodiscard]] ObjectPtr<const Type> genpoly(const ObjectPtr<const Type>& tp) {
+    if (!is_arrow_type(tp)) return tp;
+    auto vs = vars(tp);
+    auto t = tp;
+    for (auto v : vs) {
+      TyArrow a{v, genvar()};
+      t = subst_type(a, tp);
+    }
+    return t;
+  };
+
   [[nodiscard]] const ObjectPtr<const Type> recon_impl(
     const ObjectPtr<>& obj, std::vector<Constr>& constr) {
     if (!obj) throw type_error("Null object", obj);
@@ -41,14 +80,11 @@ namespace TORI_NS::detail {
     // var -> var, []
     if (has_vartype(obj)) return get_type(obj);
     // arrow -> arrow, []
-    if (has_arrow_type(obj)) return get_type(obj);
+    if (has_arrow_type(obj)) return genpoly(get_type(obj));
 
     assert(false);
     return get_type(obj);
-  }
-} // namespace TORI_NS::detail
-
-namespace TORI_NS::detail {
+  };
 
   /// recon
   [[nodiscard]] std::pair<const ObjectPtr<const Type>, std::vector<Constr>>
