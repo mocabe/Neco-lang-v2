@@ -95,17 +95,17 @@ namespace TORI_NS::detail {
 #endif
 
     /// get nth argument
-    ObjectPtr<Thunk>& args(size_t n) {
+    ObjectPtr<ThunkR>& args(size_t n) {
       constexpr size_t offset = offset_of_member(&Closure1::args);
-      static_assert(offset % sizeof(ObjectPtr<Thunk>) == 0);
-      return ((ObjectPtr<Thunk>*)this)[offset / sizeof(ObjectPtr<Thunk>) + n];
+      static_assert(offset % sizeof(ObjectPtr<ThunkR>) == 0);
+      return ((ObjectPtr<ThunkR>*)this)[offset / sizeof(ObjectPtr<ThunkR>) + n];
     }
 
     /// get nth argument
-    const ObjectPtr<Thunk>& args(size_t n) const {
+    const ObjectPtr<ThunkR>& args(size_t n) const {
       constexpr size_t offset = offset_of_member(&Closure1::args);
-      static_assert(offset % sizeof(ObjectPtr<Thunk>) == 0);
-      return ((ObjectPtr<Thunk>*)this)[offset / sizeof(ObjectPtr<Thunk>) + n];
+      static_assert(offset % sizeof(ObjectPtr<ThunkR>) == 0);
+      return ((ObjectPtr<ThunkR>*)this)[offset / sizeof(ObjectPtr<ThunkR>) + n];
     }
 
     /// Execute core with vtable function
@@ -128,16 +128,16 @@ namespace TORI_NS::detail {
    */
   template <std::size_t N>
   struct ClosureN : Closure<> {
-    ObjectPtr<Thunk> args[N] = {};
+    ObjectPtr<ThunkR> args[N] = {};
     /// get raw arg
     template <size_t Arg>
-    ObjectPtr<Thunk>& nth_arg_thunk() noexcept {
+    ObjectPtr<ThunkR>& nth_arg_thunk() noexcept {
       static_assert(Arg < N, "Invalid index of argument");
       return args[N - Arg - 1];
     }
     /// get raw arg
     template <size_t Arg>
-    const ObjectPtr<Thunk>& nth_arg_thunk() const noexcept {
+    const ObjectPtr<ThunkR>& nth_arg_thunk() const noexcept {
       static_assert(Arg < N, "Invalid index of argument");
       return args[N - Arg - 1];
     }
@@ -209,9 +209,8 @@ namespace TORI_NS::detail {
       template <size_t N>
       auto arg() const {
         using To = std::tuple_element_t<N, std::tuple<Ts...>>;
-        const auto& thunk =
-          ClosureN<sizeof...(Ts) - 1>::template nth_arg_thunk<N>();
-        return Expected<To>{thunk->value};
+        auto thunk = ClosureN<sizeof...(Ts) - 1>::template nth_arg_thunk<N>();
+        return ObjectPtr(static_cast<Thunk<To>*>(thunk.head()));
       }
 
       /// Evaluate N'th argument and take result
@@ -266,26 +265,6 @@ namespace TORI_NS::detail {
 
         template <class U>
         ReturnType(U* ptr) : ReturnType(ObjectPtr(ptr)) {}
-
-        template <class U>
-        ReturnType(const Expected<U>& e) : value{e.obj} {
-          static_assert(
-            std::is_same_v<
-              type_of_t<term>,
-              type_of_t<to_TmClosure_t<append_tuple_t<
-                remove_last_t<to_tuple_t<term>>, typename U::term>>>>,
-            "return value type does not match");
-        }
-
-        template <class U>
-        ReturnType(Expected<U>&& e) : value{std::move(e.obj)} {
-          static_assert(
-            std::is_same_v<
-              type_of_t<term>,
-              type_of_t<to_TmClosure_t<append_tuple_t<
-                remove_last_t<to_tuple_t<term>>, typename U::term>>>>,
-            "return value type does not match");
-        }
 
         ReturnType() = default;
         ReturnType(const ReturnType& other) : value{other.value} {}

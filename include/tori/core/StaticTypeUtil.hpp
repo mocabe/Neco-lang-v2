@@ -130,6 +130,10 @@ namespace TORI_NS::detail {
   template <class C>
   struct TmFix {};
 
+  // TmThunk
+  template <class T>
+  struct TmThunk {};
+
   // ------------------------------------------
   // Subst
   // ------------------------------------------
@@ -454,6 +458,15 @@ namespace TORI_NS::detail {
     using type = genvar_t<_t_gen>;
     using gen = nextgen_t<_t_gen>;
     using c = append_tuple_t<_t_c, constr<_t_t, arrow<type, type>>>;
+  };
+
+  template <class T, class Gen>
+  struct recon_<TmThunk<T>, Gen> {
+    using _t = recon_<typename T::term, Gen>;
+
+    using type = typename _t::type;
+    using gen = typename _t::gen;
+    using c = typename _t::c;
   };
 
   /// Get type of term

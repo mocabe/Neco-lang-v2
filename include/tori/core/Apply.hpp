@@ -8,14 +8,9 @@
 #include "DynamicTypeUtil.hpp"
 #include "Primitive.hpp"
 #include "Fix.hpp"
+#include "Thunk.hpp"
 
 namespace TORI_NS::detail {
-
-  /// Expected
-  template <class T>
-  struct Expected {
-    const ObjectPtr<> obj;
-  };
 
   /// ApplyValue for runtime
   struct ApplyRValue {
@@ -46,33 +41,6 @@ namespace TORI_NS::detail {
       Apply(ObjectPtr<App>&& ap, ObjectPtr<Arg>&& ar)
         : base{ObjectPtr<>{std::move(ap)}, ObjectPtr<>{std::move(ar)}} {}
 
-      Apply(const Expected<App>& ap, const Expected<Arg>& ar)
-        : base{ap.obj, ar.obj} {}
-      Apply(Expected<App>&& ap, const Expected<Arg>& ar)
-        : base{std::move(ap.obj), ar.obj} {}
-      Apply(const Expected<App>& ap, Expected<Arg>&& ar)
-        : base{ap.obj, std::move(ar.obj)} {}
-      Apply(Expected<App>&& ap, Expected<Arg>&& ar)
-        : base{std::move(ap.obj), std::move(ar.obj)} {}
-
-      Apply(const ObjectPtr<App>& ap, const Expected<Arg>& ar)
-        : base{ObjectPtr<>{ap}, ar.obj} {}
-      Apply(const ObjectPtr<App>& ap, Expected<Arg>&& ar)
-        : base{ObjectPtr<>{ap}, std::move(ar.obj)} {}
-      Apply(ObjectPtr<App>&& ap, const Expected<Arg>& ar)
-        : base{ObjectPtr<>{std::move(ap)}, ar.obj} {}
-      Apply(ObjectPtr<App>&& ap, Expected<Arg>&& ar)
-        : base{ObjectPtr<>{std::move(ap)}, std::move(ar.obj)} {}
-
-      Apply(const Expected<App>& ap, const ObjectPtr<Arg>& ar)
-        : base{ap.obj, ObjectPtr<>{ar}} {}
-      Apply(const Expected<App>& ap, ObjectPtr<Arg>& ar)
-        : base{ap.obj, ObjectPtr<>{std::move(ar)}} {}
-      Apply(Expected<App>&& ap, const ObjectPtr<Arg>& ar)
-        : base{std::move(ap.obj), ObjectPtr<>{ar}} {}
-      Apply(Expected<App>&& ap, ObjectPtr<Arg>& ar)
-        : base{std::move(ap.obj), ObjectPtr<>{std::move(ar)}} {}
-
       template <template <class> class T>
       Apply(App* ap, const T<Arg>& ar) : Apply{ObjectPtr(ap), ar} {}
       template <template <class> class T>
@@ -93,8 +61,6 @@ namespace TORI_NS::detail {
   struct is_valid_app_arg<T*> {
     static constexpr bool value = std::is_base_of_v<HeapObject, T>;
   };
-  template <class T>
-  struct is_valid_app_arg<Expected<T>> : std::true_type {};
   template <class T>
   struct is_valid_app_arg<ObjectPtr<T>> : std::true_type {};
   template <class T>

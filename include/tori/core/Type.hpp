@@ -72,8 +72,8 @@ namespace TORI_NS::detail {
       }
     }
     // Thunk
-    if (auto thunk = value_cast_if<Thunk>(obj)) {
-      return recon_impl(thunk->value, constr);
+    if (auto thunk = value_cast_if<ThunkR>(obj)) {
+      return recon_impl(thunk->value(), constr);
     }
     // value -> value, []
     if (has_value_type(obj)) return get_type(obj);

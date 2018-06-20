@@ -24,15 +24,7 @@ namespace TORI_NS::detail {
       }
     }
     // thunk
-    if (auto thunk = value_cast_if<Thunk>(obj)) {
-      if (thunk->evaluated) {
-        return thunk->value;
-      } else {
-        thunk->value = _eval_rec(thunk->value);
-        thunk->evaluated = true;
-        return thunk->value;
-      }
-    }
+    if (auto thunk = value_cast_if<ThunkR>(obj)) return thunk->eval();
     // exception
     if (auto exception = value_cast_if<Exception>(obj))
       throw result_error(exception);
@@ -53,10 +45,10 @@ namespace TORI_NS::detail {
           } else if (c->arity.atomic == c->n_args()) {
             auto pap = f.clone();
             auto cc = static_cast<Closure<>*>(pap.head());
-            cc->args(--cc->arity.atomic) = make_object<Thunk>(obj);
+            cc->args(--cc->arity.atomic) = make_object<ThunkR>(obj);
             return _eval_rec(ObjectPtr<>(pap));
           } else {
-            c->args(--c->arity.atomic) = make_object<Thunk>(obj);
+            c->args(--c->arity.atomic) = make_object<ThunkR>(obj);
             return _eval_rec(ObjectPtr<>(f));
           }
         }
@@ -74,11 +66,11 @@ namespace TORI_NS::detail {
           // first apply
           auto pap = app.clone();
           auto cc = static_cast<Closure<>*>(pap.head());
-          cc->args(--cc->arity.atomic) = make_object<Thunk>(std::move(arg));
+          cc->args(--cc->arity.atomic) = make_object<ThunkR>(std::move(arg));
           return _eval_rec(ObjectPtr<>(pap));
         } else {
           // partial apply
-          c->args(--c->arity.atomic) = make_object<Thunk>(std::move(arg));
+          c->args(--c->arity.atomic) = make_object<ThunkR>(std::move(arg));
           return _eval_rec(ObjectPtr<>(app));
         }
       }
@@ -92,22 +84,6 @@ namespace TORI_NS::detail {
     [[nodiscard]] ObjectPtr<> eval(TObjectPtr && obj) {
       ObjectPtr<> _obj(std::forward<TObjectPtr>(obj));
       return detail::_eval_rec(_obj);
-    }
-
-    /// evaluation
-    template <class T>
-    [[nodiscard]] ObjectPtr<T> eval(const Expected<T>& e) {
-      auto r = eval(e.obj);
-      ++r->refcount.atomic;
-      return static_cast<T*>(r.head());
-    }
-
-    /// evaluation
-    template <class T>
-    [[nodiscard]] ObjectPtr<T> eval(Expected<T> && e) {
-      auto r = eval(std::move(e.obj));
-      ++r->refcount.atomic;
-      return static_cast<T*>(r.head());
     }
   } // namespace interface
 
