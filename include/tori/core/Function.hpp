@@ -150,9 +150,9 @@ namespace TORI_NS::detail {
   /// wrapper for main code of closure
   template <class T>
   struct vtbl_eval_wrapper {
-    static ObjectPtr<> eval(Closure<>* _this) noexcept {
+    static ObjectPtr<> code(Closure<>* _this) noexcept {
       try {
-        return std::move((static_cast<T*>(_this)->eval()).value);
+        return std::move((static_cast<T*>(_this)->code()).value);
       } catch (const bad_value_cast& e) {
         return new Exception(new BadValueCast(e.from(), e.to()));
       } catch (const bad_closure_cast& e) {
@@ -288,7 +288,7 @@ namespace TORI_NS::detail {
          vtbl_destroy_func<T>, vtbl_clone_func<T>},              //
         sizeof...(Ts) - 1,                                       //
         closure_header_extend_bytes,                             //
-        vtbl_eval_wrapper<T>::eval};
+        vtbl_eval_wrapper<T>::code};
 
   } // namespace interface
 

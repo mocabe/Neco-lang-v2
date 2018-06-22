@@ -24,7 +24,7 @@ namespace TORI_NS::detail {
       }
     }
     // thunk
-    if (auto thunk = value_cast_if<ThunkR>(obj)) return thunk->eval();
+    if (auto thunk = value_cast_if<ThunkR>(obj)) return thunk->code();
     // exception
     if (auto exception = value_cast_if<Exception>(obj))
       throw result_error(exception);

@@ -32,7 +32,7 @@ namespace TORI_NS::detail {
       return m_value;
     }
 
-    ObjectPtr<> eval() {
+    ObjectPtr<> code() {
       if (m_evaluated) {
         return m_value;
       } else {
