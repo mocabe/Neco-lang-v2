@@ -282,7 +282,7 @@ namespace TORI_NS::detail {
   struct unify_h2 {
     using t1 = typename value<Tag1>::_error_T1;
     using t2 = typename value<Tag2>::_error_T2;
-    static_assert(false_v<>, "Unification error: Type missmatch");
+    static_assert(false_v<Tag1>, "Unification error: Type missmatch");
   };
 
   // helper

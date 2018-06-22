@@ -42,8 +42,15 @@ namespace TORI_NS::detail {
     };
     static U u;
     static constexpr size_t get(T1 T2::*member) {
-      for (size_t i = 0; i < sizeof(T2); ++i)
-        if (((void*)&(u.c[i])) == &(u.o.*member)) return i;
+      size_t i = 0;
+      for (; i < sizeof(T2); ++i)
+        if (((void*)&(u.c[i])) == &(u.o.*member)) break;
+
+      // g++ bug 67371 workaround
+      if (i >= sizeof(T2))
+        throw;
+      else
+        return i;
     }
   };
   template <class T1, class T2>
