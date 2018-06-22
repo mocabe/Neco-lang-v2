@@ -162,6 +162,14 @@ namespace TORI_NS::detail {
       return type;
     }
   };
+  // thunk
+  template <class T>
+  struct object_type_h<T, std::enable_if_t<is_TmThunk_v<T>>> {
+    static constexpr const Type* type = &vartype<T>::type;
+    static ObjectPtr<const Type> get() {
+      return type;
+    }
+  };
 
   namespace interface {
     /// object type generator
@@ -210,4 +218,43 @@ namespace TORI_NS::detail {
     static_construct_t{},
     ArrowType{object_type_h<T1>::type, object_type_h<T2>::type}};
 
+  // ------------------------------------------
+  // Assume memory lauout fron type
+  // ------------------------------------------
+
+  template <class Arrow, class Closure>
+  struct assume_object_type_h {};
+
+  template <class Ty>
+  struct assume_object_type {};
+
+  template <class T1, class T2, class... Ts>
+  struct assume_object_type_h<arrow<T1, T2>, closure<Ts...>> {
+    using type = typename assume_object_type_h<
+      T2,
+      closure<Ts..., typename assume_object_type<T1>::type>>::type;
+  };
+
+  template <class T, class... Ts>
+  struct assume_object_type_h<T, closure<Ts...>> {
+    using type = closure<Ts..., typename assume_object_type<T>::type>;
+  };
+
+  template <class Tag>
+  struct assume_object_type<value<Tag>> {
+    using type = Tag;
+  };
+
+  template <class Tag>
+  struct assume_object_type<var<Tag>> {
+    using type = HeapObject;
+  };
+
+  template <class T1, class T2>
+  struct assume_object_type<arrow<T1, T2>> {
+    using type = typename assume_object_type_h<arrow<T1, T2>, closure<>>::type;
+  };
+
+  template <class T>
+  using assume_object_type_t = typename assume_object_type<T>::type;
 } // namespace TORI_NS::detail

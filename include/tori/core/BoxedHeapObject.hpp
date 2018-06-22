@@ -51,6 +51,21 @@ namespace TORI_NS::detail {
     } catch (...) { return nullptr; }
   }
 
+  template <class T, bool B = has_term_v<T>>
+  struct value_object_term {
+    using type = TmValue<BoxedHeapObject<T>>;
+  };
+
+  template <class T>
+  struct value_object_term<T, true> {
+    using type = typename T::term;
+  };
+
+  /// \brief Get term of BoxedHeapObject.
+  /// You can customize term of HeapObject from type T
+  template <class T>
+  using value_object_term_t = typename value_object_term<T>::type;
+
   namespace interface {
 
     /// \brief Heap-allocated object generator.
@@ -63,7 +78,7 @@ namespace TORI_NS::detail {
       /// allocator type
       using allocator_type = AllocatorTemplate<BoxedHeapObject>;
       /// term
-      using term = TmValue<BoxedHeapObject>;
+      using term = value_object_term_t<T>;
 
       /// info table initializer
       struct info_table_initializer {

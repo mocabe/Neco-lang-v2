@@ -10,13 +10,15 @@
 namespace TORI_NS::detail {
 
   namespace interface {
-    /// evaluation
-    template <class TObjectPtr>
-    [[nodiscard]] ObjectPtr<> eval(TObjectPtr&& obj);
+    template <class T>
+    [[nodiscard]] auto eval(const ObjectPtr<T>& obj)
+      -> ObjectPtr<assume_object_type_t<type_of_t<typename T::term>>>;
   } // namespace interface
 
   class ThunkValue {
   public:
+    // custom term
+    using term = TmThunk<HeapObject>;
     ThunkValue(const ThunkValue&) = default;
     ThunkValue(ThunkValue&&) = default;
     ThunkValue(const ObjectPtr<>& value) : m_value{value}, m_evaluated{false} {}
@@ -63,6 +65,14 @@ namespace TORI_NS::detail {
       Thunk(const ObjectPtr<T>& obj) : ThunkR(obj) {}
       Thunk(ObjectPtr<T>&& obj) : ThunkR(std::move(obj)) {}
 
+      template <
+        class U,
+        class = std::enable_if_t<
+          !std::is_same_v<T, U> && //
+          std::is_same_v<
+            type_of_t<typename T::term>,
+            type_of_t<typename U::term>>>>
+      Thunk(const ObjectPtr<U>& obj) : ThunkR(obj) {}
     };
   } // namespace interface
 

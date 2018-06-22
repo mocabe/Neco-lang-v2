@@ -79,11 +79,24 @@ namespace TORI_NS::detail {
   }
 
   namespace interface {
-    /// evaluation
-    template <class TObjectPtr>
-    [[nodiscard]] ObjectPtr<> eval(TObjectPtr && obj) {
-      ObjectPtr<> _obj(std::forward<TObjectPtr>(obj));
-      return detail::_eval_rec(_obj);
+    template <class T>
+    [[nodiscard]] auto eval(const ObjectPtr<T>& obj)
+      -> ObjectPtr<assume_object_type_t<type_of_t<typename T::term>>> {
+      using To = assume_object_type_t<type_of_t<typename T::term>>;
+      auto result = _eval_rec(ObjectPtr<>(obj));
+      ++(result.head()->refcount.atomic);
+      // This conversion is not obvious.
+      // Currently ObjectPtr<T> MUST have type T which has compatible memory
+      // layout with ACTUAL object pointing to.
+      // Since it's impossible to decide memory layout of closure types (because
+      // of runtime currying), we convert it to closure<...> which is
+      // essentially equal to to HeapObject.
+      // Type variables are also undecidable so we just convert them to
+      // HeapObject.
+      // Finally, we get type To from compile time checker. So when compile time
+      // type system is broken or bugged, this conversion will crash the
+      // program without throwing any error.
+      return ObjectPtr<To>(static_cast<To*>(result.head()));
     }
   } // namespace interface
 

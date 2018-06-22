@@ -210,6 +210,7 @@ namespace TORI_NS::detail {
       auto arg() const {
         using To = std::tuple_element_t<N, std::tuple<Ts...>>;
         auto thunk = ClosureN<sizeof...(Ts) - 1>::template nth_arg_thunk<N>();
+        ++(thunk.head()->refcount.atomic); // +1
         return ObjectPtr(static_cast<Thunk<To>*>(thunk.head()));
       }
 

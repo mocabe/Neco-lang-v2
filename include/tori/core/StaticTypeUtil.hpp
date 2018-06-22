@@ -134,6 +134,13 @@ namespace TORI_NS::detail {
   template <class T>
   struct TmThunk {};
 
+  template <class T, class = void>
+  struct has_term : std::false_type {};
+  template <class T>
+  struct has_term<T, void_t<typename T::term>> : std::true_type {};
+  template <class T>
+  static constexpr bool has_term_v = has_term<T>::value;
+
   // ------------------------------------------
   // Subst
   // ------------------------------------------
@@ -267,10 +274,14 @@ namespace TORI_NS::detail {
     static_assert(false_v<T>, "Unification error: Circular constraints");
   };
   // helper2
-  template <class Tag1, class Tag2, class Tail, bool B = !subtype_v<Tag1, Tag2>>
+  template <
+    class Tag1,
+    class Tag2,
+    class Tail,
+    bool B = std::is_same_v<Tag1, Tag2>>
   struct unify_h2 {
-    using t1 = typename value<Tag1>::_error_here;
-    using t2 = typename value<Tag2>::_error_here;
+    using t1 = typename value<Tag1>::_error_T1;
+    using t2 = typename value<Tag2>::_error_T2;
     static_assert(false_v<>, "Unification error: Type missmatch");
   };
 
@@ -503,6 +514,12 @@ namespace TORI_NS::detail {
   struct is_TmVar : std::false_type {};
   template <class Tag>
   struct is_TmVar<TmVar<Tag>> : std::true_type {};
+
+  template <class T>
+  struct is_TmThunk : std::false_type {};
+  template <class T>
+  struct is_TmThunk<TmThunk<T>> : std::true_type {};
+
   /// is_apply_v
   template <class T>
   static constexpr bool is_TmApply_v = is_TmApply<T>::value;
@@ -527,6 +544,12 @@ namespace TORI_NS::detail {
   /// has_var_v
   template <class T>
   static constexpr bool has_TmVar_v = is_TmVar_v<typename T::term>;
+  // is_TmThunk
+  template <class T>
+  static constexpr bool is_TmThunk_v = is_TmThunk<T>::value;
+  // has_TmThunk
+  template <class T>
+  static constexpr bool has_TmThunk_v = is_TmThunk_v<typename T::term>;
 
   template <class T>
   struct is_value_type_ : std::false_type {};

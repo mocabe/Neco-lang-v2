@@ -51,7 +51,7 @@ namespace TORI_NS::detail {
     /// \throws bad_value_cast when fail.
     template <class T>
     [[nodiscard]] ObjectPtr<T> value_cast(const ObjectPtr<>& obj) {
-      static_assert(has_TmValue_v<T>, "T is not value type");
+      static_assert(has_TmValue_v<T> || has_TmThunk_v<T>, "T is not value type");
       assert(obj);
       if (has_type<T>(obj)) {
         // +1
@@ -68,7 +68,7 @@ namespace TORI_NS::detail {
     /// \throws bad_value_cast when fail.
     template <class T>
     [[nodiscard]] ObjectPtr<T> value_cast(ObjectPtr<>&& obj) {
-      static_assert(has_TmValue_v<T>, "T is not value type");
+      static_assert(has_TmValue_v<T> || has_TmThunk_v<T>, "T is not value type");
       assert(obj);
       if (has_type<T>(obj)) {
         // move
@@ -86,7 +86,7 @@ namespace TORI_NS::detail {
     /// \returns nullptr when fail.
     template <class T>
     [[nodiscard]] ObjectPtr<T> value_cast_if(const ObjectPtr<>& obj) noexcept {
-      static_assert(has_TmValue_v<T>, "T is not value type");
+      static_assert(has_TmValue_v<T> || has_TmThunk_v<T>, "T is not value type");
       assert(obj);
       if (has_type<T>(obj)) {
         // +1
@@ -103,7 +103,7 @@ namespace TORI_NS::detail {
     /// \returns nullptr when fail.
     template <class T>
     [[nodiscard]] ObjectPtr<T> value_cast_if(ObjectPtr<>&& obj) noexcept {
-      static_assert(has_TmValue_v<T>, "T is not value type");
+      static_assert(has_TmValue_v<T> || has_TmThunk_v<T>, "T is not value type");
       assert(obj);
       if (has_type<T>(obj)) {
         // move

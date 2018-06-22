@@ -205,7 +205,7 @@ namespace TORI_NS::detail {
     while (!cs.empty()) {
       auto c = cs.back();
       cs.pop_back();
-      if (subtype(c.t1, c.t2)) continue;
+      if (same_type(c.t1, c.t2)) continue;
       if (is_vartype(c.t2)) {
         if (!occurs(c.t2, c.t1)) {
           auto arr = TyArrow{c.t2, c.t1};
