@@ -10,12 +10,16 @@
 
 namespace TORI_NS::detail {
 
-  struct FixValue {};
+  struct FixValue;
 
   namespace interface {
     /// Fix object
     using Fix = BoxedHeapObject<FixValue>;
   } // namespace interface
+
+  struct FixValue {
+    using term = TmFix<Fix>;
+  };
 } // namespace TORI_NS::detail
 
 namespace TORI_NS {

@@ -127,7 +127,7 @@ namespace TORI_NS::detail {
   };
 
   /// TmFix
-  template <class C>
+  template <class Tag>
   struct TmFix {};
 
   // TmThunk
@@ -447,6 +447,18 @@ namespace TORI_NS::detail {
     using type = genpoly_t<t, g, t>;
     using gen = genpoly_gen<t, g, t>;
   };
+  template <class Tag, class T, class Gen>
+  struct recon_<TmApply<TmFix<Tag>, T>, Gen> {
+    // recon T
+    using _t = recon_<T, Gen>;
+    using _t_t = typename _t::type;
+    using _t_gen = typename _t::gen;
+    using _t_c = typename _t::c;
+    //
+    using type = genvar_t<_t_gen>;
+    using gen = nextgen_t<_t_gen>;
+    using c = append_tuple_t<_t_c, constr<_t_t, arrow<type, type>>>;
+  };
   template <class T1, class T2, class Gen>
   struct recon_<TmApply<T1, T2>, Gen> {
     using _t1 = recon_<T1, Gen>;
@@ -458,19 +470,6 @@ namespace TORI_NS::detail {
       concat_tuple_t<typename _t1::c, typename _t2::c>,
       constr<typename _t1::type, arrow<typename _t2::type, type>>>;
   };
-  template <class T, class Gen>
-  struct recon_<TmFix<T>, Gen> {
-    // recon T
-    using _t = recon_<T, Gen>;
-    using _t_t = typename _t::type;
-    using _t_gen = typename _t::gen;
-    using _t_c = typename _t::c;
-    //
-    using type = genvar_t<_t_gen>;
-    using gen = nextgen_t<_t_gen>;
-    using c = append_tuple_t<_t_c, constr<_t_t, arrow<type, type>>>;
-  };
-
   template <class T, class Gen>
   struct recon_<TmThunk<T>, Gen> {
     using _t = recon_<typename T::term, Gen>;
@@ -516,6 +515,11 @@ namespace TORI_NS::detail {
   struct is_TmVar<TmVar<Tag>> : std::true_type {};
 
   template <class T>
+  struct is_TmFix : std::false_type {};
+  template <class Tag>
+  struct is_TmFix<TmFix<Tag>> : std::true_type {};
+
+  template <class T>
   struct is_TmThunk : std::false_type {};
   template <class T>
   struct is_TmThunk<TmThunk<T>> : std::true_type {};
@@ -544,6 +548,12 @@ namespace TORI_NS::detail {
   /// has_var_v
   template <class T>
   static constexpr bool has_TmVar_v = is_TmVar_v<typename T::term>;
+  // is_TmFix
+  template <class T>
+  static constexpr bool is_TmFix_v = is_TmFix<T>::value;
+  // has_TmFix
+  template <class T>
+  static constexpr bool has_TmFix_v = is_TmFix_v<typename T::term>;
   // is_TmThunk
   template <class T>
   static constexpr bool is_TmThunk_v = is_TmThunk<T>::value;
@@ -586,6 +596,10 @@ namespace TORI_NS::detail {
   };
   template <class Tag>
   struct tag_of<TmVar<Tag>> {
+    using type = Tag;
+  };
+  template <class Tag>
+  struct tag_of<TmFix<Tag>> {
     using type = Tag;
   };
   template <class T>

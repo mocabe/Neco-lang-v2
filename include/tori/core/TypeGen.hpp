@@ -170,6 +170,14 @@ namespace TORI_NS::detail {
       return type;
     }
   };
+  // fix
+  template <class T>
+  struct object_type_h<T, std::enable_if_t<is_TmFix_v<T>>> {
+    static constexpr const Type* type = &value_type<T>::type;
+    static ObjectPtr<const Type> get() {
+      return type;
+    }
+  };
 
   namespace interface {
     /// object type generator
