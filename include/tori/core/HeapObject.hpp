@@ -88,17 +88,17 @@ namespace TORI_NS::detail {
       friend class ObjectPtr<HeapObject>;
 
       /// move cast function
-      template <class U>
-      friend ObjectPtr<U> value_cast(ObjectPtr<T>&&);
+      template <class U, class S>
+      friend ObjectPtr<U> value_cast(ObjectPtr<S>&&);
       /// move cast function
-      template <class U>
-      friend ObjectPtr<U> value_cast_if(ObjectPtr<T>&&) noexcept;
+      template <class U, class S>
+      friend ObjectPtr<U> value_cast_if(ObjectPtr<S>&&) noexcept;
       /// move cast function
-      template <class U>
-      friend ObjectPtr<U> closure_cast(ObjectPtr<T>&&);
+      template <class U, class S>
+      friend ObjectPtr<U> closure_cast(ObjectPtr<S>&&);
       /// move cast function
-      template <class U>
-      friend ObjectPtr<U> closure_cast_if(ObjectPtr<T>&&) noexcept;
+      template <class U, class S>
+      friend ObjectPtr<U> closure_cast_if(ObjectPtr<S>&&) noexcept;
 
     public:
       using value_type = T;

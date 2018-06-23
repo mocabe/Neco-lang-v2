@@ -49,16 +49,17 @@ namespace TORI_NS::detail {
     ///
     /// dynamically cast object to specified value type.
     /// \throws bad_value_cast when fail.
-    template <class T>
-    [[nodiscard]] ObjectPtr<T> value_cast(const ObjectPtr<>& obj) {
-      static_assert(has_TmValue_v<T> || has_TmThunk_v<T>, "T is not value type");
+    template <class T, class U>
+    [[nodiscard]] ObjectPtr<T> value_cast(const ObjectPtr<U>& obj) {
+      static_assert(!has_TmClosure_v<T>, "T is not value type");
       assert(obj);
-      if (has_type<T>(obj)) {
+      auto o = ObjectPtr<>(obj);
+      if (has_type<T>(o)) {
         // +1
-        if (obj.head()) ++(obj.head()->refcount.atomic);
-        return static_cast<T*>(obj.head());
+        if (o.head()) ++(o.head()->refcount.atomic);
+        return static_cast<T*>(o.head());
       } else {
-        throw bad_value_cast{object_type<T>::get(), get_type(obj)};
+        throw bad_value_cast{object_type<T>::get(), get_type(o)};
       }
     }
 
@@ -66,17 +67,18 @@ namespace TORI_NS::detail {
     ///
     /// dynamically cast object to specified value type.
     /// \throws bad_value_cast when fail.
-    template <class T>
-    [[nodiscard]] ObjectPtr<T> value_cast(ObjectPtr<>&& obj) {
-      static_assert(has_TmValue_v<T> || has_TmThunk_v<T>, "T is not value type");
+    template <class T, class U>
+    [[nodiscard]] ObjectPtr<T> value_cast(ObjectPtr<U>&& obj) {
+      static_assert(!has_TmClosure_v<T>, "T is not value type");
       assert(obj);
-      if (has_type<T>(obj)) {
+      auto o = ObjectPtr<>(std::move(obj));
+      if (has_type<T>(o)) {
         // move
-        auto r = static_cast<T*>(obj.m_ptr);
-        obj.m_ptr = nullptr;
+        auto r = static_cast<T*>(o.m_ptr);
+        o.m_ptr = nullptr;
         return r;
       } else {
-        throw bad_value_cast{object_type<T>::get(), get_type(obj)};
+        throw bad_value_cast{object_type<T>::get(), get_type(o)};
       }
     }
 
@@ -84,14 +86,15 @@ namespace TORI_NS::detail {
     ///
     /// dynamically cast object to specified value type.
     /// \returns nullptr when fail.
-    template <class T>
-    [[nodiscard]] ObjectPtr<T> value_cast_if(const ObjectPtr<>& obj) noexcept {
-      static_assert(has_TmValue_v<T> || has_TmThunk_v<T>, "T is not value type");
+    template <class T, class U>
+    [[nodiscard]] ObjectPtr<T> value_cast_if(const ObjectPtr<U>& obj) noexcept {
+      static_assert(!has_TmClosure_v<T>, "T is not value type");
       assert(obj);
-      if (has_type<T>(obj)) {
+      auto o = ObjectPtr<>(obj);
+      if (has_type<T>(o)) {
         // +1
-        if (obj.head()) ++(obj.head()->refcount.atomic);
-        return static_cast<T*>(obj.head());
+        if (o.head()) ++(o.head()->refcount.atomic);
+        return static_cast<T*>(o.head());
       } else {
         return nullptr;
       }
@@ -101,14 +104,15 @@ namespace TORI_NS::detail {
     ///
     /// dynamically cast object to specified value type.
     /// \returns nullptr when fail.
-    template <class T>
-    [[nodiscard]] ObjectPtr<T> value_cast_if(ObjectPtr<>&& obj) noexcept {
-      static_assert(has_TmValue_v<T> || has_TmThunk_v<T>, "T is not value type");
+    template <class T, class U>
+    [[nodiscard]] ObjectPtr<T> value_cast_if(ObjectPtr<U>&& obj) noexcept {
+      static_assert(!has_TmClosure_v<T>, "T is not value type");
       assert(obj);
-      if (has_type<T>(obj)) {
+      auto o = ObjectPtr<>(std::move(obj));
+      if (has_type<T>(o)) {
         // move
-        auto r = static_cast<T*>(obj.m_ptr);
-        obj.m_ptr = nullptr;
+        auto r = static_cast<T*>(o.m_ptr);
+        o.m_ptr = nullptr;
         return r;
       } else {
         return nullptr;
