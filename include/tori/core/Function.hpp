@@ -289,7 +289,7 @@ namespace TORI_NS::detail {
     template <class T, class... Ts>
     const ClosureInfoTable
       Function<T, Ts...>::info_table_initializer::info_table = { //
-        {object_type<T>::get(),                                  //
+        {object_type<T>(),                                  //
          sizeof(T),                                              //
          object_header_extend_bytes,                             //
          vtbl_destroy_func<T>, vtbl_clone_func<T>},              //

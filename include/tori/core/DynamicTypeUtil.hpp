@@ -104,7 +104,7 @@ namespace TORI_NS::detail {
   [[nodiscard]] bool subtype(
     const ObjectPtr<const Type>& t1, const ObjectPtr<const Type>& t2) {
     if (same_type(t1, t2)) return true;
-    if (same_type(object_type<HeapObject>::get(), t2)) return true;
+    if (same_type(object_type<HeapObject>(), t2)) return true;
     if (is_arrow_type(t1) && is_arrow_type(t2)) {
       auto& t1c = std::get_if<ArrowType>(t1.value())->captured;
       auto& t1r = std::get_if<ArrowType>(t1.value())->returns;
@@ -265,7 +265,7 @@ namespace TORI_NS::detail {
     template <class T>
     [[nodiscard]] bool has_type(const ObjectPtr<>& obj) {
       if (!obj) return false;
-      if (subtype(get_type(obj), object_type<T>::get())) return true;
+      if (subtype(get_type(obj), object_type<T>())) return true;
       return false;
     }
   } // namespace interface

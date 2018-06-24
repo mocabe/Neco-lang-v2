@@ -22,7 +22,7 @@ namespace TORI_NS::detail {
     inline constexpr static_construct_t static_construct = static_construct_t();
     // forward decl
     template <class T>
-    struct object_type; // see TypeGen.hpp
+    ObjectPtr<const Type> object_type(); // see TypeGen.hpp
 
   } // namespace interface
 
@@ -148,7 +148,7 @@ namespace TORI_NS::detail {
     template <class T, template <class> class AllocatorTemplate>
     const ObjectInfoTable BoxedHeapObject<T, AllocatorTemplate>::
       info_table_initializer::info_table = {
-        object_type<BoxedHeapObject>::get(), //
+        object_type<BoxedHeapObject>(), //
         sizeof(BoxedHeapObject),             //
         object_header_extend_bytes,          //
         vtbl_destroy_func<BoxedHeapObject>,  //

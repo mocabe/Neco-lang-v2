@@ -182,12 +182,9 @@ namespace TORI_NS::detail {
   namespace interface {
     /// object type generator
     template <class T>
-    struct object_type {
-      static constexpr const Type* type = object_type_h<typename T::term>::type;
-      [[nodiscard]] static ObjectPtr<const Type> get() {
-        return type;
-      }
-    };
+    [[nodiscard]] ObjectPtr<const Type> object_type() {
+      return object_type_h<typename T::term>::type;
+    }
   } // namespace interface
 
   /// convert constexpr char array to buffer type for value type

@@ -105,7 +105,7 @@ namespace TORI_NS::detail {
     /// check type
     template <class T>
     void check_type(const ObjectPtr<>& obj) {
-      auto t1 = object_type<T>::get();
+      auto t1 = object_type<T>();
       auto t2 = type_of(obj);
       if (!same_type(t1, t2)) throw type_error{"check_type failed", obj};
     }

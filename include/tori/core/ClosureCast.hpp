@@ -58,7 +58,7 @@ namespace TORI_NS::detail {
         if (o.head()) ++(o.head()->refcount.atomic);
         return static_cast<T*>(o.head());
       }
-      throw bad_closure_cast{get_type(o), object_type<T>::get()};
+      throw bad_closure_cast{get_type(o), object_type<T>()};
     }
 
     /// closure_cast
@@ -76,7 +76,7 @@ namespace TORI_NS::detail {
         o.m_ptr = nullptr;
         return r;
       }
-      throw bad_closure_cast{get_type(o), object_type<T>::get()};
+      throw bad_closure_cast{get_type(o), object_type<T>()};
     }
 
     /// closure_cast_if
