@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.8)
+cmake_minimum_required(VERSION 3.5)
 
 # ------------------------------------------
 # Project
@@ -39,8 +39,16 @@ include_directories("${TORI_DIR}/include")
 if(MSVC)
   set(CMAKE_CXX_FLAGS "/std:c++latest /permissive-")
 else()
-  set(CMAKE_CXX_FLAGS "-Wall -Wextra -g -std=c++17")
+  set(CMAKE_CXX_FLAGS "-O0 -Wall -Wextra -g -std=c++17")
 endif()
+
+# ------------------------------------------
+# valgrind
+# ------------------------------------------
+add_custom_target(valgrind
+    COMMAND ${CMAKE_CTEST_COMMAND} 
+        --force-new-ctest-process --test-action memcheck
+COMMAND cat "${CMAKE_BINARY_DIR}/Testing/Temporary/MemoryChecker.*.log")
 
 # ------------------------------------------
 # Subdirectories
@@ -57,5 +65,4 @@ endif()
 if(TORI_BUILD_BENCHMARK)
   add_subdirectory(benchmark)
 endif()
-
 
