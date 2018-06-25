@@ -312,7 +312,7 @@ namespace TORI_NS::detail {
     using type = std::conditional_t<
       subtype_v<var<Tag1>, var<Tag2>>,
       typename unify_<std::tuple<Cs...>>::type,
-      typename unify_h<var<Tag1>, var<Tag2>, std::tuple<Cs...>>::type>;
+      typename unify_h<var<Tag2>, var<Tag1>, std::tuple<Cs...>>::type>;
   };
   template <class T1, class Tag, class... Cs>
   struct unify_<std::tuple<constr<T1, var<Tag>>, Cs...>> {
