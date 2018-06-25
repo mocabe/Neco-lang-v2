@@ -284,6 +284,16 @@ namespace TORI_NS::detail {
     private:
       using ClosureN<sizeof...(Ts) - 1>::nth_arg_thunk;
       using ClosureN<sizeof...(Ts) - 1>::args;
+
+      template <auto P>
+      struct concept_checker {};
+
+      void check_code() {
+        static_assert(
+          std::is_same_v<ReturnType, decltype(std::declval<T>().code())>,
+          "code() is not defined.");
+      }
+      using concept_check_code = concept_checker<&check_code>;
     };
     // Initialize closure infotable
     template <class T, class... Ts>
