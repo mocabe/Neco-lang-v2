@@ -7,7 +7,8 @@
 
 namespace TORI_NS::detail {
   namespace interface {
-    struct Identity : Function<Identity, Auto<class X>, Auto<class X>> {
+    struct Identity
+      : Function<Identity, Auto<class Identity_X>, Auto<class Identity_X>> {
       ReturnType code() {
         return arg<0>();
       }
