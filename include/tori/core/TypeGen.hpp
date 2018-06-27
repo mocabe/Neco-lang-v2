@@ -40,11 +40,11 @@ namespace TORI_NS::detail {
       using term = TmClosure<typename Ts::term...>;
     };
 
-    /// Type variable
+    /// Type variable value
     template <class Tag>
     struct Auto {
       /// term
-      using term = TmVar<Tag>;
+      using term = TmVarValue<Tag>;
     };
 
   } // namespace interface
@@ -162,6 +162,14 @@ namespace TORI_NS::detail {
       return type;
     }
   };
+  // var value
+  template <class T>
+  struct object_type_h<T, std::enable_if_t<is_TmVarValue_v<T>>> {
+    static constexpr const Type* type = &vartype<T>::type;
+    static ObjectPtr<const Type> get() {
+      return type;
+    }
+  };
   // thunk
   template <class T>
   struct object_type_h<T, std::enable_if_t<is_TmThunk_v<T>>> {
@@ -252,6 +260,11 @@ namespace TORI_NS::detail {
 
   template <class Tag>
   struct assume_object_type<var<Tag>> {
+    using type = HeapObject;
+  };
+
+  template <class Tag>
+  struct assume_object_type<varvalue<Tag>> {
     using type = HeapObject;
   };
 

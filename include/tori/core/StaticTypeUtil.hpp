@@ -98,6 +98,11 @@ namespace TORI_NS::detail {
   struct value {
     using type = value<Tag>;
   };
+  // Var value
+  template <class Tag>
+  struct varvalue {
+    using type = varvalue<Tag>;
+  };
 
   /// Type mapping
   template <class T1, class T2>
@@ -124,6 +129,11 @@ namespace TORI_NS::detail {
   template <class Tag>
   struct TmVar {
     using type = var<Tag>;
+  };
+  /// TmVarValue
+  template <class Tag>
+  struct TmVarValue {
+    using type = varvalue<Tag>;
   };
 
   /// TmFix
@@ -253,6 +263,10 @@ namespace TORI_NS::detail {
   struct occurs_<X, var<Tag>> {
     static constexpr bool value = std::is_same_v<X, var<Tag>>;
   };
+  template <class X, class Tag>
+  struct occurs_<X, varvalue<Tag>> {
+    static constexpr bool value = false;
+  };
   /// Does X occur in T?
   template <class X, class T>
   static constexpr bool occurs_v = occurs_<X, T>::value;
@@ -284,6 +298,17 @@ namespace TORI_NS::detail {
     using t2 = typename value<Tag2>::_error_T2;
     static_assert(false_v<Tag1>, "Unification error: Type missmatch");
   };
+  // helper3
+  template <
+    class Tag1,
+    class Tag2,
+    class Tail,
+    bool B = std::is_same_v<Tag1, Tag2>>
+  struct unify_h3 {
+    using t1 = typename varvalue<Tag1>::_error_T1;
+    using t2 = typename varvalue<Tag2>::_error_T2;
+    static_assert(false_v<Tag1>, "Unification error: Type missmatch");
+  };
 
   // helper
   template <class Var, class T, class Tail>
@@ -297,6 +322,11 @@ namespace TORI_NS::detail {
   struct unify_h2<Tag1, Tag2, Tail, true> {
     using type = typename unify_<Tail>::type;
   };
+  // helper3
+  template <class Tag1, class Tag2, class Tail>
+  struct unify_h3<Tag1, Tag2, Tail, true> {
+    using type = typename unify_<Tail>::type;
+  };
 
   // empty set
   template <>
@@ -306,6 +336,10 @@ namespace TORI_NS::detail {
   template <class Tag1, class Tag2, class... Cs>
   struct unify_<std::tuple<constr<value<Tag1>, value<Tag2>>, Cs...>> {
     using type = typename unify_h2<Tag1, Tag2, std::tuple<Cs...>>::type;
+  };
+  template <class Tag1, class Tag2, class... Cs>
+  struct unify_<std::tuple<constr<varvalue<Tag1>, varvalue<Tag2>>, Cs...>> {
+    using type = typename unify_h3<Tag1, Tag2, std::tuple<Cs...>>::type;
   };
   template <class Tag1, class Tag2, class... Cs>
   struct unify_<std::tuple<constr<var<Tag1>, var<Tag2>>, Cs...>> {
@@ -421,6 +455,12 @@ namespace TORI_NS::detail {
   struct subst_term_<From, To, TmVar<Tag>> {
     using type =
       std::conditional_t<std::is_same_v<From, TmVar<Tag>>, To, TmVar<Tag>>;
+  };
+
+  template <class From, class To, class Tag>
+  struct subst_term_<From, To, TmVarValue<Tag>> {
+    using type = std::
+      conditional_t<std::is_same_v<From, TmVarValue<Tag>>, To, TmVarValue<Tag>>;
   };
 
   template <class From, class To, class Tag>
@@ -556,6 +596,12 @@ namespace TORI_NS::detail {
     using c = std::tuple<>;
     using gen = Gen;
   };
+  template <class Tag, class Gen>
+  struct recon_<TmVarValue<Tag>, Gen> {
+    using type = typename TmVarValue<Tag>::type;
+    using c = std::tuple<>;
+    using gen = Gen;
+  };
   template <class... Ts, class Gen>
   struct recon_<TmClosure<Ts...>, Gen> {
     using rcn = recon_h<
@@ -633,6 +679,11 @@ namespace TORI_NS::detail {
   struct is_TmVar<TmVar<Tag>> : std::true_type {};
 
   template <class T>
+  struct is_TmVarValue : std::false_type {};
+  template <class Tag>
+  struct is_TmVarValue<TmVarValue<Tag>> : std::true_type {};
+
+  template <class T>
   struct is_TmFix : std::false_type {};
   template <class Tag>
   struct is_TmFix<TmFix<Tag>> : std::true_type {};
@@ -666,6 +717,12 @@ namespace TORI_NS::detail {
   /// has_var_v
   template <class T>
   static constexpr bool has_TmVar_v = is_TmVar_v<typename T::term>;
+  /// is_varvalue_v
+  template <class T>
+  static constexpr bool is_TmVarValue_v = is_TmVarValue<T>::value;
+  /// has_varvalue_v
+  template <class T>
+  static constexpr bool has_TmVarValue_v = is_TmVarValue_v<typename T::term>;
   // is_TmFix
   template <class T>
   static constexpr bool is_TmFix_v = is_TmFix<T>::value;
@@ -707,6 +764,15 @@ namespace TORI_NS::detail {
   static constexpr bool is_vartype_v = is_vartype_<T>::value;
 
   template <class T>
+  struct is_varvalue_type_ : std::false_type {};
+
+  template <class Tag>
+  struct is_varvalue_type_<varvalue<Tag>> : std::true_type {};
+  /// is_varvalue_v
+  template <class T>
+  static constexpr bool is_varvalue_type_v = is_varvalue_type_<T>::value;
+
+  template <class T>
   struct tag_of {};
   template <class Tag>
   struct tag_of<TmValue<Tag>> {
@@ -714,6 +780,10 @@ namespace TORI_NS::detail {
   };
   template <class Tag>
   struct tag_of<TmVar<Tag>> {
+    using type = Tag;
+  };
+  template <class Tag>
+  struct tag_of<TmVarValue<Tag>> {
     using type = Tag;
   };
   template <class Tag>

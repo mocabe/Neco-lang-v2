@@ -245,30 +245,35 @@ namespace TORI_NS::detail {
                    &info_table_initializer::info_table)},
              sizeof...(Ts) - 1}} {}
 
+    private:
+      template <class T1, class T2, bool B = std::is_same_v<T1, T2>>
+      struct show_result {
+        using t1 = typename T1::_expected;
+        using t2 = typename T2::_provided;
+        static_assert(false_v<T1>, "return type does not match");
+      };
+
+      template <class T1, class T2>
+      struct show_result<T1, T2, true> {
+        using type = void;
+      };
+
     protected:
       /// Return type checker
       struct ReturnType {
-        using return_type = type_of_t<typename std::tuple_element_t<
-          sizeof...(Ts) - 1,
-          std::tuple<Ts...>>::term>;
+        using return_term = typename std::
+          tuple_element_t<sizeof...(Ts) - 1, std::tuple<Ts...>>::term;
+        using return_type = type_of_t<return_term>;
         template <class U>
         ReturnType(const ObjectPtr<U>& obj) : value{ObjectPtr<>(obj)} {
-          static_assert(
-            std::is_same_v<
-              type_of_t<term>,
-              type_of_t<to_TmClosure_t<append_tuple_t<
-                remove_last_t<to_tuple_t<term>>, typename U::term>>>>,
-            "return value type does not match");
+          // check return type
+          ignore(show_result<return_type, type_of_t<typename U::term>>{});
         }
 
         template <class U>
         ReturnType(ObjectPtr<U>&& obj) : value{ObjectPtr<>(std::move(obj))} {
-          static_assert(
-            std::is_same_v<
-              type_of_t<term>,
-              type_of_t<to_TmClosure_t<append_tuple_t<
-                remove_last_t<to_tuple_t<term>>, typename U::term>>>>,
-            "return value type does not match");
+          // check return type
+          ignore(show_result<return_type, type_of_t<typename U::term>>{});
         }
 
         template <class U>
