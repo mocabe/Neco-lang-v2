@@ -18,7 +18,7 @@ namespace TORI_NS::detail {
   class ThunkValue {
   public:
     // custom term
-    using term = TmThunk<HeapObject>;
+    using term = TmThunk<typename HeapObject::term>;
     ThunkValue(const ThunkValue&) = default;
     ThunkValue(ThunkValue&&) = default;
     ThunkValue(const ObjectPtr<>& value) : m_value{value}, m_evaluated{false} {}
@@ -56,7 +56,7 @@ namespace TORI_NS::detail {
     // Thunk<T>
     template <class T>
     struct Thunk : ThunkR {
-      using term = TmThunk<T>;
+      using term = TmThunk<typename T::term>;
       Thunk() = default;
       Thunk(const Thunk&) = default;
       Thunk(Thunk&&) = default;
