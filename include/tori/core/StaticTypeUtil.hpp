@@ -339,6 +339,33 @@ namespace TORI_NS::detail {
   using unify_t = typename unify_<Cs>::type;
 
   // ------------------------------------------
+  // TmClosure to Tuple
+  // ------------------------------------------
+  template <class T>
+  struct to_tuple {};
+
+  template <class... Ts>
+  struct to_tuple<TmClosure<Ts...>> {
+    using type = std::tuple<Ts...>;
+  };
+
+  template <class T>
+  using to_tuple_t = typename to_tuple<T>::type;
+
+  // ------------------------------------------
+  // Tuple to TmClosure
+  // ------------------------------------------
+
+  template <class T>
+  struct to_TmClosure {};
+  template <class... Ts>
+  struct to_TmClosure<std::tuple<Ts...>> {
+    using type = TmClosure<Ts...>;
+  };
+  template <class T>
+  using to_TmClosure_t = typename to_TmClosure<T>::type;
+
+  // ------------------------------------------
   // Typing
   // ------------------------------------------
 
@@ -363,33 +390,124 @@ namespace TORI_NS::detail {
   template <class Gen>
   using nextgen_t = typename genvar_<Gen>::next;
 
+  template <class From ,class To, class In>
+  struct subst_term_ {};
+
+  template <class From, class To, class... Ts>
+  struct subst_term_<From, To, TmClosure<Ts...>> {
+    using type = std::conditional_t<
+      std::is_same_v<From, TmClosure<Ts...>>,
+      To,
+      TmClosure<typename subst_term_<From, To, Ts>::type...>>;
+  };
+
+  template <class From, class To, class T1, class T2>
+  struct subst_term_<From, To, TmApply<T1, T2>> {
+    using type = std::conditional_t<
+      std::is_same_v<From, TmApply<T1, T2>>,
+      To,
+      TmApply<
+        typename subst_term_<From, To, T1>::type,
+        typename subst_term_<From, To, T2>::type>>;
+  };
+
+  template <class From, class To, class T>
+  struct subst_term_<From, To, TmValue<T>> {
+    using type =
+      std::conditional_t<std::is_same_v<From, TmValue<T>>, To, TmValue<T>>;
+  };
+
+  template <class From, class To, class Tag>
+  struct subst_term_<From, To, TmVar<Tag>> {
+    using type =
+      std::conditional_t<std::is_same_v<From, TmVar<Tag>>, To, TmVar<Tag>>;
+  };
+
+  template <class From, class To, class Tag>
+  struct subst_term_<From, To, TmFix<Tag>> {
+    using type =
+      std::conditional_t<std::is_same_v<From, TmFix<Tag>>, To, TmFix<Tag>>;
+  };
+
+  template <class From, class To, class T>
+  struct subst_term_<From,To,TmThunk<T>> {
+    using type = std::conditional_t<
+      std::is_same_v<From, TmThunk<T>>,
+      To,
+      typename subst_term_<From, To, T>::type>;
+  };
+
+  template <class From, class To, class Term>
+  using subst_term_t = typename subst_term_<From, To, Term>::type;
+
   template <class T, class Gen, class Target>
   struct genpoly_ {
-    using type = Target;
+    using term = Target;
     using gen = Gen;
   };
 
-  template <class Tag, class Gen, class Target>
-  struct genpoly_<var<Tag>, Gen, Target> {
-    using _v = genvar_t<Gen>;
+  template <class T, class Gen, class Target>
+  struct genpoly_impl_ {};
+
+  template <class Tag, class... Ts, class Gen, class Target>
+  struct genpoly_impl_<std::tuple<TmVar<Tag>, Ts...>, Gen, Target> {
+    using _var = TmVar<Gen>;
+    using t = genpoly_impl_<
+      std::tuple<Ts...>,
+      nextgen_t<Gen>,
+      subst_term_t<TmVar<Tag>, _var, Target>>;
+
+    using term = typename t::term;
+    using gen = typename t::gen;
+  };
+
+  template <class T, class... Ts, class Gen, class Target>
+  struct genpoly_impl_<std::tuple<T, Ts...>, Gen, Target> {
+    using t = genpoly_impl_<std::tuple<Ts...>, Gen, Target>;
+    using term  = typename t::term;
+    using gen  = typename t::gen;
+  };
+
+  template <class Tag,class Gen, class Target>
+  struct genpoly_impl_<std::tuple<TmVar<Tag>>, Gen, Target> {
+    using _var = TmVar<Gen>;
+    using term = subst_term_t<TmVar<Tag>, _var, Target>;
     using gen = nextgen_t<Gen>;
-    using type = subst_t<tyarrow<var<Tag>, _v>, Target>;
+  };
+
+  template <class T, class Gen, class Target>
+  struct genpoly_impl_<std::tuple<T>, Gen, Target> {
+    using term = typename genpoly_<T, Gen, Target>::term;
+    using gen = typename genpoly_<T, Gen, Target>::gen;
   };
 
   template <class T1, class T2, class Gen, class Target>
-  struct genpoly_<arrow<T1, T2>, Gen, Target> {
+  struct genpoly_<TmApply<T1,T2>, Gen, Target> {
     using t1 = genpoly_<T1, Gen, Target>;
-    using t2 = genpoly_<T2, typename t1::gen, typename t1::type>;
-
-    using type = typename t1::type;
-    using gen = typename t1::gen;
+    using t2 = genpoly_<T2, typename t1::gen, typename t1::term>;
+    using term = typename t2::term;
+    using gen = typename t2::gen;
   };
 
   template <class T, class Gen, class Target>
-  using genpoly_t = typename genpoly_<T, Gen, Target>::type;
+  struct genpoly_<TmThunk<T>, Gen, Target> {
+    using t = genpoly_<T, Gen, Target>;
+    using term = typename t::term;
+    using gen = typename t::gen;
+  };
 
-  template <class T, class Gen, class Target>
-  using genpoly_gen = typename genpoly_<T, Gen, Target>::gen;
+  template <class... Ts, class Gen, class Target>
+  struct genpoly_<TmClosure<Ts...>, Gen, Target> {
+    using t = genpoly_impl_<std::tuple<Ts...>, Gen, Target>;
+    using term = typename t::term;
+    using gen = typename t::gen;
+  };
+
+  template <class Term, class Gen>
+  using genpoly_term = typename genpoly_<Term, Gen, Term>::term;
+
+  template <class Term, class Gen>
+  using genpoly_gen = typename genpoly_<Term, Gen, Term>::gen;
 
   template <class T, class Gen>
   struct recon_ {};
@@ -416,14 +534,14 @@ namespace TORI_NS::detail {
     // here we go...
     using type = arrow<_t1_t, _t2_t>;
     using gen = _t2_gen;
-    using c = _t2_c;
+    using c = concat_tuple_t<_t1_c, _t2_c>;
   };
   template <class T, class Gen>
   struct recon_h<TmClosure<T>, Gen> {
     // unwrap
-    using type = typename recon_<T, Gen>::type;
-    using gen = typename recon_<T, Gen>::gen;
-    using c = typename recon_<T, Gen>::c;
+    using type = typename recon_h<T, Gen>::type;
+    using gen = typename recon_h<T, Gen>::gen;
+    using c = typename recon_h<T, Gen>::c;
   };
 
   template <class Tag, class Gen>
@@ -440,12 +558,12 @@ namespace TORI_NS::detail {
   };
   template <class... Ts, class Gen>
   struct recon_<TmClosure<Ts...>, Gen> {
-    using rcn = recon_h<TmClosure<Ts...>, Gen>;
-    using t = typename rcn::type;
-    using g = typename rcn::gen;
+    using rcn = recon_h<
+      genpoly_term<TmClosure<Ts...>, Gen>,
+      genpoly_gen<TmClosure<Ts...>, Gen>>;
+    using type = typename rcn::type;
+    using gen = typename rcn::gen;
     using c = typename rcn::c;
-    using type = genpoly_t<t, g, t>;
-    using gen = genpoly_gen<t, g, t>;
   };
   template <class Tag, class T, class Gen>
   struct recon_<TmApply<TmFix<Tag>, T>, Gen> {
@@ -472,7 +590,7 @@ namespace TORI_NS::detail {
   };
   template <class T, class Gen>
   struct recon_<TmThunk<T>, Gen> {
-    using _t = recon_<typename T::term, Gen>;
+    using _t = recon_<T, Gen>;
 
     using type = typename _t::type;
     using gen = typename _t::gen;
@@ -604,25 +722,5 @@ namespace TORI_NS::detail {
   };
   template <class T>
   using tag_of_t = typename tag_of<T>::type;
-
-  template <class T>
-  struct to_tuple {};
-
-  template <class... Ts>
-  struct to_tuple<TmClosure<Ts...>> {
-    using type = std::tuple<Ts...>;
-  };
-
-  template <class T>
-  using to_tuple_t = typename to_tuple<T>::type;
-
-  template <class T>
-  struct to_TmClosure {};
-  template <class... Ts>
-  struct to_TmClosure<std::tuple<Ts...>> {
-    using type = TmClosure<Ts...>;
-  };
-  template <class T>
-  using to_TmClosure_t = typename to_TmClosure<T>::type;
 
 } // namespace TORI_NS::detail
