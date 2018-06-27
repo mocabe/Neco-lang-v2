@@ -41,17 +41,20 @@ namespace TORI_NS::detail {
       Apply(ObjectPtr<App>&& ap, ObjectPtr<Arg>&& ar)
         : base{ObjectPtr<>{std::move(ap)}, ObjectPtr<>{std::move(ar)}} {}
 
-      template <template <class> class T>
-      Apply(App* ap, const T<Arg>& ar) : Apply{ObjectPtr(ap), ar} {}
-      template <template <class> class T>
-      Apply(App* ap, T<Arg>&& ar) : Apply{ObjectPtr(ap), std::move(ar)} {}
+      // NOTE: msvc 15.8 Preview 3 can't compile CTAD with delegate constructors
 
-      template <template <class> class T>
-      Apply(const T<App>& ap, Arg* ar) : Apply{ap, ObjectPtr(ar)} {}
-      template <template <class> class T>
-      Apply(T<App>&& ap, Arg* ar) : Apply{std::move(ap), ObjectPtr(ar)} {}
+      Apply(const ObjectPtr<App>& ap, Arg* ar) //
+        : base{ObjectPtr<>{ap}, ObjectPtr<>{ar}} {}
+      Apply(App* ap, const ObjectPtr<Arg>& ar) //
+        : base{ObjectPtr<>{ap}, ObjectPtr<>{ar}} {}
 
-      Apply(App* ap, Arg* ar) : Apply{ObjectPtr(ap), ObjectPtr(ar)} {}
+      Apply(App* ap, ObjectPtr<Arg>&& ar)
+        : base{ObjectPtr<>{ap}, ObjectPtr<>{std::move(ar)}} {}
+      Apply(ObjectPtr<App>&& ap, Arg* ar)
+        : base{ObjectPtr<>{std::move(ap)}, ObjectPtr<>{ar}} {}
+
+      Apply(App* ap, Arg* ar) //
+        : base{ObjectPtr<>{ap}, ObjectPtr<>{ar}} {}
     };
   } // namespace interface
 
