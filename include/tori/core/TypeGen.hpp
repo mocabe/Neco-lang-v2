@@ -49,6 +49,13 @@ namespace TORI_NS::detail {
 
   } // namespace interface
 
+  // expected
+  template <class T>
+  struct expected : HeapObject {
+    // term
+    using term = typename T::term;
+  };
+
   // ------------------------------------------
   // Type
   // ------------------------------------------

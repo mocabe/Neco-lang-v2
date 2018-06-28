@@ -102,17 +102,17 @@ namespace TORI_NS::detail {
 #endif
 
     /// get nth argument
-    ObjectPtr<ThunkR>& args(size_t n) {
+    ObjectPtr<>& args(size_t n) {
       constexpr size_t offset = offset_of_member(&Closure1::args);
-      static_assert(offset % sizeof(ObjectPtr<ThunkR>) == 0);
-      return ((ObjectPtr<ThunkR>*)this)[offset / sizeof(ObjectPtr<ThunkR>) + n];
+      static_assert(offset % sizeof(ObjectPtr<>) == 0);
+      return ((ObjectPtr<>*)this)[offset / sizeof(ObjectPtr<>) + n];
     }
 
     /// get nth argument
-    const ObjectPtr<ThunkR>& args(size_t n) const {
+    const ObjectPtr<>& args(size_t n) const {
       constexpr size_t offset = offset_of_member(&Closure1::args);
-      static_assert(offset % sizeof(ObjectPtr<ThunkR>) == 0);
-      return ((ObjectPtr<ThunkR>*)this)[offset / sizeof(ObjectPtr<ThunkR>) + n];
+      static_assert(offset % sizeof(ObjectPtr<>) == 0);
+      return ((ObjectPtr<>*)this)[offset / sizeof(ObjectPtr<>) + n];
     }
 
     /// Execute core with vtable function
@@ -135,16 +135,16 @@ namespace TORI_NS::detail {
    */
   template <std::size_t N>
   struct ClosureN : Closure<> {
-    ObjectPtr<ThunkR> args[N] = {};
+    ObjectPtr<> args[N] = {};
     /// get raw arg
     template <size_t Arg>
-    ObjectPtr<ThunkR>& nth_arg_thunk() noexcept {
+    ObjectPtr<>& nth_arg() noexcept {
       static_assert(Arg < N, "Invalid index of argument");
       return args[N - Arg - 1];
     }
     /// get raw arg
     template <size_t Arg>
-    const ObjectPtr<ThunkR>& nth_arg_thunk() const noexcept {
+    const ObjectPtr<>& nth_arg() const noexcept {
       static_assert(Arg < N, "Invalid index of argument");
       return args[N - Arg - 1];
     }
@@ -167,6 +167,7 @@ namespace TORI_NS::detail {
       } catch (type_error& e) {
         return new Exception(new TypeError(new String(e.what()), e.src()));
       } catch (eval_error& e) {
+        const char* msg = e.what();
         return new Exception(new EvalError(new String(e.what()), e.src()));
       } catch (result_error& e) {
         return ObjectPtr<>(e.result());
@@ -258,28 +259,17 @@ namespace TORI_NS::detail {
       template <size_t N>
       auto arg() const {
         using To = std::tuple_element_t<N, std::tuple<Ts...>>;
-        auto thunk = ClosureN<sizeof...(Ts) - 1>::template nth_arg_thunk<N>();
-        ++(thunk.head()->refcount.atomic); // +1
-        return ObjectPtr(static_cast<Thunk<To>*>(thunk.head()));
+        auto obj = ClosureN<sizeof...(Ts) - 1>::template nth_arg<N>();
+        ++(obj.head()->refcount.atomic); // +1
+        return ObjectPtr(static_cast<expected<To>*>(obj.head()));
       }
 
       /// Evaluate N'th argument and take result
       template <size_t N>
       auto eval_arg() {
-        using _To = std::tuple_element_t<N, std::tuple<Ts...>>;
-        using To = std::conditional_t<has_TmVar_v<_To>, HeapObject, _To>;
-        auto& thunk = ClosureN<sizeof...(Ts) - 1>::template nth_arg_thunk<N>();
-        auto obj = eval(thunk);
-        auto sw_cast = [](auto& _obj) {
-          if constexpr (has_TmClosure_v<To>)
-            return closure_cast<To>(std::forward<decltype(_obj)>(_obj));
-          else if constexpr (has_TmValue_v<To>)
-            return value_cast<To>(std::forward<decltype(_obj)>(_obj));
-          else
-            static_assert(false_v<decltype(_obj)>);
-        };
-        return sw_cast(obj);
+        return eval(arg<N>());
       }
+
       /// Ctor
       constexpr Function() noexcept
         : ClosureN<sizeof...(Ts) - 1>{
@@ -289,14 +279,14 @@ namespace TORI_NS::detail {
 
     private:
       template <class T1, class T2, bool B = std::is_same_v<T1, T2>>
-      struct show_result {
+      struct check_return_type {
         using t1 = typename T1::_expected;
         using t2 = typename T2::_provided;
         static_assert(false_v<T1>, "return type does not match");
       };
 
       template <class T1, class T2>
-      struct show_result<T1, T2, true> {
+      struct check_return_type<T1, T2, true> {
         using type = void;
       };
 
@@ -309,13 +299,13 @@ namespace TORI_NS::detail {
         template <class U>
         ReturnType(const ObjectPtr<U>& obj) : value{ObjectPtr<>(obj)} {
           // check return type
-          ignore(show_result<return_type, type_of_t<typename U::term>>{});
+          ignore(check_return_type<return_type, type_of_t<typename U::term>>{});
         }
 
         template <class U>
         ReturnType(ObjectPtr<U>&& obj) : value{ObjectPtr<>(std::move(obj))} {
           // check return type
-          ignore(show_result<return_type, type_of_t<typename U::term>>{});
+          ignore(check_return_type<return_type, type_of_t<typename U::term>>{});
         }
 
         template <class U>
@@ -329,7 +319,7 @@ namespace TORI_NS::detail {
       };
 
     private:
-      using ClosureN<sizeof...(Ts) - 1>::nth_arg_thunk;
+      using ClosureN<sizeof...(Ts) - 1>::nth_arg;
       using ClosureN<sizeof...(Ts) - 1>::args;
 
       template <auto P>
