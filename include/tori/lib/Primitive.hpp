@@ -5,7 +5,7 @@
 
 /// \file primitives
 
-#include "DynamicTypeUtil.hpp"
+#include "../core.hpp"
 
 namespace TORI_NS::detail::interface {
 

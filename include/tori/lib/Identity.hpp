@@ -3,6 +3,8 @@
 
 #pragma once
 
+/// \file Identity
+
 #include "../core.hpp"
 
 namespace TORI_NS::detail {

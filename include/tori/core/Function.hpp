@@ -8,7 +8,6 @@
 #include "ClosureCast.hpp"
 #include "Fix.hpp"
 #include "Exception.hpp"
-#include "Primitive.hpp"
 #include "Apply.hpp"
 #include "String.hpp"
 #include "Thunk.hpp"

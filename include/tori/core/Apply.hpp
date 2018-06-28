@@ -6,7 +6,6 @@
 /// \file Apply
 
 #include "DynamicTypeUtil.hpp"
-#include "Primitive.hpp"
 #include "Fix.hpp"
 #include "Thunk.hpp"
 

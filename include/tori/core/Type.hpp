@@ -10,7 +10,6 @@
 #include "Exception.hpp"
 #include "ValueCast.hpp"
 #include "Thunk.hpp"
-#include "Util.hpp"
 
 namespace TORI_NS::detail {
 

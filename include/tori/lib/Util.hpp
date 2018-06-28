@@ -3,8 +3,7 @@
 
 #pragma once
 
-#include "TypeGen.hpp"
-#include "DynamicTypeUtil.hpp"
+#include "../core.hpp"
 
 #include <vector>
 #include <string>

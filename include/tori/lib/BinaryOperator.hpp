@@ -3,6 +3,8 @@
 
 #pragma once
 
+/// \file BinaryOperator
+
 #include "../core.hpp"
 #include <functional>
 
@@ -15,8 +17,8 @@ namespace TORI_NS::detail {
       // assume BoxedHeapObject
       using Tp = typename T::value_type;
       E<Tp> op;
-      auto lhs = BinaryOperator::template eval_arg<0>();
-      auto rhs = BinaryOperator::template eval_arg<1>();
+      auto lhs = this->template eval_arg<0>();
+      auto rhs = this->template eval_arg<1>();
       return new R{op(*lhs, *rhs)};
     }
   };
