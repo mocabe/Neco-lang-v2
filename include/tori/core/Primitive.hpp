@@ -22,10 +22,12 @@ namespace TORI_NS::detail::interface {
   using Double = BoxedHeapObject<double>;
 
   using Char = Int8;
+  using Short = Int16;
   using Int = Int32;
   using Long = Int64;
 
   using UChar = UInt8;
+  using UShort = UInt16;
   using UInt = UInt32;
   using ULong = UInt64;
 
