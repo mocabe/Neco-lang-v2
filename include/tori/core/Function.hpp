@@ -195,6 +195,48 @@ namespace TORI_NS::detail {
   using remove_last_t = typename remove_last<T>::type;
 
   // ------------------------------------------
+  // remove varvalue
+  // ------------------------------------------
+
+  template <class T, class Target>
+  struct remove_varvalue_ {
+    using type = Target;
+  };
+
+  // replace TmVarValue<Tag> to TmVar<Tag>
+  template <class Tag, class Target>
+  struct remove_varvalue_<TmVarValue<Tag>, Target> {
+    using _var = TmVar<Tag>;
+    using type = subst_term_t<TmVarValue<Tag>, _var, Target>;
+  };
+
+  template <class T, class... Ts, class Target>
+  struct remove_varvalue_<TmClosure<T, Ts...>, Target> {
+    using t = remove_varvalue_<T, Target>;
+    using type =
+      typename remove_varvalue_<TmClosure<Ts...>, typename t::type>::type;
+  };
+
+  template <class T, class Target>
+  struct remove_varvalue_<TmClosure<T>, Target> {
+    using type = typename remove_varvalue_<T, Target>::type;
+  };
+  template <class T1, class T2, class Target>
+  struct remove_varvalue_<TmApply<T1,T2>, Target> {
+    using t1 = remove_varvalue_<T1, Target>;
+    using t2 = remove_varvalue_<T2, typename t1::type>;
+    using type = typename t2::type;
+  };
+
+  template <class T, class Target>
+  struct remove_varvalue_<TmThunk<T>, Target> {
+    using type = typename remove_varvalue_<T, Target>::type;
+  };
+
+  template <class Term>
+  using remove_varvalue_t = typename remove_varvalue_<Term, Term>::type;
+
+  // ------------------------------------------
   // Function
   // ------------------------------------------
   namespace interface {
@@ -203,8 +245,8 @@ namespace TORI_NS::detail {
       static_assert(
         sizeof...(Ts) > 1, "Closure should have argument and return type");
 
-      /// term
-      using term = TmClosure<typename Ts::term...>;
+      /// export term
+      using term = remove_varvalue_t<TmClosure<typename Ts::term...>>;
 
       /// Closure info table initializer
       struct info_table_initializer {
