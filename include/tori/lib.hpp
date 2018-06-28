@@ -6,3 +6,4 @@
 #include "core.hpp"
 
 #include "lib/Identity.hpp"
+#include "lib/BinaryOperator.hpp"
