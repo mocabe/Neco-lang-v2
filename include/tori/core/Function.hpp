@@ -167,7 +167,6 @@ namespace TORI_NS::detail {
       } catch (type_error& e) {
         return new Exception(new TypeError(new String(e.what()), e.src()));
       } catch (eval_error& e) {
-        const char* msg = e.what();
         return new Exception(new EvalError(new String(e.what()), e.src()));
       } catch (result_error& e) {
         return ObjectPtr<>(e.result());
