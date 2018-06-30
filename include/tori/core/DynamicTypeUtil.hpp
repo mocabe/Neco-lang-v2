@@ -100,22 +100,6 @@ namespace TORI_NS::detail {
     }
   } // namespace interface
 
-  /// check subtype relation T1 :< T2
-  [[nodiscard]] bool subtype(
-    const ObjectPtr<const Type>& t1, const ObjectPtr<const Type>& t2) {
-    if (same_type(t1, t2)) return true;
-    if (same_type(object_type<HeapObject>(), t2)) return true;
-    if (is_arrow_type(t1) && is_arrow_type(t2)) {
-      auto& t1c = std::get_if<ArrowType>(t1.value())->captured;
-      auto& t1r = std::get_if<ArrowType>(t1.value())->returns;
-      auto& t2c = std::get_if<ArrowType>(t2.value())->captured;
-      auto& t2r = std::get_if<ArrowType>(t2.value())->returns;
-      return subtype(t2c, t1c) && subtype(t1r, t2r);
-    }
-    // TODO support dynamic subtype declaration
-    return false;
-  }
-
   struct TyArrow {
     ObjectPtr<const Type> from;
     ObjectPtr<const Type> to;
@@ -265,7 +249,7 @@ namespace TORI_NS::detail {
     template <class T>
     [[nodiscard]] bool has_type(const ObjectPtr<>& obj) {
       if (!obj) return false;
-      if (subtype(get_type(obj), object_type<T>())) return true;
+      if (same_type(get_type(obj), object_type<T>())) return true;
       return false;
     }
   } // namespace interface

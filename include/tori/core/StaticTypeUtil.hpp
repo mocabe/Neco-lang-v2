@@ -186,24 +186,6 @@ namespace TORI_NS::detail {
   template <class TyArrows, class Ty>
   using subst_all_t = typename subst_all_<TyArrows, Ty>::type;
 
-  // ------------------------------------------
-  // Subtype
-  // ------------------------------------------
-  template <class T1, class T2>
-  struct subtype_ : std::false_type {};
-
-  template <class Tag1, class Tag2>
-  struct subtype_<value<Tag1>, value<Tag2>> {
-    static constexpr bool value = std::is_base_of_v<Tag1, Tag2>;
-  };
-
-  template <class T11, class T12, class T21, class T22>
-  struct subtype_<arrow<T11, T12>, arrow<T21, T22>> {
-    static constexpr bool value =
-      subtype_<T21, T11>::value && subtype_<T12, T22>::value;
-  };
-  template <class T1, class T2>
-  static constexpr bool subtype_v = subtype_<T1, T2>::value;
 
   // ------------------------------------------
   // Constr
@@ -340,21 +322,21 @@ namespace TORI_NS::detail {
   template <class Tag1, class Tag2, class... Cs>
   struct unify_<std::tuple<constr<var<Tag1>, var<Tag2>>, Cs...>> {
     using type = std::conditional_t<
-      subtype_v<var<Tag1>, var<Tag2>>,
+      std::is_same_v<var<Tag1>, var<Tag2>>,
       typename unify_<std::tuple<Cs...>>::type,
       typename unify_h<var<Tag2>, var<Tag1>, std::tuple<Cs...>>::type>;
   };
   template <class T1, class Tag, class... Cs>
   struct unify_<std::tuple<constr<T1, var<Tag>>, Cs...>> {
     using type = std::conditional_t<
-      subtype_v<T1, var<Tag>>,
+      std::is_same_v<T1, var<Tag>>,
       typename unify_<std::tuple<Cs...>>::type,
       typename unify_h<var<Tag>, T1, std::tuple<Cs...>>::type>;
   };
   template <class Tag, class T2, class... Cs>
   struct unify_<std::tuple<constr<var<Tag>, T2>, Cs...>> {
     using type = std::conditional_t<
-      subtype_v<var<Tag>, T2>,
+      std::is_same_v<var<Tag>, T2>,
       typename unify_<std::tuple<Cs...>>::type,
       typename unify_h<var<Tag>, T2, std::tuple<Cs...>>::type>;
   };
