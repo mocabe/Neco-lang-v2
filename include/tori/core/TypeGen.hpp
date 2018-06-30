@@ -42,8 +42,8 @@ namespace TORI_NS::detail {
 
     /// Type variable value
     template <class Tag>
-    struct Auto : HeapObject {
-      /// term
+    struct forall : HeapObject {
+      // term
       using term = TmVarValue<Tag>;
     };
   } // namespace interface
@@ -263,7 +263,7 @@ namespace TORI_NS::detail {
 
   template <class Tag>
   struct assume_object_type<varvalue<Tag>> {
-    using type = Auto<Tag>;
+    using type = forall<Tag>;
   };
 
   template <class T1, class T2>

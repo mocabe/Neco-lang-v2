@@ -11,7 +11,7 @@ namespace TORI_NS::detail {
 
   namespace interface {
     /// Thunk
-    struct Thunk : Function<Thunk, Auto<class Thunk_X>, Auto<class Thunk_X>> {
+    struct Thunk : Function<Thunk, forall<class Thunk_X>, forall<class Thunk_X>> {
       ReturnType code() {
         if (m_evaluated) {
           return m_obj;
@@ -24,7 +24,7 @@ namespace TORI_NS::detail {
       }
 
     private:
-      ObjectPtr<Auto<Thunk_X>> m_obj;
+      ObjectPtr<forall<Thunk_X>> m_obj;
       bool_t m_evaluated;
     };
   } // namespace interface
