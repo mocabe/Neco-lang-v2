@@ -37,7 +37,7 @@ include_directories("${TORI_DIR}/include")
 # Compiler Flags
 # ------------------------------------------
 if(MSVC)
-  set(CMAKE_CXX_FLAGS "/std:c++latest /permissive-")
+  set(CMAKE_CXX_FLAGS "/W4 /Zi /EHsc /std:c++latest /permissive-")
 else()
   set(CMAKE_CXX_FLAGS "-O0 -Wall -Wextra -g -std=c++17")
 endif()
