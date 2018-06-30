@@ -270,17 +270,23 @@ namespace TORI_NS::detail {
              sizeof...(Ts) - 1}} {}
 
     private:
-      template <class T1, class T2, bool B = std::is_same_v<T1, T2>>
+      template <class T1, class T2, bool B>
+      struct check_return_type_;
+
+      template <class T1, class T2>
       struct check_return_type {
+        // clang bug(?) workaround
+        using type = check_return_type_<T1, T2, std::is_same_v<T1,T2>>;
+      };
+
+      template <class T1, class T2>
+      struct check_return_type_<T1, T2, false> {
         using t1 = typename T1::_expected;
         using t2 = typename T2::_provided;
         static_assert(false_v<T1>, "return type does not match");
       };
-
       template <class T1, class T2>
-      struct check_return_type<T1, T2, true> {
-        using type = void;
-      };
+      struct check_return_type_<T1, T2, true> {};
 
     protected:
       /// Return type checker
@@ -303,7 +309,7 @@ namespace TORI_NS::detail {
         template <class U>
         ReturnType(U* ptr) : ReturnType(ObjectPtr(ptr)) {}
 
-        ReturnType() = default;
+        ReturnType() = delete;
         ReturnType(const ReturnType& other) : value{other.value} {}
         ReturnType(ReturnType&& other) : value{std::move(other.value)} {}
 
@@ -322,7 +328,7 @@ namespace TORI_NS::detail {
           std::is_same_v<ReturnType, decltype(std::declval<T>().code())>,
           "code() is not defined.");
       }
-      using concept_check_code = concept_checker<&check_code>;
+      using concept_check_code = concept_checker<&Function::check_code>;
     };
     // Initialize closure infotable
     template <class T, class... Ts>
