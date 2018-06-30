@@ -9,5 +9,6 @@
 #include "lib/Unit.hpp"
 #include "lib/Identity.hpp"
 #include "lib/BinaryOperator.hpp"
+#include "lib/Thunk.hpp"
 
 #include "lib/Util.hpp"

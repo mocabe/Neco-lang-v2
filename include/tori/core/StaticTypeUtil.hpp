@@ -140,10 +140,6 @@ namespace TORI_NS::detail {
   template <class Tag>
   struct TmFix {};
 
-  // TmThunk
-  template <class T>
-  struct TmThunk {};
-
   template <class T, class = void>
   struct has_term : std::false_type {};
   template <class T>
@@ -469,14 +465,6 @@ namespace TORI_NS::detail {
       std::conditional_t<std::is_same_v<From, TmFix<Tag>>, To, TmFix<Tag>>;
   };
 
-  template <class From, class To, class T>
-  struct subst_term_<From,To,TmThunk<T>> {
-    using type = std::conditional_t<
-      std::is_same_v<From, TmThunk<T>>,
-      To,
-      typename subst_term_<From, To, T>::type>;
-  };
-
   template <class From, class To, class Term>
   using subst_term_t = typename subst_term_<From, To, Term>::type;
 
@@ -527,13 +515,6 @@ namespace TORI_NS::detail {
     using t2 = genpoly_<T2, typename t1::gen, typename t1::term>;
     using term = typename t2::term;
     using gen = typename t2::gen;
-  };
-
-  template <class T, class Gen, class Target>
-  struct genpoly_<TmThunk<T>, Gen, Target> {
-    using t = genpoly_<T, Gen, Target>;
-    using term = typename t::term;
-    using gen = typename t::gen;
   };
 
   template <class... Ts, class Gen, class Target>
@@ -634,14 +615,6 @@ namespace TORI_NS::detail {
       concat_tuple_t<typename _t1::c, typename _t2::c>,
       constr<typename _t1::type, arrow<typename _t2::type, type>>>;
   };
-  template <class T, class Gen>
-  struct recon_<TmThunk<T>, Gen> {
-    using _t = recon_<T, Gen>;
-
-    using type = typename _t::type;
-    using gen = typename _t::gen;
-    using c = typename _t::c;
-  };
 
   /// Get type of term
   template <class Term>
@@ -688,11 +661,6 @@ namespace TORI_NS::detail {
   template <class Tag>
   struct is_TmFix<TmFix<Tag>> : std::true_type {};
 
-  template <class T>
-  struct is_TmThunk : std::false_type {};
-  template <class T>
-  struct is_TmThunk<TmThunk<T>> : std::true_type {};
-
   /// is_apply_v
   template <class T>
   static constexpr bool is_TmApply_v = is_TmApply<T>::value;
@@ -729,12 +697,6 @@ namespace TORI_NS::detail {
   // has_TmFix
   template <class T>
   static constexpr bool has_TmFix_v = is_TmFix_v<typename T::term>;
-  // is_TmThunk
-  template <class T>
-  static constexpr bool is_TmThunk_v = is_TmThunk<T>::value;
-  // has_TmThunk
-  template <class T>
-  static constexpr bool has_TmThunk_v = is_TmThunk_v<typename T::term>;
 
   template <class T>
   struct is_value_type_ : std::false_type {};

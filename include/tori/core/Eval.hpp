@@ -9,7 +9,6 @@
 #include "Fix.hpp"
 #include "Exception.hpp"
 #include "ValueCast.hpp"
-#include "Thunk.hpp"
 
 namespace TORI_NS::detail {
 
@@ -23,9 +22,6 @@ namespace TORI_NS::detail {
         return _eval_rec(eval_result);
       }
     }
-    // thunk
-    if (auto thunk = value_cast_if<ThunkR>(obj))
-      return _eval_rec(thunk->code());
     // exception
     if (auto exception = value_cast_if<Exception>(obj))
       throw result_error(exception);

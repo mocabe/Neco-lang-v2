@@ -10,7 +10,6 @@
 #include "Exception.hpp"
 #include "Apply.hpp"
 #include "String.hpp"
-#include "Thunk.hpp"
 
 #include <type_traits>
 
@@ -127,10 +126,10 @@ namespace TORI_NS::detail {
 
   /** \brief ClosureN
    * Contains static size array for incoming arguments.
-   * Arguments will be filled from back to front as thunk.
+   * Arguments will be filled from back to front.
    * So, first argument of closure will be LAST element of array for arguments.
    * If all arguments are passed, arity becomes zero and the closure is ready to
-   * execute code. All argument thunks are initialized as nullptr.
+   * execute code.
    */
   template <std::size_t N>
   struct ClosureN : Closure<> {
@@ -225,11 +224,6 @@ namespace TORI_NS::detail {
     using t1 = remove_varvalue_<T1, Target>;
     using t2 = remove_varvalue_<T2, typename t1::type>;
     using type = typename t2::type;
-  };
-
-  template <class T, class Target>
-  struct remove_varvalue_<TmThunk<T>, Target> {
-    using type = typename remove_varvalue_<T, Target>::type;
   };
 
   template <class Term>

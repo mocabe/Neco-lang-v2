@@ -9,7 +9,6 @@
 #include "Fix.hpp"
 #include "Exception.hpp"
 #include "ValueCast.hpp"
-#include "Thunk.hpp"
 
 namespace TORI_NS::detail {
 
@@ -69,10 +68,6 @@ namespace TORI_NS::detail {
         constr.push_back({_t1, new Type(ArrowType{_t2, _t})});
         return _t;
       }
-    }
-    // Thunk
-    if (auto thunk = value_cast_if<ThunkR>(obj)) {
-      return recon_impl(thunk->value(), constr);
     }
     // value -> value, []
     if (has_value_type(obj)) return get_type(obj);

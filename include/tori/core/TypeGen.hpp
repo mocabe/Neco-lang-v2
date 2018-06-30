@@ -42,11 +42,10 @@ namespace TORI_NS::detail {
 
     /// Type variable value
     template <class Tag>
-    struct Auto {
+    struct Auto : HeapObject {
       /// term
       using term = TmVarValue<Tag>;
     };
-
   } // namespace interface
 
   // expected
@@ -177,14 +176,6 @@ namespace TORI_NS::detail {
       return type;
     }
   };
-  // thunk
-  template <class T>
-  struct object_type_h<T, std::enable_if_t<is_TmThunk_v<T>>> {
-    static constexpr const Type* type = &vartype<T>::type;
-    static ObjectPtr<const Type> get() {
-      return type;
-    }
-  };
   // fix
   template <class T>
   struct object_type_h<T, std::enable_if_t<is_TmFix_v<T>>> {
@@ -272,7 +263,7 @@ namespace TORI_NS::detail {
 
   template <class Tag>
   struct assume_object_type<varvalue<Tag>> {
-    using type = HeapObject;
+    using type = Auto<Tag>;
   };
 
   template <class T1, class T2>

@@ -17,7 +17,6 @@
 #include "core/ClosureCast.hpp"
 #include "core/Fix.hpp"
 #include "core/Apply.hpp"
-#include "core/Thunk.hpp"
 #include "core/Function.hpp"
 #include "core/Eval.hpp"
 #include "core/Type.hpp"

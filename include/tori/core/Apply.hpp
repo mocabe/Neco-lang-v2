@@ -7,7 +7,6 @@
 
 #include "DynamicTypeUtil.hpp"
 #include "Fix.hpp"
-#include "Thunk.hpp"
 
 namespace TORI_NS::detail {
 
