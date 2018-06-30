@@ -20,3 +20,5 @@
 #include "core/Function.hpp"
 #include "core/Eval.hpp"
 #include "core/Type.hpp"
+
+#include "core/Compatibility.hpp"
