@@ -14,6 +14,9 @@ namespace TORI_NS::detail {
 
   /// eval implementation
   [[nodiscard]] ObjectPtr<> _eval_rec(const ObjectPtr<>& obj) {
+    // exception
+    if (auto exception = value_cast_if<Exception>(obj))
+      throw result_error(exception);
     // closure
     if (has_arrow_type(obj)) {
       auto c = static_cast<Closure<>*>(obj.head());
@@ -22,9 +25,6 @@ namespace TORI_NS::detail {
         return _eval_rec(eval_result);
       }
     }
-    // exception
-    if (auto exception = value_cast_if<Exception>(obj))
-      throw result_error(exception);
     // apply
     if (auto apply = value_cast_if<ApplyR>(obj)) {
       // reduce app
