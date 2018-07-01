@@ -46,10 +46,12 @@ namespace TORI_NS::detail::interface {
   using DoublePtr = BoxedHeapObject<double *>;
 
   using CharPtr = Int8Ptr;
+  using ShortPtr = Int16Ptr;
   using IntPtr = Int32Ptr;
   using LongPtr = Int64Ptr;
 
   using UCharPtr = UInt8Ptr;
+  using UShortPtr = UInt16Ptr;
   using UIntPtr = UInt32Ptr;
   using ULongPtr = UInt64Ptr;
 
