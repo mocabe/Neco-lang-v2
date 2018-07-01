@@ -8,9 +8,12 @@
 #include "../core.hpp"
 
 namespace TORI_NS::detail {
+
+  class Identity_X;
+
   namespace interface {
     struct Identity
-      : Function<Identity, forall<class Identity_X>, forall<class Identity_X>> {
+      : Function<Identity, forall<Identity_X>, forall<Identity_X>> {
       ReturnType code() {
         return arg<0>();
       }

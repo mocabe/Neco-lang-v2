@@ -9,9 +9,11 @@
 
 namespace TORI_NS::detail {
 
+  class Thunk_X;
+
   namespace interface {
     /// Thunk
-    struct Thunk : Function<Thunk, forall<class Thunk_X>, forall<class Thunk_X>> {
+    struct Thunk : Function<Thunk, forall<Thunk_X>, forall<Thunk_X>> {
       ReturnType code() {
         if (m_evaluated) {
           return m_obj;
