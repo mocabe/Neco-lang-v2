@@ -13,7 +13,6 @@ namespace TORI_NS::detail {
     /// \notes NO null check.
     /// \notes use type_of() to get actual type of terms.
     [[nodiscard]] ObjectPtr<const Type> get_type(const ObjectPtr<>& obj) {
-      assert(obj);
       return obj.info_table()->obj_type;
     }
 
@@ -52,9 +51,10 @@ namespace TORI_NS::detail {
     }
   } // namespace interface
 
-  [[nodiscard]] ObjectPtr<const Type> copy_type_impl(const ObjectPtr<const Type>& ptp) {
-    if (std::get_if<ValueType>(ptp.value())) { return ptp; }
-    if (std::get_if<VarType>(ptp.value())) { return ptp; }
+  [[nodiscard]] ObjectPtr<const Type> copy_type_impl(
+    const ObjectPtr<const Type>& ptp) {
+    if (std::get_if<ValueType>(ptp.value())) return ptp;
+    if (std::get_if<VarType>(ptp.value())) return ptp;
     if (auto arrow = std::get_if<ArrowType>(ptp.value())) {
       auto ret = new Type{ArrowType{copy_type_impl(arrow->captured),
                                     copy_type_impl(arrow->returns)}};
@@ -62,15 +62,15 @@ namespace TORI_NS::detail {
     }
 
     assert(false);
-    return ptp;
+    throw std::invalid_argument("copy_type_impl(): invalid variant index");
   }
 
-  namespace interface {
-    /// Deep copy type object
-    [[nodiscard]] ObjectPtr<const Type> copy_type(const ObjectPtr<const Type>& tp) {
-      return copy_type_impl(tp);
-    }
-  } // namespace interface
+  namespace interface{
+
+  /// Deep copy type object
+  [[nodiscard]] ObjectPtr<const Type> copy_type(
+    const ObjectPtr<const Type>& tp) { return copy_type_impl(tp); }
+  }
 
   [[nodiscard]] bool same_type_impl(
     const ObjectPtr<const Type>& lhs, const ObjectPtr<const Type>& rhs) {
@@ -79,16 +79,24 @@ namespace TORI_NS::detail {
     if (auto lvar = std::get_if<ValueType>(&left)) {
       if (auto rvar = std::get_if<ValueType>(&right))
         return ValueType::compare(*lvar, *rvar);
+      else
+        return false;
     }
     if (auto larr = std::get_if<ArrowType>(&left)) {
       if (auto rarr = std::get_if<ArrowType>(&right))
         return same_type_impl(larr->captured, rarr->captured) &&
                same_type_impl(larr->returns, rarr->returns);
+      else
+        return false;
     }
     if (auto lany = std::get_if<VarType>(&left)) {
-      if (auto rany = std::get_if<VarType>(&right)) return lany->id == rany->id;
+      if (auto rany = std::get_if<VarType>(&right))
+        return lany->id == rany->id;
+      else
+        return false;
     }
-    return false;
+    assert(false);
+    throw std::invalid_argument("same_type_impl(): invalid variant index");
   }
 
   namespace interface {
@@ -123,7 +131,7 @@ namespace TORI_NS::detail {
                                 subst_type_impl(ta, arrow->returns)}};
     }
     assert(false);
-    return in;
+    throw std::invalid_argument("subst_type_impl(): invalid variant index");
   }
 
   /// emulate type-substitution
@@ -248,7 +256,6 @@ namespace TORI_NS::detail {
     /// has_type
     template <class T>
     [[nodiscard]] bool has_type(const ObjectPtr<>& obj) {
-      if (!obj) return false;
       if (same_type(get_type(obj), object_type<T>())) return true;
       return false;
     }

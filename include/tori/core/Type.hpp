@@ -29,6 +29,7 @@ namespace TORI_NS::detail {
       return;
     }
     assert(false);
+    throw std::invalid_argument("vars_impl(): invalid variant index");
   };
 
   // get list of type variables
@@ -53,7 +54,6 @@ namespace TORI_NS::detail {
 
   [[nodiscard]] const ObjectPtr<const Type> recon_impl(
     const ObjectPtr<>& obj, std::vector<Constr>& constr) {
-    if (!obj) throw type_error("Null object", obj);
     // Apply
     if (auto apply = value_cast_if<ApplyR>(obj)) {
       if (auto fix = value_cast_if<Fix>(apply->app)) {
@@ -77,7 +77,7 @@ namespace TORI_NS::detail {
     if (has_arrow_type(obj)) return genpoly(get_type(obj));
 
     assert(false);
-    return get_type(obj);
+    throw std::invalid_argument("recon_impl(): invalid variant index");
   };
 
   /// recon

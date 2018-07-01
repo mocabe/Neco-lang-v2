@@ -29,7 +29,7 @@ namespace TORI_NS::detail {
              "]";                                                     //
     }
     assert(false);
-    return "";
+    throw std::invalid_argument("to_string(): invalid variant index");
   }
 
   namespace interface {
