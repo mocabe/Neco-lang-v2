@@ -84,7 +84,7 @@ namespace TORI_NS::detail {
   using Multiples##TYPE = Multiples<TYPE>;       \
   using Divides##TYPE = Divides<TYPE>;           \
   using Modulus##TYPE = Modulus<TYPE>;           \
-  using Negates##TYPE = Negate<TYPE>;            \
+  using Negate##TYPE = Negate<TYPE>;             \
   using EqualTo##TYPE = EqualTo<TYPE>;           \
   using NotEqualTo##TYPE = NotEqualTo<TYPE>;     \
   using Greater##TYPE = Greater<TYPE>;           \
