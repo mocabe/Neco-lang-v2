@@ -29,7 +29,7 @@ namespace TORI_NS::detail {
       return;
     }
     assert(false);
-    throw std::invalid_argument("vars_impl(): invalid variant index");
+    return;
   };
 
   // get list of type variables
@@ -52,46 +52,41 @@ namespace TORI_NS::detail {
     return t;
   };
 
-  [[nodiscard]] const ObjectPtr<const Type> recon_impl(
-    const ObjectPtr<>& obj, std::vector<Constr>& constr) {
+  // typing
+  [[nodiscard]] const ObjectPtr<const Type> type_of_impl(
+    const ObjectPtr<>& obj) {
     // Apply
     if (auto apply = value_cast_if<ApplyR>(obj)) {
       if (auto fix = value_cast_if<Fix>(apply->app)) {
-        auto _t1 = recon_impl(apply->arg, constr);
+        auto _t1 = type_of_impl(apply->arg);
         auto _t = genvar();
-        constr.push_back({_t1, new Type(ArrowType{_t, _t})});
-        return _t;
+        auto c = std::vector{Constr{_t1, new Type(ArrowType{_t, _t})}};
+        auto s = unify(std::move(c), obj);
+        return subst_type_all(s, _t);
       } else {
-        auto _t1 = recon_impl(apply->app, constr);
-        auto _t2 = recon_impl(apply->arg, constr);
+        auto _t1 = type_of_impl(apply->app);
+        auto _t2 = type_of_impl(apply->arg);
         auto _t = genvar();
-        constr.push_back({_t1, new Type(ArrowType{_t2, _t})});
-        return _t;
+        auto c = std::vector{Constr{_t1, new Type(ArrowType{_t2, _t})}};
+        auto s = unify(std::move(c), obj);
+        return subst_type_all(s, _t);
       }
     }
-    // value -> value, []
+    // value -> value
     if (has_value_type(obj)) return get_type(obj);
-    // var -> var, []
+    // var -> var
     if (has_vartype(obj)) return get_type(obj);
-    // arrow -> arrow, []
+    // arrow -> genpoly arrow
     if (has_arrow_type(obj)) return genpoly(get_type(obj));
 
     assert(false);
-    throw std::invalid_argument("recon_impl(): invalid variant index");
+    return {};
   };
-
-  /// recon
-  [[nodiscard]] std::pair<const ObjectPtr<const Type>, std::vector<Constr>>
-  recon(const ObjectPtr<>& obj) {
-    std::vector<Constr> constr;
-    return {recon_impl(obj, constr), constr};
-  }
 
   namespace interface {
     // type_of
     [[nodiscard]] ObjectPtr<const Type> type_of(const ObjectPtr<>& obj) {
-      auto [type, constr] = recon(obj);
-      return subst_type_all(unify(constr, obj), type);
+      return type_of_impl(obj);
     }
   } // namespace interface
 

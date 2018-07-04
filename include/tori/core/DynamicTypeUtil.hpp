@@ -16,8 +16,8 @@ namespace TORI_NS::detail {
       return obj.info_table()->obj_type;
     }
 
-    /// is_value_type
-    [[nodiscard]] bool is_value_type(const ObjectPtr<const Type>& tp) {
+      /// is_value_type
+      [[nodiscard]] bool is_value_type(const ObjectPtr<const Type>& tp) {
       if (std::get_if<ValueType>(tp.value()))
         return true;
       else
@@ -30,8 +30,8 @@ namespace TORI_NS::detail {
       else
         return false;
     }
-    /// is_vartype
-    [[nodiscard]] bool is_vartype(const ObjectPtr<const Type>& tp) {
+      /// is_vartype
+      [[nodiscard]] bool is_vartype(const ObjectPtr<const Type>& tp) {
       if (std::get_if<VarType>(tp.value()))
         return true;
       else
@@ -41,8 +41,8 @@ namespace TORI_NS::detail {
     [[nodiscard]] bool has_value_type(const ObjectPtr<>& obj) {
       return is_value_type(get_type(obj));
     }
-    /// has_arrow_type
-    [[nodiscard]] bool has_arrow_type(const ObjectPtr<>& obj) {
+      /// has_arrow_type
+      [[nodiscard]] bool has_arrow_type(const ObjectPtr<>& obj) {
       return is_arrow_type(get_type(obj));
     }
     /// has_vartype
@@ -62,18 +62,17 @@ namespace TORI_NS::detail {
     }
 
     assert(false);
-    throw std::invalid_argument("copy_type_impl(): invalid variant index");
+    return {};
   }
 
   namespace interface{
 
-  /// Deep copy type object
-  [[nodiscard]] ObjectPtr<const Type> copy_type(
-    const ObjectPtr<const Type>& tp) { return copy_type_impl(tp); }
-  }
+    /// Deep copy type object
+    [[nodiscard]] ObjectPtr<const Type> copy_type(
+      const ObjectPtr<const Type>& tp) { return copy_type_impl(tp); }}
 
-  [[nodiscard]] bool same_type_impl(
-    const ObjectPtr<const Type>& lhs, const ObjectPtr<const Type>& rhs) {
+    [[nodiscard]] bool same_type_impl(
+      const ObjectPtr<const Type>& lhs, const ObjectPtr<const Type>& rhs) {
     const auto& left = *lhs;
     const auto& right = *rhs;
     if (auto lvar = std::get_if<ValueType>(&left)) {
@@ -96,7 +95,7 @@ namespace TORI_NS::detail {
         return false;
     }
     assert(false);
-    throw std::invalid_argument("same_type_impl(): invalid variant index");
+    return {};
   }
 
   namespace interface {
@@ -131,11 +130,11 @@ namespace TORI_NS::detail {
                                 subst_type_impl(ta, arrow->returns)}};
     }
     assert(false);
-    throw std::invalid_argument("subst_type_impl(): invalid variant index");
+    return {};
   }
 
-  /// emulate type-substitution
-  [[nodiscard]] ObjectPtr<const Type> subst_type(
+    /// emulate type-substitution
+    [[nodiscard]] ObjectPtr<const Type> subst_type(
       const TyArrow& ta, const ObjectPtr<const Type>& in) {
     return subst_type_impl(ta, in);
   }
@@ -164,9 +163,9 @@ namespace TORI_NS::detail {
     return {subst_type(ta, constr.t1), subst_type(ta, constr.t2)};
   }
 
-  /// subst_constr_all
-  [[nodiscard]] std::vector<Constr> subst_constr_all(
-    const TyArrow& ta, const std::vector<Constr>& cs) {
+    /// subst_constr_all
+    [[nodiscard]] std::vector<Constr> subst_constr_all(
+      const TyArrow& ta, const std::vector<Constr>& cs) {
     std::vector<Constr> ret;
     ret.reserve(cs.size());
     for (auto&& c : cs)
@@ -192,6 +191,47 @@ namespace TORI_NS::detail {
   // Unify
   // ------------------------------------------
 
+  namespace interface {
+    // unification error
+    struct unification_error : type_error {
+      unification_error(const std::string& msg, const ObjectPtr<>& src)
+        : type_error(msg, src) {}
+    };
+    // unification error(circular constraint)
+    struct unification_circular_constraint : unification_error {
+      unification_circular_constraint(
+        const ObjectPtr<>& src, const ObjectPtr<const Type>& var)
+        : unification_error("Unification error: Circular constraint", src)
+        , m_var{var} {}
+
+      ObjectPtr<const Type> var() const {
+        return m_var;
+      }
+      ObjectPtr<const Type> m_var;
+    };
+    // unification error(missmatch)
+    struct unification_missmatch : unification_error {
+      unification_missmatch(
+        const ObjectPtr<>& src,
+        const ObjectPtr<const Type>& t1,
+        const ObjectPtr<const Type>& t2)
+        : unification_error("Unification error: type missmatch", src)
+        , m_t1{t1}
+        , m_t2{t2} {}
+
+      ObjectPtr<const Type> t1() const {
+        return m_t1;
+      }
+      ObjectPtr<const Type> t2() const {
+        return m_t2;
+      }
+
+    private:
+      ObjectPtr<const Type> m_t1;
+      ObjectPtr<const Type> m_t2;
+    };
+  }
+
   void unify_impl(
     std::vector<Constr>& cs, std::vector<TyArrow>& ta, const ObjectPtr<>& src) {
     while (!cs.empty()) {
@@ -205,7 +245,7 @@ namespace TORI_NS::detail {
           ta.push_back(arr);
           continue;
         }
-        throw type_error("Unification error: Circular constraints", src);
+        throw unification_circular_constraint(src, c.t1);
       }
       if (is_vartype(c.t1)) {
         if (!occurs(c.t1, c.t2)) {
@@ -214,7 +254,7 @@ namespace TORI_NS::detail {
           ta.push_back(arr);
           continue;
         }
-        throw type_error("Unification error: Circular constraints", src);
+        throw unification_circular_constraint(src, c.t1);
       }
       if (auto arrow1 = std::get_if<ArrowType>(c.t1.value())) {
         if (auto arrow2 = std::get_if<ArrowType>(c.t2.value())) {
@@ -223,7 +263,7 @@ namespace TORI_NS::detail {
           continue;
         }
       }
-      throw type_error("Unification error: Unsolvalbe constraints", src);
+      throw unification_missmatch(src, c.t1, c.t2);
     }
   }
 
@@ -238,11 +278,11 @@ namespace TORI_NS::detail {
     return as;
   }
 
-  // ------------------------------------------
-  // Recon
-  // ------------------------------------------
+    // ------------------------------------------
+    // Recon
+    // ------------------------------------------
 
-  [[nodiscard]] ObjectPtr<const Type> genvar() {
+    [[nodiscard]] ObjectPtr<const Type> genvar() {
     auto var = make_object<Type>(VarType{0});
     std::get_if<VarType>(var.value())->id = uintptr_t(var.head());
     return ObjectPtr<const Type>(var);
