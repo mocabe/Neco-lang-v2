@@ -190,7 +190,6 @@ namespace TORI_NS::detail {
   template <class TyArrows, class Ty>
   using subst_all_t = typename subst_all_<TyArrows, Ty>::type;
 
-
   // ------------------------------------------
   // Constr
   // ------------------------------------------
@@ -417,7 +416,7 @@ namespace TORI_NS::detail {
   template <class Gen>
   using nextgen_t = typename genvar_<Gen>::next;
 
-  template <class From ,class To, class In>
+  template <class From, class To, class In>
   struct subst_term_ {};
 
   template <class From, class To, class... Ts>
@@ -489,11 +488,11 @@ namespace TORI_NS::detail {
   template <class T, class... Ts, class Gen, class Target>
   struct genpoly_impl_<std::tuple<T, Ts...>, Gen, Target> {
     using t = genpoly_impl_<std::tuple<Ts...>, Gen, Target>;
-    using term  = typename t::term;
-    using gen  = typename t::gen;
+    using term = typename t::term;
+    using gen = typename t::gen;
   };
 
-  template <class Tag,class Gen, class Target>
+  template <class Tag, class Gen, class Target>
   struct genpoly_impl_<std::tuple<TmVar<Tag>>, Gen, Target> {
     using _var = TmVar<Gen>;
     using term = subst_term_t<TmVar<Tag>, _var, Target>;
@@ -507,7 +506,7 @@ namespace TORI_NS::detail {
   };
 
   template <class T1, class T2, class Gen, class Target>
-  struct genpoly_<TmApply<T1,T2>, Gen, Target> {
+  struct genpoly_<TmApply<T1, T2>, Gen, Target> {
     using t1 = genpoly_<T1, Gen, Target>;
     using t2 = genpoly_<T2, typename t1::gen, typename t1::term>;
     using term = typename t2::term;
@@ -536,7 +535,7 @@ namespace TORI_NS::detail {
     using gen = typename type_of_<T, Gen>::gen;
   };
 
-  template <class T, class ...Ts, class Gen>
+  template <class T, class... Ts, class Gen>
   struct type_of_h<TmClosure<T, Ts...>, Gen> {
     // t1
     using _t1 = type_of_h<T, Gen>;
@@ -621,7 +620,7 @@ namespace TORI_NS::detail {
 
   /// Infer type of term
   template <class Term>
-  using type_of_t = typename type_of_<Term,taggen<0>>::type;
+  using type_of_t = typename type_of_<Term, taggen<0>>::type;
 
   // ------------------------------------------
   // Util
