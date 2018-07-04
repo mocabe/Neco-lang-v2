@@ -163,6 +163,10 @@ namespace TORI_NS::detail {
     using type = value<Tag>;
   };
   template <class TyT1, class TyT2, class Tag>
+  struct subst_<tyarrow<TyT1, TyT2>, varvalue<Tag>> {
+    using type = varvalue<Tag>;
+  };
+  template <class TyT1, class TyT2, class Tag>
   struct subst_<tyarrow<TyT1, TyT2>, var<Tag>> {
     using type =
       std::conditional_t<std::is_same_v<TyT1, var<Tag>>, TyT2, var<Tag>>;
@@ -256,13 +260,23 @@ namespace TORI_NS::detail {
   // error
   template <class ConstrList>
   struct unify_ {
-    using type = typename ConstrList::_error_here;
+    using type = typename ConstrList::_error_constraints;
     static_assert(
       false_v<ConstrList>, "Unification error: Unsolvable constraints");
+  };
+
+  template <class T1, class T2, class... Ts>
+  struct unify_<std::tuple<constr<T1, T2>, Ts...>> {
+    using t1 = typename T1::_error_lhs;
+    using t2 = typename T2::_error_rhs;
+    using t3 = typename std::tuple<Ts...>::_error_other;
+    static_assert(false_v<T1>, "Unification error: Unsolvable constraints");
   };
   // helper
   template <class Var, class T, class Tail, bool B = !occurs_v<Var, T>>
   struct unify_h {
+    using t1 = typename T::_error_var;
+    using t2 = typename Tail::_error_other;
     static_assert(false_v<T>, "Unification error: Circular constraints");
   };
   // helper2
@@ -272,8 +286,9 @@ namespace TORI_NS::detail {
     class Tail,
     bool B = std::is_same_v<Tag1, Tag2>>
   struct unify_h2 {
-    using t1 = typename value<Tag1>::_error_T1;
-    using t2 = typename value<Tag2>::_error_T2;
+    using t1 = typename value<Tag1>::_error_lhs;
+    using t2 = typename value<Tag2>::_error_rhs;
+    using t3 = typename Tail::_error_other;
     static_assert(false_v<Tag1>, "Unification error: Type missmatch");
   };
   // helper3
@@ -283,8 +298,8 @@ namespace TORI_NS::detail {
     class Tail,
     bool B = std::is_same_v<Tag1, Tag2>>
   struct unify_h3 {
-    using t1 = typename varvalue<Tag1>::_error_T1;
-    using t2 = typename varvalue<Tag2>::_error_T2;
+    using t1 = typename varvalue<Tag1>::_error_lhs;
+    using t2 = typename varvalue<Tag2>::_error_rhs;
     static_assert(false_v<Tag1>, "Unification error: Type missmatch");
   };
 
@@ -513,102 +528,100 @@ namespace TORI_NS::detail {
   using genpoly_gen = typename genpoly_<Term, Gen, Term>::gen;
 
   template <class T, class Gen>
-  struct recon_ {};
+  struct type_of_ {};
 
   template <class T, class Gen>
-  struct recon_h {
-    using type = typename recon_<T, Gen>::type;
-    using gen = typename recon_<T, Gen>::gen;
-    using c = typename recon_<T, Gen>::c;
+  struct type_of_h {
+    using type = typename type_of_<T, Gen>::type;
+    using gen = typename type_of_<T, Gen>::gen;
   };
 
   template <class T, class ...Ts, class Gen>
-  struct recon_h<TmClosure<T, Ts...>, Gen> {
+  struct type_of_h<TmClosure<T, Ts...>, Gen> {
     // t1
-    using _t1 = recon_h<T, Gen>;
+    using _t1 = type_of_h<T, Gen>;
     using _t1_t = typename _t1::type;
     using _t1_gen = typename _t1::gen;
-    using _t1_c = typename _t1::c;
     // t2
-    using _t2 = recon_h<TmClosure<Ts...>, _t1_gen>;
+    using _t2 = type_of_h<TmClosure<Ts...>, _t1_gen>;
     using _t2_t = typename _t2::type;
     using _t2_gen = typename _t2::gen;
-    using _t2_c = typename _t2::c;
     // here we go...
     using type = arrow<_t1_t, _t2_t>;
     using gen = _t2_gen;
-    using c = concat_tuple_t<_t1_c, _t2_c>;
   };
   template <class T, class Gen>
-  struct recon_h<TmClosure<T>, Gen> {
+  struct type_of_h<TmClosure<T>, Gen> {
     // unwrap
-    using type = typename recon_h<T, Gen>::type;
-    using gen = typename recon_h<T, Gen>::gen;
-    using c = typename recon_h<T, Gen>::c;
+    using type = typename type_of_h<T, Gen>::type;
+    using gen = typename type_of_h<T, Gen>::gen;
   };
 
   template <class Tag, class Gen>
-  struct recon_<TmValue<Tag>, Gen> {
+  struct type_of_<TmValue<Tag>, Gen> {
     using type = typename TmValue<Tag>::type;
-    using c = std::tuple<>;
     using gen = Gen;
   };
   template <class Tag, class Gen>
-  struct recon_<TmVar<Tag>, Gen> {
+  struct type_of_<TmVar<Tag>, Gen> {
     using type = typename TmVar<Tag>::type;
-    using c = std::tuple<>;
     using gen = Gen;
   };
   template <class Tag, class Gen>
-  struct recon_<TmVarValue<Tag>, Gen> {
+  struct type_of_<TmVarValue<Tag>, Gen> {
     using type = typename TmVarValue<Tag>::type;
-    using c = std::tuple<>;
     using gen = Gen;
   };
   template <class... Ts, class Gen>
-  struct recon_<TmClosure<Ts...>, Gen> {
-    using rcn = recon_h<
+  struct type_of_<TmClosure<Ts...>, Gen> {
+    using rcn = type_of_h<
       genpoly_term<TmClosure<Ts...>, Gen>,
       genpoly_gen<TmClosure<Ts...>, Gen>>;
     using type = typename rcn::type;
     using gen = typename rcn::gen;
-    using c = typename rcn::c;
   };
   template <class Tag, class T, class Gen>
-  struct recon_<TmApply<TmFix<Tag>, T>, Gen> {
+  struct type_of_<TmApply<TmFix<Tag>, T>, Gen> {
     // recon T
-    using _t = recon_<T, Gen>;
+    using _t = type_of_<T, Gen>;
     using _t_t = typename _t::type;
     using _t_gen = typename _t::gen;
-    using _t_c = typename _t::c;
     //
-    using type = genvar_t<_t_gen>;
-    using gen = nextgen_t<_t_gen>;
-    using c = append_tuple_t<_t_c, constr<_t_t, arrow<type, type>>>;
+    using _type = genvar_t<_t_gen>;
+    using _gen = nextgen_t<_t_gen>;
+    using _c = std::tuple<constr<_t_t, arrow<_type, _type>>>;
+
+    // unify
+    using _u = unify_t<_c>;
+
+    // return
+    using type = subst_all_t<_u, _type>;
+    using gen = _gen;
   };
   template <class T1, class T2, class Gen>
-  struct recon_<TmApply<T1, T2>, Gen> {
-    using _t1 = recon_<T1, Gen>;
-    using _t2 = recon_<T2, typename _t1::gen>;
-    using _gen = typename _t2::gen;
-    using type = genvar_t<_gen>;
-    using gen = nextgen_t<_gen>;
-    using c = append_tuple_t<
-      concat_tuple_t<typename _t1::c, typename _t2::c>,
-      constr<typename _t1::type, arrow<typename _t2::type, type>>>;
-  };
+  struct type_of_<TmApply<T1, T2>, Gen> {
+    // recon t1 and t2
+    using _t1 = type_of_<T1, Gen>;
+    using _t2 = type_of_<T2, typename _t1::gen>;
+    using t2_gen = typename _t2::gen;
 
-  /// Get type of term
-  template <class Term>
-  using recon_type_t = typename recon_<Term, taggen<0>>::type;
-  /// Get constraint set of term
-  template <class Term>
-  using recon_constr_t = typename recon_<Term, taggen<0>>::c;
+    // generate
+    using _type = genvar_t<t2_gen>;
+    using _gen = nextgen_t<t2_gen>;
+    using _c =
+      std::tuple<constr<typename _t1::type, arrow<typename _t2::type, _type>>>;
+
+    // unify
+    using _u = unify_t<_c>;
+
+    // return
+    using type = subst_all_t<_u, _type>;
+    using gen = _gen;
+  };
 
   /// Infer type of term
   template <class Term>
-  using type_of_t =
-    subst_all_t<unify_t<recon_constr_t<Term>>, recon_type_t<Term>>;
+  using type_of_t = typename type_of_<Term,taggen<0>>::type;
 
   // ------------------------------------------
   // Util
