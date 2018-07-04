@@ -47,30 +47,32 @@ namespace TORI_NS::detail {
     using TypeError = BoxedHeapObject<TypeErrorValue>;
   } // namespace interface
 
-  /// type_error
-  class type_error : public std::logic_error {
-  public:
-    /// Ctor string
-    template <class T>
-    explicit type_error(const std::string& what, const ObjectPtr<T>& src)
-      : std::logic_error(what), m_src{ObjectPtr<>(src)} {}
-    template <class T>
-    /// Ctor const char*
-    explicit type_error(const char* what, const ObjectPtr<T>& src)
-      : std::logic_error(what), m_src{ObjectPtr<>(src)} {}
-    /// get source node
-    ObjectPtr<> src() {
-      return m_src;
-    }
-    /// format function
-    virtual std::string format() {
-      return {what()};
-    }
+  namespace interface {
+    /// type_error
+    class type_error : public std::logic_error {
+    public:
+      /// Ctor string
+      template <class T>
+      explicit type_error(const std::string& what, const ObjectPtr<T>& src)
+        : std::logic_error(what), m_src{ObjectPtr<>(src)} {}
+      template <class T>
+      /// Ctor const char*
+      explicit type_error(const char* what, const ObjectPtr<T>& src)
+        : std::logic_error(what), m_src{ObjectPtr<>(src)} {}
+      /// get source node
+      ObjectPtr<> src() {
+        return m_src;
+      }
+      /// format function
+      virtual std::string format() {
+        return {what()};
+      }
 
-  private:
-    /// source node
-    ObjectPtr<> m_src;
-  };
+    private:
+      /// source node
+      ObjectPtr<> m_src;
+    };
+  } // namespace interface
 
   // ------------------------------------------
   // Eval errors
@@ -89,50 +91,54 @@ namespace TORI_NS::detail {
     using EvalError = BoxedHeapObject<EvalErrorValue>;
   } // namespace interface
 
-  class eval_error : public std::logic_error {
-  public:
-    /// Ctor string
-    template <class T>
-    explicit eval_error(const std::string& what, const ObjectPtr<T>& src)
-      : std::logic_error(what), m_src{ObjectPtr<>(src)} {}
-    /// Ctor const char*
-    template <class T>
-    explicit eval_error(const char* what, const ObjectPtr<T>& src)
-      : std::logic_error(what), m_src{ObjectPtr<>(src)} {}
-    /// get source node
-    ObjectPtr<> src() {
-      return m_src;
-    }
-    /// format
-    virtual std::string format() {
-      return {what()};
-    }
+  namespace interface {
+    class eval_error : public std::logic_error {
+    public:
+      /// Ctor string
+      template <class T>
+      explicit eval_error(const std::string& what, const ObjectPtr<T>& src)
+        : std::logic_error(what), m_src{ObjectPtr<>(src)} {}
+      /// Ctor const char*
+      template <class T>
+      explicit eval_error(const char* what, const ObjectPtr<T>& src)
+        : std::logic_error(what), m_src{ObjectPtr<>(src)} {}
+      /// get source node
+      ObjectPtr<> src() {
+        return m_src;
+      }
+      /// format
+      virtual std::string format() {
+        return {what()};
+      }
 
-  private:
-    /// source node
-    ObjectPtr<> m_src;
-  };
+    private:
+      /// source node
+      ObjectPtr<> m_src;
+    };
+  } // namespace interface
 
   // ------------------------------------------
   // Result errors
   // ------------------------------------------
 
-  /// result error
-  class result_error : public std::runtime_error {
-  public:
-    result_error(const ObjectPtr<Exception>& result)
-      : runtime_error("result_error: Exception detected in eval")
-      , m_result{result} {}
-    result_error(ObjectPtr<Exception>&& result)
-      : runtime_error("result_error: Exception detected in eval")
-      , m_result{std::move(result)} {}
-    ObjectPtr<Exception> result() {
-      return m_result;
-    }
+  namespace interface {
+    /// result error
+    class result_error : public std::runtime_error {
+    public:
+      result_error(const ObjectPtr<Exception>& result)
+        : runtime_error("result_error: Exception detected in eval")
+        , m_result{result} {}
+      result_error(ObjectPtr<Exception>&& result)
+        : runtime_error("result_error: Exception detected in eval")
+        , m_result{std::move(result)} {}
+      ObjectPtr<Exception> result() {
+        return m_result;
+      }
 
-  private:
-    ObjectPtr<Exception> m_result;
-  };
+    private:
+      ObjectPtr<Exception> m_result;
+    };
+  } // namespace interface
 
 } // namespace TORI_NS::detail
 
