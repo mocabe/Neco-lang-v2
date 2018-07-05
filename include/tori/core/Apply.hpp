@@ -12,8 +12,37 @@ namespace TORI_NS::detail {
 
   /// ApplyValue for runtime
   struct ApplyRValue {
-    ObjectPtr<> app;
-    ObjectPtr<> arg;
+    template <class App, class Arg>
+    ApplyRValue(App&& app, Arg&& arg)
+      : m_app{std::forward<App>(app)}, m_arg{std::forward<Arg>(arg)} {}
+
+    ObjectPtr<> app() const {
+      return m_app;
+    }
+    ObjectPtr<> arg() const {
+      return m_arg;
+    }
+
+    bool has_cache() const {
+      return m_cache != nullptr;
+    }
+    ObjectPtr<> cache() const {
+      return m_cache;
+    }
+    void clear_cache() {
+      m_cache = nullptr;
+    }
+    void set_cache(const ObjectPtr<>& obj) {
+      m_cache = obj;
+    }
+
+  private:
+
+    ObjectPtr<> m_app;
+    ObjectPtr<> m_arg;
+
+    // for graph reduction
+    ObjectPtr<> m_cache = {};
   };
 
   namespace interface {

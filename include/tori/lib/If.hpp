@@ -12,7 +12,7 @@ namespace TORI_NS::detail {
 
   namespace interface {
     struct If : Function<If, Bool, forall<If_X>, forall<If_X>, forall<If_X>> {
-      ReturnType code() {
+      ReturnType code() const {
         if (*eval_arg<0>())
           return arg<1>();
         else

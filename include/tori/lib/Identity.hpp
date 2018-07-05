@@ -14,7 +14,7 @@ namespace TORI_NS::detail {
   namespace interface {
     struct Identity
       : Function<Identity, forall<Identity_X>, forall<Identity_X>> {
-      ReturnType code() {
+      ReturnType code() const {
         return arg<0>();
       }
     };

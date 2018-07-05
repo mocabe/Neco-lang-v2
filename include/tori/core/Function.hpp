@@ -157,7 +157,7 @@ namespace TORI_NS::detail {
   struct vtbl_eval_wrapper {
     static ObjectPtr<> code(Closure<>* _this) noexcept {
       try {
-        return std::move((static_cast<T*>(_this)->code()).value);
+        return std::move((static_cast<const T*>(_this)->code()).value);
       } catch (const bad_value_cast& e) {
         return new Exception(new BadValueCast(e.from(), e.to()));
       } catch (const bad_closure_cast& e) {
@@ -258,7 +258,7 @@ namespace TORI_NS::detail {
 
       /// Evaluate N'th argument and take result
       template <size_t N>
-      auto eval_arg() {
+      auto eval_arg() const {
         return eval(arg<N>());
       }
 
@@ -325,8 +325,8 @@ namespace TORI_NS::detail {
 
       void check_code() {
         static_assert(
-          std::is_same_v<ReturnType, decltype(std::declval<T>().code())>,
-          "code() is not defined.");
+          std::is_same_v<ReturnType, decltype(std::declval<const T>().code())>,
+          " `ReturnType code() const` was not found.");
       }
       using concept_check_code = concept_checker<&Function::check_code>;
     };

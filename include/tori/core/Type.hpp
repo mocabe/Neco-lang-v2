@@ -57,15 +57,15 @@ namespace TORI_NS::detail {
     const ObjectPtr<>& obj) {
     // Apply
     if (auto apply = value_cast_if<ApplyR>(obj)) {
-      if (auto fix = value_cast_if<Fix>(apply->app)) {
-        auto _t1 = type_of_impl(apply->arg);
+      if (auto fix = value_cast_if<Fix>(apply->app())) {
+        auto _t1 = type_of_impl(apply->arg());
         auto _t = genvar();
         auto c = std::vector{Constr{_t1, new Type(ArrowType{_t, _t})}};
         auto s = unify(std::move(c), obj);
         return subst_type_all(s, _t);
       } else {
-        auto _t1 = type_of_impl(apply->app);
-        auto _t2 = type_of_impl(apply->arg);
+        auto _t1 = type_of_impl(apply->app());
+        auto _t2 = type_of_impl(apply->arg());
         auto _t = genvar();
         auto c = std::vector{Constr{_t1, new Type(ArrowType{_t2, _t})}};
         auto s = unify(std::move(c), obj);

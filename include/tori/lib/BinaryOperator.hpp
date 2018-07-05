@@ -13,7 +13,7 @@ namespace TORI_NS::detail {
   /// Binary operator function
   template <class T, class R, template <class> class E>
   struct BinaryOperator : Function<BinaryOperator<T, R, E>, T, T, R> {
-    typename BinaryOperator::ReturnType code() {
+    typename BinaryOperator::ReturnType code() const {
       // assume BoxedHeapObject
       using Tp = typename T::value_type;
       E<Tp> op;
