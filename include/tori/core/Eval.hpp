@@ -48,14 +48,9 @@ namespace TORI_NS::detail {
             auto pap = f.clone();
             auto cc = static_cast<Closure<>*>(pap.head());
             cc->args(--cc->arity.atomic) = obj;
-            if (cc->arity.atomic == 0) {
-              auto eval_result = eval_impl(cc->code());
-              apply->set_cache(eval_result);
-              return eval_result;
-            } else {
-              apply->set_cache(pap);
-              return eval_impl(ObjectPtr<>(pap));
-            }
+            apply->set_cache(pap);
+            --apply.head()->refcount.atomic;
+            return eval_impl(ObjectPtr<>(pap));
           }
         }
       }
