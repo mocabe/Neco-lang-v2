@@ -13,15 +13,18 @@
 namespace TORI_NS::detail {
 
   namespace interface {
-    /// clear apply cache
-    void clear_cache(const ObjectPtr<>& obj) {
+    /// copy apply graph
+    [[nodiscard]] ObjectPtr<> copy_apply_graph(const ObjectPtr<>& obj) {
       if (auto apply = value_cast_if<ApplyR>(obj)) {
-        apply->clear_cache();
-        clear_cache(apply->app());
-        clear_cache(apply->arg());
+        // return cached value
+        if (apply->evaluated()) return apply->get_cache();
+        // create new apply
+        return new ApplyR{copy_apply_graph(apply->arg()),
+                          copy_apply_graph(apply->app())};
       }
+      return obj;
     }
-  } // namespace interface
+  }
 
   /// eval implementation
   [[nodiscard]] ObjectPtr<> eval_impl(const ObjectPtr<>& obj) {
@@ -31,7 +34,7 @@ namespace TORI_NS::detail {
     // apply
     if (auto apply = value_cast_if<ApplyR>(obj)) {
       // graph reduction
-      if (apply->has_cache()) return apply->cache();
+      if (apply->evaluated()) return apply->get_cache();
       // reduce app
       auto app = eval_impl(apply->app());
       auto arg = apply->arg();
@@ -82,7 +85,7 @@ namespace TORI_NS::detail {
 
   namespace interface {
 
-    /// eval
+    /// evaluate each apply node and replace with result
     template <class T>
     [[nodiscard]] auto eval(const ObjectPtr<T>& obj)
       ->ObjectPtr<assume_object_type_t<type_of_t<typename T::term>>> {
@@ -104,13 +107,6 @@ namespace TORI_NS::detail {
       return ObjectPtr<To>(static_cast<To*>(result.head()));
     }
 
-    /// eval_top (for top level call)
-    template <class T>
-    [[nodiscard]] auto eval_top(const ObjectPtr<T>& obj) {
-      auto ret = eval(obj);
-      clear_cache(ObjectPtr<>(obj));
-      return ret;
-    }
   } // namespace interface
 
 } // namespace TORI_NS::detail

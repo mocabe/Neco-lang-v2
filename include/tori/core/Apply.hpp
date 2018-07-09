@@ -17,32 +17,36 @@ namespace TORI_NS::detail {
       : m_app{std::forward<App>(app)}, m_arg{std::forward<Arg>(arg)} {}
 
     ObjectPtr<> app() const {
+      assert(m_app != nullptr);
       return m_app;
     }
     ObjectPtr<> arg() const {
+      assert(m_app != nullptr);
       return m_arg;
     }
 
-    bool has_cache() const {
-      return m_cache != nullptr;
+    bool evaluated() const {
+      return m_app == nullptr;
     }
-    ObjectPtr<> cache() const {
-      return m_cache;
+
+    ObjectPtr<> get_cache() const {
+      assert(evaluated());
+      return m_arg;
     }
-    void clear_cache() {
-      m_cache = nullptr;
-    }
+
     void set_cache(const ObjectPtr<>& obj) {
-      m_cache = obj;
+      assert(!evaluated());
+      m_app = nullptr;
+      m_arg = obj;
     }
 
   private:
-
+    /// closure
+    /// when evaluated: nullptr
     ObjectPtr<> m_app;
-    ObjectPtr<> m_arg;
-
-    // for graph reduction
-    ObjectPtr<> m_cache = {};
+    /// argument
+    /// when evaluated: result
+    ObjectPtr<> m_arg; 
   };
 
   namespace interface {

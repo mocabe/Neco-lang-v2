@@ -65,7 +65,7 @@ namespace TORI_NS::detail {
   static_assert(sizeof(FixValue) == 1);
   static_assert(sizeof(Fix) == 8 + sizeof(HeapObject));
 
-  static_assert(sizeof(ApplyRValue) == 24);
+  static_assert(sizeof(ApplyRValue) == 16);
   static_assert(sizeof(ApplyR) == sizeof(HeapObject) + sizeof(ApplyRValue));
   static_assert(sizeof(ApplyR) == sizeof(Apply<Fix, Fix>));
 }
