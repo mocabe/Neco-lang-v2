@@ -120,12 +120,12 @@ namespace TORI_NS::detail {
       /// Copy convert constructor
       /// \effects increases reference count.
       template <class U>
-      explicit ObjectPtr(const ObjectPtr<U>& obj) noexcept : m_ptr{obj.head()} {
+      ObjectPtr(const ObjectPtr<U>& obj) noexcept : m_ptr{obj.head()} {
         if (m_ptr && m_ptr->refcount.atomic != 0) m_ptr->refcount.atomic++;
       }
       /// Move convert constructor
       template <class U>
-      explicit ObjectPtr(ObjectPtr<U>&& obj) noexcept : m_ptr{obj.head()} {
+      ObjectPtr(ObjectPtr<U>&& obj) noexcept : m_ptr{obj.head()} {
         obj.m_ptr = nullptr;
       }
       /// get address of head of the object
@@ -162,7 +162,19 @@ namespace TORI_NS::detail {
         return *this;
       }
       /// operator=
+      template <class U>
+      ObjectPtr<value_type>& operator=(const ObjectPtr<U>& obj) noexcept {
+        ObjectPtr(obj).swap(*this);
+        return *this;
+      }
+      /// operator=
       ObjectPtr<value_type>& operator=(ObjectPtr<value_type>&& obj) noexcept {
+        ObjectPtr(std::move(obj)).swap(*this);
+        return *this;
+      }
+      /// operator=
+      template <class U>
+      ObjectPtr<value_type>& operator=(ObjectPtr<U>&& obj) noexcept {
         ObjectPtr(std::move(obj)).swap(*this);
         return *this;
       }
