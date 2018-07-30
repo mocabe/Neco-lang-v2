@@ -111,7 +111,7 @@ namespace TORI_NS::detail {
       /// Copy constructor
       /// \effects increases reference count.
       ObjectPtr(const ObjectPtr<value_type>& obj) noexcept : m_ptr{obj.m_ptr} {
-        if (m_ptr && m_ptr->refcount.atomic != 0) m_ptr->refcount.atomic++;
+        if (m_ptr && head()->refcount.atomic != 0) head()->refcount.atomic++;
       }
       /// Move constructor
       ObjectPtr(ObjectPtr<value_type>&& obj) noexcept : m_ptr{obj.m_ptr} {
@@ -120,17 +120,24 @@ namespace TORI_NS::detail {
       /// Copy convert constructor
       /// \effects increases reference count.
       template <class U>
-      ObjectPtr(const ObjectPtr<U>& obj) noexcept : m_ptr{obj.head()} {
-        if (m_ptr && m_ptr->refcount.atomic != 0) m_ptr->refcount.atomic++;
+      ObjectPtr(const ObjectPtr<U>& obj) noexcept : m_ptr{obj.get()} {
+        if (m_ptr && head()->refcount.atomic != 0) head()->refcount.atomic++;
       }
       /// Move convert constructor
       template <class U>
-      ObjectPtr(ObjectPtr<U>&& obj) noexcept : m_ptr{obj.head()} {
+      ObjectPtr(ObjectPtr<U>&& obj) noexcept : m_ptr{obj.get()} {
         obj.m_ptr = nullptr;
       }
-      /// get address of head of the object
-      value_type* head() const noexcept {
+      /// get address of object
+      value_type* get() const noexcept {
         return m_ptr;
+      }
+      /// get address of header
+      auto head() const noexcept {
+        if constexpr (std::is_const_v<value_type>)
+          return static_cast<const HeapObject*>(m_ptr);
+        else
+          return static_cast<HeapObject*>(m_ptr);
       }
       /// get address of info table
       /// \requires Object is not null.
@@ -149,7 +156,7 @@ namespace TORI_NS::detail {
       /// use_count
       /// \requires Object is not null.
       size_t use_count() const noexcept {
-        return m_ptr->refcount.atomic;
+        return head()->refcount.atomic;
       }
       /// swap data
       void swap(ObjectPtr<value_type>& obj) noexcept {
@@ -234,14 +241,15 @@ namespace TORI_NS::detail {
     template <class T>
     ObjectPtr<T>::~ObjectPtr() noexcept {
       if (
-        m_ptr && m_ptr->refcount.atomic != 0 && --(m_ptr->refcount.atomic) == 0)
+        m_ptr && head()->refcount.atomic != 0 &&
+        --(head()->refcount.atomic) == 0)
         info_table()->destroy(const_cast<std::remove_cv_t<T>*>(m_ptr));
     }
 
     /// operator==
     template <class T, class U>
     bool operator==(const ObjectPtr<T>& lhs, const ObjectPtr<U>& rhs) noexcept {
-      return lhs.head() == rhs.head();
+      return lhs.get() == rhs.get();
     }
 
     /// operator==
@@ -259,7 +267,7 @@ namespace TORI_NS::detail {
     /// operator!=
     template <class T, class U>
     bool operator!=(const ObjectPtr<T>& lhs, const ObjectPtr<U>& rhs) noexcept {
-      return lhs.head() != rhs.head();
+      return lhs.get() != rhs.get();
     }
 
     /// operator!=

@@ -44,12 +44,12 @@ namespace TORI_NS::detail {
         if (has_value_type(f)) {
           throw eval_error{"Fix: Expected Closure", obj};
         } else {
-          auto c = static_cast<Closure<>*>(f.head());
+          auto c = static_cast<Closure<>*>(f.get());
           if (c->arity.atomic == 0) {
             throw eval_error{"Fix: Expected appliable closure", obj};
           } else {
             auto pap = f.clone();
-            auto cc = static_cast<Closure<>*>(pap.head());
+            auto cc = static_cast<Closure<>*>(pap.get());
             cc->args(--cc->arity.atomic) = obj;
             apply->set_cache(pap);
             --apply.head()->refcount.atomic;
@@ -62,12 +62,12 @@ namespace TORI_NS::detail {
         throw eval_error{"Apply: Cannot apply to value", obj};
       } else {
         // create pap
-        auto c = static_cast<Closure<>*>(app.head());
+        auto c = static_cast<Closure<>*>(app.get());
         if (c->arity.atomic == 0) {
           throw eval_error{"Apply: Too many arguments", obj};
         } else {
           auto pap = app.clone();
-          auto cc = static_cast<Closure<>*>(pap.head());
+          auto cc = static_cast<Closure<>*>(pap.get());
           cc->args(--cc->arity.atomic) = std::move(arg);
           if (cc->arity.atomic == 0) {
             auto eval_result = eval_impl(cc->code());
@@ -104,7 +104,7 @@ namespace TORI_NS::detail {
       // type system is broken or bugged, this conversion will crash the
       // program without throwing any error.
       ++(result.head()->refcount.atomic);
-      return ObjectPtr<To>(static_cast<To*>(result.head()));
+      return ObjectPtr<To>(static_cast<To*>(result.get()));
     }
 
   } // namespace interface

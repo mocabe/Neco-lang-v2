@@ -102,7 +102,7 @@ namespace TORI_NS::detail {
     /// check type equality
     [[nodiscard]] bool same_type(
       const ObjectPtr<const Type>& lhs, const ObjectPtr<const Type>& rhs) {
-      if (lhs.head() == rhs.head()) return true;
+      if (lhs.get() == rhs.get()) return true;
       return same_type_impl(lhs, rhs);
     }
   } // namespace interface
@@ -284,7 +284,7 @@ namespace TORI_NS::detail {
 
     [[nodiscard]] ObjectPtr<const Type> genvar() {
     auto var = make_object<Type>(VarType{0});
-    std::get_if<VarType>(var.value())->id = uintptr_t(var.head());
+    std::get_if<VarType>(var.value())->id = uintptr_t(var.get());
     return ObjectPtr<const Type>(var);
   }
 

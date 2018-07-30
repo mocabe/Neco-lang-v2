@@ -56,8 +56,8 @@ namespace TORI_NS::detail {
       auto o = ObjectPtr<>(obj);
       if (has_type<T>(o)) {
         // +1
-        if (o.head()) ++(o.head()->refcount.atomic);
-        return static_cast<T*>(o.head());
+        if (o.get()) ++(o.head()->refcount.atomic);
+        return static_cast<T*>(o.get());
       } else {
         throw bad_value_cast{object_type<T>(), get_type(o)};
       }
@@ -93,8 +93,8 @@ namespace TORI_NS::detail {
       auto o = ObjectPtr<>(obj);
       if (has_type<T>(o)) {
         // +1
-        if (o.head()) ++(o.head()->refcount.atomic);
-        return static_cast<T*>(o.head());
+        if (o.get()) ++(o.head()->refcount.atomic);
+        return static_cast<T*>(o.get());
       } else {
         return nullptr;
       }

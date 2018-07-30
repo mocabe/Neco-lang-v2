@@ -253,7 +253,7 @@ namespace TORI_NS::detail {
         using To = std::tuple_element_t<N, std::tuple<Ts...>>;
         auto obj = ClosureN<sizeof...(Ts) - 1>::template nth_arg<N>();
         ++(obj.head()->refcount.atomic); // +1
-        return ObjectPtr(static_cast<expected<To>*>(obj.head()));
+        return ObjectPtr(static_cast<expected<To>*>(obj.get()));
       }
 
       /// Evaluate N'th argument and take result
