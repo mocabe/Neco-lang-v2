@@ -1,105 +1,160 @@
 #include <tori/core.hpp>
+#include <tori/lib.hpp>
 
-int main() {
-  using namespace tori::detail;
+#include <iostream>
 
-  // [X -> int]
-  using constr1 = std::tuple<constr<var<class X>, value<int>>>;
-  static_assert(
-    set_eq_v<std::tuple<tyarrow<var<class X>, value<int>>>, unify_t<constr1>>);
+using namespace tori::detail;
 
-  // [X = int, Y = X -> X]
-  using constr2 = std::tuple<
-    constr<var<class X>, value<int>>,
-    constr<var<class Y>, arrow<var<class X>, var<class X>>>>;
-  static_assert(set_eq_v<
-                std::tuple<
-                  tyarrow<var<class X>, value<int>>,
-                  tyarrow<var<class Y>, arrow<value<int>, value<int>>>>,
-                unify_t<constr2>>);
-
-  // [int->int = X -> Y]
-  using constr3 = std::tuple<
-    constr<arrow<value<int>, value<int>>, arrow<var<class X>, var<class Y>>>>;
-  static_assert(
-    set_eq_v<
-      std::tuple<
-        tyarrow<var<class X>, value<int>>, tyarrow<var<class Y>, value<int>>>,
-      unify_t<constr3>>);
-
-  // [int = int -> Y]
-  using constr4 =
-    std::tuple<constr<value<int>, arrow<value<int>, var<class Y>>>>;
-  // using t4 = unify_t<constr4>;
-
-  // [Y -> int -> Y]
-  using constr5 = std::tuple<constr<var<Y>, arrow<value<int>, var<class Y>>>>;
-  // using t5 = unify_t<constr5>;
-
-  // []
-  using constr6 = std::tuple<>;
-  static_assert(set_eq_v<std::tuple<>, unify_t<constr6>>);
-
-  { // apply
-    using tm1 = TmApply<TmClosure<TmValue<int>, TmValue<int>>, TmValue<int>>;
-    using tp = recon_type_t<tm1>;
-    using c = recon_constr_t<tm1>;
-    using u = unify_t<c>;
-    static_assert(std::is_same_v<value<int>, subst_all_t<u, tp>>);
+void test_unify() {
+  {
+    // [X -> int]
+    using c = std::tuple<constr<var<class X>, value<int>>>;
+    static_assert(
+      set_eq_v<std::tuple<tyarrow<var<class X>, value<int>>>, unify_t<c>>);
   }
-  { // higher-order
+  {
+    // [X = int, Y = X -> X]
+    using c = std::tuple<
+      constr<var<class X>, value<int>>,
+      constr<var<class Y>, arrow<var<class X>, var<class X>>>>;
+    static_assert(set_eq_v<
+                  std::tuple<
+                    tyarrow<var<class X>, value<int>>,
+                    tyarrow<var<class Y>, arrow<value<int>, value<int>>>>,
+                  unify_t<c>>);
+  }
+  {
+    // [int->int = X -> Y]
+    using c = std::tuple<
+      constr<arrow<value<int>, value<int>>, arrow<var<class X>, var<class Y>>>>;
+    static_assert(
+      set_eq_v<
+        std::tuple<
+          tyarrow<var<class X>, value<int>>, tyarrow<var<class Y>, value<int>>>,
+        unify_t<c>>);
+  }
+  {
+    // [int = int -> Y]
+    using c = std::tuple<constr<value<int>, arrow<value<int>, var<class Y>>>>;
+    // using r = unify_t<c>; // should fail
+  }
+  {
+    // [Y = int -> Y]
+    using c = std::tuple<constr<var<class Y>, arrow<value<int>, var<class Y>>>>;
+    // using r = unify_t<c>; // should fail
+  }
+  {
+    // []
+    using c = std::tuple<>;
+    static_assert(set_eq_v<std::tuple<>, unify_t<c>>);
+  }
+}
+
+void test_type_of() {
+  {
+    // apply
+    // (Int -> Int) Int = Int
+    using tm1 = TmApply<TmClosure<TmValue<int>, TmValue<int>>, TmValue<int>>;
+    static_assert(std::is_same_v<value<int>, type_of_t<tm1>>);
+  }
+  {
+    // higher-order
+    // (Double -> Int -> Int) (Double -> Int) = Int
     using tm1 = TmApply<
       TmClosure<TmClosure<TmValue<double>, TmValue<int>>, TmValue<int>>,
       TmClosure<TmValue<double>, TmValue<int>>>;
-    using tp = recon_type_t<tm1>;
-    using c = recon_constr_t<tm1>;
-    using u = unify_t<c>;
-    static_assert(std::is_same_v<value<int>, subst_all_t<u, tp>>);
+    static_assert(std::is_same_v<value<int>, type_of_t<tm1>>);
   }
   {
+    // (Double -> X -> X) (Double -> Int) = Int
     using tm1 = TmApply<
       TmClosure<TmClosure<TmValue<double>, TmVar<class X>>, TmVar<class X>>,
       TmClosure<TmValue<double>, TmValue<int>>>;
-    using tp = recon_type_t<tm1>;
-    using c = recon_constr_t<tm1>;
-    using u = unify_t<c>;
-    static_assert(std::is_same_v<value<int>, subst_all_t<u, tp>>);
+    static_assert(std::is_same_v<value<int>, type_of_t<tm1>>);
   }
   {
+    // ((X -> X) -> (X -> X)) (Int -> Int) = Int -> Int
     using doubleapp = TmClosure<
       TmClosure<TmVar<class X>, TmVar<class X>>,
       TmClosure<TmVar<class X>, TmVar<class X>>>;
-    using tm1 = TmApply<
-      TmClosure<TmClosure<TmValue<double>, TmVar<class X>>, TmVar<class X>>,
-      TmClosure<TmValue<double>, TmValue<int>>>;
-    using tp = recon_type_t<tm1>;
-    using c = recon_constr_t<tm1>;
-    using u = unify_t<c>;
-    static_assert(std::is_same_v<value<int>, subst_all_t<u, tp>>);
+    using tm = TmApply<doubleapp, TmClosure<TmValue<int>, TmValue<int>>>;
+    static_assert(std::is_same_v<arrow<value<int>, value<int>>, type_of_t<tm>>);
   }
   {
-    using ff = TmFix<TmClosure<
-      TmClosure<TmValue<int>, TmValue<bool>>, TmValue<int>, TmValue<bool>>>;
+    // fix ((int -> bool) -> (int -> bool)) = int -> bool
+    using ff = TmApply<
+      TmFix<Fix>,
+      TmClosure<
+        TmClosure<TmValue<int>, TmValue<bool>>, TmValue<int>, TmValue<bool>>>;
     static_assert(
       std::is_same_v<type_of_t<ff>, arrow<value<int>, value<bool>>>);
   }
+  { static_assert(std::is_same_v<type_of_t<TmVar<class X>>, var<class X>>); }
   {
-    static_assert(subtype_v<value<HeapObject>, value<Type>>);
-    static_assert(subtype_v<
-                  arrow<value<Type>, value<Type>>,
-                  arrow<value<HeapObject>, value<Type>>>);
-    static_assert(subtype_v<
-                  arrow<value<Type>, value<HeapObject>>,
-                  arrow<value<Type>, value<Type>>>);
+    // (Int->X) X = X
+    using term = TmApply<TmClosure<TmValue<Int>, TmVar<class X>>, TmValue<Int>>;
+    static_assert(std::is_same_v<var<taggen<0>>, type_of_t<term>>);
   }
   {
+    // (Int -> Double) Int = Double
+    using term =
+      TmApply<TmClosure<TmValue<Int>, TmValue<Double>>, TmValue<Int>>;
+    static_assert(std::is_same_v<value<Double>, type_of_t<term>>);
+  }
+  {
+    // (X -> Y -> Int) Double -> Z(placeholder)
+    using term = TmApply<
+      TmApply<TmClosure<TmVar<class XX>, TmVar<class YY>>, TmValue<Int>>,
+      TmValue<Double>>;
+    static_assert(std::is_same_v<var<taggen<3>>, type_of_t<term>>);
+  }
+}
+
+void test_genpoly() {
+  {
+    // Double -> Var<X> -> Var<X>
+    using term = remove_varvalue_t<TmClosure<
+      TmClosure<TmValue<double>, TmVarValue<class X>>, TmVarValue<class X>>>;
+    // Double -> Var[0] -> Var[0]
+    using gterm =
+      TmClosure<TmClosure<TmValue<double>, TmVar<taggen<0>>>, TmVar<taggen<0>>>;
+    static_assert(std::is_same_v<genpoly_term<term, taggen<0>>, gterm>);
+  }
+}
+
+void test_assume_object_type() {
+  {
+    // value<T> -> T
+    static_assert(std::is_same_v<assume_object_type_t<value<Int>>, Int>);
+  }
+  {
+    // var<class T> -> HeapObject
+    static_assert(
+      std::is_same_v<assume_object_type_t<var<class Tag>>, HeapObject>);
+  }
+  {
+    // arrow<S, T> -> closure<S, T>
+    static_assert(std::is_same_v<
+                  assume_object_type_t<arrow<value<Double>, value<Int>>>,
+                  closure<Double, Int>>);
+    // arrow<S, arrow<T, U>> -> closure<S, T, U>
+    static_assert(std::is_same_v<
+                  assume_object_type_t<
+                    arrow<value<Int>, arrow<value<Double>, value<Int>>>>,
+                  closure<Int, Double, Int>>);
+    // arrow<arrow<Double, Int>, arrow<Double, Int>> -> closure<closure<Double,
+    // Int>, Double, Int>
     static_assert(
       std::is_same_v<
-        type_of_t<TmApply<
-          TmClosure<TmValue<HeapObject>, TmValue<Type>>, TmValue<Type>>>,
-        value<Type>>);
+        assume_object_type_t<arrow<
+          arrow<value<Double>, value<Int>>, arrow<value<Double>, value<Int>>>>,
+        closure<closure<Double, Int>, Double, Int>>);
   }
-  { 
-    static_assert(std::is_same_v<type_of_t<TmVar<class X>>, var<class X>>); 
-  }
+}
+
+int main() {
+  test_unify();
+  test_genpoly();
+  test_assume_object_type();
+  test_type_of();
 }
