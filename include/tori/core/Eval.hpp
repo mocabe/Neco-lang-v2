@@ -37,7 +37,7 @@ namespace TORI_NS::detail {
       if (apply->evaluated()) return apply->get_cache();
       // reduce app
       auto app = eval_impl(apply->app());
-      auto arg = apply->arg();
+      auto& arg = apply->arg();
       // Fix
       if (has_type<Fix>(app)) {
         auto f = eval_impl(arg);
@@ -66,7 +66,7 @@ namespace TORI_NS::detail {
         } else {
           auto pap = app.clone();
           auto cc = static_cast<Closure<>*>(pap.get());
-          cc->args(--cc->arity.atomic) = std::move(arg);
+          cc->args(--cc->arity.atomic) = arg;
           if (cc->arity.atomic == 0) {
             auto eval_result = eval_impl(cc->code());
             apply->set_cache(eval_result);

@@ -16,11 +16,11 @@ namespace TORI_NS::detail {
     ApplyRValue(App&& app, Arg&& arg)
       : m_app{std::forward<App>(app)}, m_arg{std::forward<Arg>(arg)} {}
 
-    ObjectPtr<> app() const {
+    const ObjectPtr<>& app() const {
       assert(m_app != nullptr);
       return m_app;
     }
-    ObjectPtr<> arg() const {
+    const ObjectPtr<>& arg() const {
       assert(m_app != nullptr);
       return m_arg;
     }
@@ -29,7 +29,7 @@ namespace TORI_NS::detail {
       return m_app == nullptr;
     }
 
-    ObjectPtr<> get_cache() const {
+    const ObjectPtr<>& get_cache() const {
       assert(evaluated());
       return m_arg;
     }
