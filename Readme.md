@@ -93,7 +93,7 @@ struct If : Function<If, Bool, forall<class X>, forall<class X>, forall<class X>
 // core features
 #include <tori/core.hpp>
 
-// basic types utilities
+// basic types and utilities
 #include <tori/lib.hpp>
 ```
 ### Creating object
