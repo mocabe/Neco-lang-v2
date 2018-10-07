@@ -111,7 +111,10 @@ namespace TORI_NS::detail {
       /// Copy constructor
       /// \effects increases reference count.
       ObjectPtr(const ObjectPtr<value_type>& obj) noexcept : m_ptr{obj.m_ptr} {
-        if (m_ptr && head()->refcount.atomic != 0) head()->refcount.atomic++;
+        // when not static object
+        if (m_ptr && head()->refcount.atomic != 0) {
+          head()->refcount.atomic.fetch_add(1u, std::memory_order_relaxed);
+        }
       }
       /// Move constructor
       ObjectPtr(ObjectPtr<value_type>&& obj) noexcept : m_ptr{obj.m_ptr} {
@@ -121,7 +124,10 @@ namespace TORI_NS::detail {
       /// \effects increases reference count.
       template <class U>
       ObjectPtr(const ObjectPtr<U>& obj) noexcept : m_ptr{obj.get()} {
-        if (m_ptr && head()->refcount.atomic != 0) head()->refcount.atomic++;
+        // when not static object
+        if (m_ptr && head()->refcount.atomic != 0) {
+          head()->refcount.atomic.fetch_add(1u, std::memory_order_relaxed);
+        } 
       }
       /// Move convert constructor
       template <class U>
@@ -240,10 +246,14 @@ namespace TORI_NS::detail {
     /// 0
     template <class T>
     ObjectPtr<T>::~ObjectPtr() noexcept {
-      if (
-        m_ptr && head()->refcount.atomic != 0 &&
-        --(head()->refcount.atomic) == 0)
-        info_table()->destroy(const_cast<std::remove_cv_t<T>*>(m_ptr));
+      // when not static object
+      if (m_ptr && head()->refcount.atomic != 0) {
+        // delete object if needed
+        if (head()->refcount.atomic.fetch_sub(1u, std::memory_order_release) == 1) {
+          std::atomic_thread_fence(std::memory_order_acquire);
+          info_table()->destroy(const_cast<std::remove_cv_t<T>*>(m_ptr));
+        }
+      }
     }
 
     /// operator==
