@@ -1,11 +1,8 @@
-// Copyright (c) 2018 mocabe(https://github.com/mocabe)
-// This code is licensed under MIT license.
+#include <tori/core.hpp>
 
-#pragma once
-
-#include "Eval.hpp"
-
-namespace TORI_NS::detail {
+void comp() {
+  using namespace tori;
+  using namespace tori::detail;
 
   // ----------------------------------------
   // HeapObject
@@ -52,7 +49,7 @@ namespace TORI_NS::detail {
   static_assert(sizeof(ExceptionValue) == 8);
   static_assert(
     sizeof(Exception) == sizeof(ExceptionValue) + sizeof(HeapObject));
-  
+
   static_assert(sizeof(TypeErrorValue) == 16);
   static_assert(
     sizeof(TypeError) == sizeof(TypeErrorValue) + sizeof(HeapObject));
@@ -69,3 +66,4 @@ namespace TORI_NS::detail {
   static_assert(sizeof(ApplyR) == sizeof(HeapObject) + sizeof(ApplyRValue));
   static_assert(sizeof(ApplyR) == sizeof(Apply<Fix, Fix>));
 }
+int main() {}
