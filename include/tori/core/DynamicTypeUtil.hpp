@@ -203,7 +203,8 @@ namespace TORI_NS::detail {
     struct unification_circular_constraint : unification_error {
       unification_circular_constraint(
         const ObjectPtr<>& src, const ObjectPtr<const Type>& var)
-        : unification_error("Unification error: Circular constraint", src)
+        : unification_error(
+            "unification_circular_constraint: Circular constraints", src)
         , m_var{var} {}
 
       ObjectPtr<const Type> var() const {
@@ -217,7 +218,7 @@ namespace TORI_NS::detail {
         const ObjectPtr<>& src,
         const ObjectPtr<const Type>& t1,
         const ObjectPtr<const Type>& t2)
-        : unification_error("Unification error: type missmatch", src)
+        : unification_error("unification_missmatch: Type missmatch", src)
         , m_t1{t1}
         , m_t2{t2} {}
 

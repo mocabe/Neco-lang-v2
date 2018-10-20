@@ -172,7 +172,10 @@ namespace TORI_NS::detail {
         return ObjectPtr<>(e.result());
       } catch (const std::exception& e) {
         return new Exception(new String(e.what()));
-      } catch (...) { return new Exception(new String("Unknown exception")); }
+      } catch (...) {
+        return new Exception(
+          new String("Unknown exception thrown while evaluation"));
+      }
     }
   };
 

@@ -34,7 +34,8 @@ namespace TORI_NS::detail {
   template <class T>
   void vtbl_destroy_func(HeapObject *obj) noexcept {
     static_assert(
-      std::is_nothrow_destructible_v<T>, "should have nothrow destructor");
+      std::is_nothrow_destructible_v<T>,
+      "Boxed object should have nothrow destructor");
     auto *p = static_cast<T *>(obj);
     delete p;
   }

@@ -42,11 +42,12 @@ namespace TORI_NS::detail {
       if (has_type<Fix>(app)) {
         auto f = eval_impl(arg);
         if (has_value_type(f)) {
-          throw eval_error{"Fix: Expected Closure", obj};
+          throw eval_error{"eval_error: Expected Closure after Fix", obj};
         } else {
           auto c = static_cast<Closure<>*>(f.get());
           if (c->arity.atomic == 0) {
-            throw eval_error{"Fix: Expected appliable closure", obj};
+            throw eval_error{"eval_error: Expected appliable closure after Fix",
+                             obj};
           } else {
             auto pap = f.clone();
             auto cc = static_cast<Closure<>*>(pap.get());
@@ -57,12 +58,12 @@ namespace TORI_NS::detail {
       }
       // Apply
       if (has_value_type(app)) {
-        throw eval_error{"Apply: Cannot apply to value", obj};
+        throw eval_error{"eval_error: Apply to value type", obj};
       } else {
         // create pap
         auto c = static_cast<Closure<>*>(app.get());
         if (c->arity.atomic == 0) {
-          throw eval_error{"Apply: Too many arguments", obj};
+          throw eval_error{"eval_error: Too many arguments", obj};
         } else {
           auto pap = app.clone();
           auto cc = static_cast<Closure<>*>(pap.get());

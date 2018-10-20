@@ -126,10 +126,10 @@ namespace TORI_NS::detail {
     class result_error : public std::runtime_error {
     public:
       result_error(const ObjectPtr<Exception>& result)
-        : runtime_error("result_error: Exception detected in eval")
+        : runtime_error("result_error: Exception detected while evaluation")
         , m_result{result} {}
       result_error(ObjectPtr<Exception>&& result)
-        : runtime_error("result_error: Exception detected in eval")
+        : runtime_error("result_error: Exception detected while evaluation")
         , m_result{std::move(result)} {}
       ObjectPtr<Exception> result() {
         return m_result;
