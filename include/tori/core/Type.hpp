@@ -29,8 +29,9 @@ namespace TORI_NS::detail {
       vars_impl(std::get_if<ArrowType>(tp.value())->returns, vars);
       return;
     }
+
     assert(false);
-    return;
+    unreachable();
   };
 
   // get list of type variables
@@ -82,7 +83,7 @@ namespace TORI_NS::detail {
     if (has_arrow_type(obj)) return genpoly(get_type(obj));
 
     assert(false);
-    return {};
+    unreachable();
   };
 
   namespace interface {
@@ -98,7 +99,7 @@ namespace TORI_NS::detail {
     void check_type(const object_ptr<>& obj) {
       auto t1 = object_type<T>();
       auto t2 = type_of(obj);
-      if (!same_type(t1, t2))
+      if (unlikely(!same_type(t1, t2)))
         throw type_error{
           "type_error: check_type failed. Result type is invalid", obj};
     }

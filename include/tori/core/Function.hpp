@@ -238,6 +238,8 @@ namespace TORI_NS::detail {
   // Function
   // ------------------------------------------
   namespace interface {
+
+    /// CRTP utility to create closure type.  
     template <class T, class... Ts>
     struct Function : ClosureN<sizeof...(Ts) - 1> {
       static_assert(

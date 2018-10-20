@@ -237,7 +237,7 @@ namespace TORI_NS::detail {
     object_ptr<T> object_ptr<T>::clone() const {
       if (!m_ptr) throw std::runtime_error("clone() to null object");
       auto r = static_cast<value_type*>(info_table()->clone(m_ptr));
-      if (!r) throw std::bad_alloc();
+      if (unlikely(!r)) throw std::bad_alloc();
       r->refcount.atomic = 1;
       return r;
     }

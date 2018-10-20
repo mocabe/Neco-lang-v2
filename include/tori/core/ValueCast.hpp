@@ -54,7 +54,7 @@ namespace TORI_NS::detail {
       static_assert(!has_tm_closure_v<T>, "T is not value type");
       assert(obj);
       auto o = object_ptr<>(obj);
-      if (has_type<T>(o)) {
+      if (likely(has_type<T>(o))) {
         // +1
         if (o.get()) ++(o.head()->refcount.atomic);
         return static_cast<T*>(o.get());
@@ -72,7 +72,7 @@ namespace TORI_NS::detail {
       static_assert(!has_tm_closure_v<T>, "T is not value type");
       assert(obj);
       auto o = object_ptr<>(std::move(obj));
-      if (has_type<T>(o)) {
+      if (likely(has_type<T>(o))) {
         // move
         auto r = static_cast<T*>(o.m_ptr);
         o.m_ptr = nullptr;

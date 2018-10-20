@@ -62,8 +62,14 @@ namespace TORI_NS::detail {
 #  define likely(expr) __builtin_expect(!!(expr), 1)
 #  define unlikely(expr) __builtin_expect(!!(expr), 0)
 #else
-#  define likely(expr)
-#  define unlikely(expr)
+#  define likely(expr) expr
+#  define unlikely(expr) expr
+#endif
+
+#if defined(__GNUC__)
+#  define unreachable() __builtin_unreachable()
+#else
+#  define unreachable() __assume(0)
 #endif
 
   // for std::visit
@@ -124,7 +130,7 @@ namespace TORI_NS::detail {
   }
 
   // ABI requirements
-  static_assert(is_64bit, "64bit");
+  static_assert(is_64bit, "64bit only");
   static_assert(CHAR_BIT == 8, "1byte != 8bit");
   static_assert(sizeof(char) == sizeof(unsigned char));
   static_assert(sizeof(char) == 1);

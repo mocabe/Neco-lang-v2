@@ -41,11 +41,11 @@ namespace TORI_NS::detail {
       // Fix
       if (has_type<Fix>(app)) {
         auto f = eval_impl(arg);
-        if (has_value_type(f)) {
+        if (unlikely(has_value_type(f))) {
           throw eval_error{"eval_error: Expected Closure after Fix", obj};
         } else {
           auto c = static_cast<Closure<>*>(f.get());
-          if (c->arity.atomic == 0) {
+          if (unlikely(c->arity.atomic == 0)) {
             throw eval_error{"eval_error: Expected appliable closure after Fix",
                              obj};
           } else {
@@ -57,12 +57,12 @@ namespace TORI_NS::detail {
         }
       }
       // Apply
-      if (has_value_type(app)) {
+      if (unlikely(has_value_type(app))) {
         throw eval_error{"eval_error: Apply to value type", obj};
       } else {
         // create pap
         auto c = static_cast<Closure<>*>(app.get());
-        if (c->arity.atomic == 0) {
+        if (unlikely(c->arity.atomic == 0)) {
           throw eval_error{"eval_error: Too many arguments", obj};
         } else {
           auto pap = app.clone();
@@ -91,6 +91,8 @@ namespace TORI_NS::detail {
       using To = assume_object_type_t<type_of_t<typename T::term>>;
       auto result = eval_impl(object_ptr<>(obj));
 
+      ++(result.head()->refcount.atomic);
+
       // This conversion is not obvious.
       // Currently object_ptr<T> MUST have type T which has compatible memory
       // layout with ACTUAL object pointing to.
@@ -102,7 +104,6 @@ namespace TORI_NS::detail {
       // Finally, we get type To from compile time checker. So when compile time
       // type system is broken or bugged, this conversion will crash the
       // program without throwing any error.
-      ++(result.head()->refcount.atomic);
       return object_ptr<To>(static_cast<To*>(result.get()));
     }
 
