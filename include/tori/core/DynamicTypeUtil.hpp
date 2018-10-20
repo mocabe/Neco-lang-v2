@@ -1,7 +1,9 @@
+#pragma once
+
 // Copyright (c) 2018 mocabe(https://github.com/mocabe)
 // This code is licensed under MIT license.
 
-#pragma once
+/// \file Dynamic typing utility
 
 #include "TypeGen.hpp"
 #include "Exception.hpp"

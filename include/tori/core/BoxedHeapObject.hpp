@@ -1,7 +1,9 @@
+#pragma once
+
 // Copyright (c) 2018 mocabe(https://github.com/mocabe)
 // This code is licensed under MIT license.
 
-#pragma once
+/// \file Box
 
 #include "HeapObject.hpp"
 #include <utility>
@@ -73,6 +75,7 @@ namespace TORI_NS::detail {
     /// \param AllocatorTemplate allocator
     template <class T, template <class> class AllocatorTemplate>
     struct BoxedHeapObject : HeapObject {
+
       /// value type
       using value_type = T;
       /// allocator type

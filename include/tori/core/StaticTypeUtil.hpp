@@ -1,9 +1,9 @@
+#pragma once
+
 // Copyright (c) 2018 mocabe(https://github.com/mocabe)
 // This code is licensed under MIT license.
 
-/// \file Type.hpp - template type utility
-
-#pragma once
+/// \file Template type utility
 
 #include <type_traits>
 #include <utility>

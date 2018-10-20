@@ -1,7 +1,9 @@
+#pragma once
+
 // Copyright (c) 2018 mocabe(https://github.com/mocabe)
 // This code is licensed under MIT license.
 
-#pragma once
+/// \file Include core library
 
 // load config
 #include "config/config.hpp"
@@ -20,5 +22,3 @@
 #include "core/Function.hpp"
 #include "core/Eval.hpp"
 #include "core/Type.hpp"
-
-#include "core/Compatibility.hpp"
