@@ -13,7 +13,8 @@
 namespace TORI_NS::detail {
 
   void vars_impl(
-    const ObjectPtr<const Type>& tp, std::vector<ObjectPtr<const Type>>& vars) {
+    const object_ptr<const Type>& tp,
+    std::vector<object_ptr<const Type>>& vars) {
     if (is_value_type(tp)) return;
     if (is_vartype(tp)) {
       return [&]() {
@@ -33,15 +34,16 @@ namespace TORI_NS::detail {
   };
 
   // get list of type variables
-  [[nodiscard]] std::vector<ObjectPtr<const Type>> vars(
-    const ObjectPtr<const Type>& tp) {
-    std::vector<ObjectPtr<const Type>> vars;
+  [[nodiscard]] std::vector<object_ptr<const Type>> vars(
+    const object_ptr<const Type>& tp) {
+    std::vector<object_ptr<const Type>> vars;
     vars_impl(tp, vars);
     return vars;
   };
 
   /// create fresh polymorphic closure type
-  [[nodiscard]] ObjectPtr<const Type> genpoly(const ObjectPtr<const Type>& tp) {
+  [[nodiscard]] object_ptr<const Type> genpoly(
+    const object_ptr<const Type>& tp) {
     if (!is_arrow_type(tp)) return tp;
     auto vs = vars(tp);
     auto t = tp;
@@ -53,19 +55,19 @@ namespace TORI_NS::detail {
   };
 
   // typing
-  [[nodiscard]] const ObjectPtr<const Type> type_of_impl(
-    const ObjectPtr<>& obj) {
+  [[nodiscard]] const object_ptr<const Type> type_of_func_impl(
+    const object_ptr<>& obj) {
     // Apply
     if (auto apply = value_cast_if<ApplyR>(obj)) {
       if (auto fix = value_cast_if<Fix>(apply->app())) {
-        auto _t1 = type_of_impl(apply->arg());
+        auto _t1 = type_of_func_impl(apply->arg());
         auto _t = genvar();
         auto c = std::vector{Constr{_t1, new Type(ArrowType{_t, _t})}};
         auto s = unify(std::move(c), obj);
         return subst_type_all(s, _t);
       } else {
-        auto _t1 = type_of_impl(apply->app());
-        auto _t2 = type_of_impl(apply->arg());
+        auto _t1 = type_of_func_impl(apply->app());
+        auto _t2 = type_of_func_impl(apply->arg());
         auto _t = genvar();
         auto c = std::vector{Constr{_t1, new Type(ArrowType{_t2, _t})}};
         auto s = unify(std::move(c), obj);
@@ -85,15 +87,15 @@ namespace TORI_NS::detail {
 
   namespace interface {
     // type_of
-    [[nodiscard]] ObjectPtr<const Type> type_of(const ObjectPtr<>& obj) {
-      return type_of_impl(obj);
+    [[nodiscard]] object_ptr<const Type> type_of(const object_ptr<>& obj) {
+      return type_of_func_impl(obj);
     }
   } // namespace interface
 
   namespace interface {
     /// check type
     template <class T>
-    void check_type(const ObjectPtr<>& obj) {
+    void check_type(const object_ptr<>& obj) {
       auto t1 = object_type<T>();
       auto t2 = type_of(obj);
       if (!same_type(t1, t2))

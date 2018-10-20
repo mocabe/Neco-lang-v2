@@ -54,58 +54,61 @@ void test_type_of() {
   {
     // apply
     // (Int -> Int) Int = Int
-    using tm1 = TmApply<TmClosure<TmValue<int>, TmValue<int>>, TmValue<int>>;
+    using tm1 =
+      tm_apply<tm_closure<tm_value<int>, tm_value<int>>, tm_value<int>>;
     static_assert(std::is_same_v<value<int>, type_of_t<tm1>>);
   }
   {
     // higher-order
     // (Double -> Int -> Int) (Double -> Int) = Int
-    using tm1 = TmApply<
-      TmClosure<TmClosure<TmValue<double>, TmValue<int>>, TmValue<int>>,
-      TmClosure<TmValue<double>, TmValue<int>>>;
+    using tm1 = tm_apply<
+      tm_closure<tm_closure<tm_value<double>, tm_value<int>>, tm_value<int>>,
+      tm_closure<tm_value<double>, tm_value<int>>>;
     static_assert(std::is_same_v<value<int>, type_of_t<tm1>>);
   }
   {
     // (Double -> X -> X) (Double -> Int) = Int
-    using tm1 = TmApply<
-      TmClosure<TmClosure<TmValue<double>, TmVar<class X>>, TmVar<class X>>,
-      TmClosure<TmValue<double>, TmValue<int>>>;
+    using tm1 = tm_apply<
+      tm_closure<
+        tm_closure<tm_value<double>, tm_var<class X>>, tm_var<class X>>,
+      tm_closure<tm_value<double>, tm_value<int>>>;
     static_assert(std::is_same_v<value<int>, type_of_t<tm1>>);
   }
   {
     // ((X -> X) -> (X -> X)) (Int -> Int) = Int -> Int
-    using doubleapp = TmClosure<
-      TmClosure<TmVar<class X>, TmVar<class X>>,
-      TmClosure<TmVar<class X>, TmVar<class X>>>;
-    using tm = TmApply<doubleapp, TmClosure<TmValue<int>, TmValue<int>>>;
+    using doubleapp = tm_closure<
+      tm_closure<tm_var<class X>, tm_var<class X>>,
+      tm_closure<tm_var<class X>, tm_var<class X>>>;
+    using tm = tm_apply<doubleapp, tm_closure<tm_value<int>, tm_value<int>>>;
     static_assert(std::is_same_v<arrow<value<int>, value<int>>, type_of_t<tm>>);
   }
   {
     // fix ((int -> bool) -> (int -> bool)) = int -> bool
-    using ff = TmApply<
-      TmFix<Fix>,
-      TmClosure<
-        TmClosure<TmValue<int>, TmValue<bool>>, TmValue<int>, TmValue<bool>>>;
+    using ff = tm_apply<
+      tm_fix<Fix>, tm_closure<
+                     tm_closure<tm_value<int>, tm_value<bool>>, tm_value<int>,
+                     tm_value<bool>>>;
     static_assert(
       std::is_same_v<type_of_t<ff>, arrow<value<int>, value<bool>>>);
   }
-  { static_assert(std::is_same_v<type_of_t<TmVar<class X>>, var<class X>>); }
+  { static_assert(std::is_same_v<type_of_t<tm_var<class X>>, var<class X>>); }
   {
     // (Int->X) X = X
-    using term = TmApply<TmClosure<TmValue<Int>, TmVar<class X>>, TmValue<Int>>;
+    using term =
+      tm_apply<tm_closure<tm_value<Int>, tm_var<class X>>, tm_value<Int>>;
     static_assert(std::is_same_v<var<taggen<0>>, type_of_t<term>>);
   }
   {
     // (Int -> Double) Int = Double
     using term =
-      TmApply<TmClosure<TmValue<Int>, TmValue<Double>>, TmValue<Int>>;
+      tm_apply<tm_closure<tm_value<Int>, tm_value<Double>>, tm_value<Int>>;
     static_assert(std::is_same_v<value<Double>, type_of_t<term>>);
   }
   {
     // (X -> Y -> Int) Double -> Z(placeholder)
-    using term = TmApply<
-      TmApply<TmClosure<TmVar<class XX>, TmVar<class YY>>, TmValue<Int>>,
-      TmValue<Double>>;
+    using term = tm_apply<
+      tm_apply<tm_closure<tm_var<class XX>, tm_var<class YY>>, tm_value<Int>>,
+      tm_value<Double>>;
     static_assert(std::is_same_v<var<taggen<3>>, type_of_t<term>>);
   }
 }
@@ -113,11 +116,12 @@ void test_type_of() {
 void test_genpoly() {
   {
     // Double -> Var<X> -> Var<X>
-    using term = remove_varvalue_t<TmClosure<
-      TmClosure<TmValue<double>, TmVarValue<class X>>, TmVarValue<class X>>>;
+    using term = remove_varvalue_t<tm_closure<
+      tm_closure<tm_value<double>, tm_varvalue<class X>>,
+      tm_varvalue<class X>>>;
     // Double -> Var[0] -> Var[0]
-    using gterm =
-      TmClosure<TmClosure<TmValue<double>, TmVar<taggen<0>>>, TmVar<taggen<0>>>;
+    using gterm = tm_closure<
+      tm_closure<tm_value<double>, tm_var<taggen<0>>>, tm_var<taggen<0>>>;
     static_assert(std::is_same_v<genpoly_term<term, taggen<0>>, gterm>);
   }
 }

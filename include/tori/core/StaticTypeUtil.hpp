@@ -114,31 +114,31 @@ namespace TORI_NS::detail {
   // Terms
   // ------------------------------------------
 
-  /// TmApply
+  /// tm_apply
   template <class T1, class T2>
-  struct TmApply {};
-  /// TmClosure
+  struct tm_apply {};
+  /// tm_closure
   template <class... Ts>
-  struct TmClosure {};
-  /// TmValue
+  struct tm_closure {};
+  /// tm_value
   template <class T>
-  struct TmValue {
+  struct tm_value {
     using type = value<T>;
   };
-  /// TmVar
+  /// tm_var
   template <class Tag>
-  struct TmVar {
+  struct tm_var {
     using type = var<Tag>;
   };
-  /// TmVarValue
+  /// tm_varvalue
   template <class Tag>
-  struct TmVarValue {
+  struct tm_varvalue {
     using type = varvalue<Tag>;
   };
 
-  /// TmFix
+  /// tm_fix
   template <class Tag>
-  struct TmFix {};
+  struct tm_fix {};
 
   template <class T, class = void>
   struct has_term : std::false_type {};
@@ -151,44 +151,44 @@ namespace TORI_NS::detail {
   // Subst
   // ------------------------------------------
   template <class TyArrow, class Ty>
-  struct subst_ {};
+  struct subst_impl {};
   template <class TyT1, class TyT2, class T1, class T2>
-  struct subst_<tyarrow<TyT1, TyT2>, arrow<T1, T2>> {
+  struct subst_impl<tyarrow<TyT1, TyT2>, arrow<T1, T2>> {
     using type = arrow<
-      typename subst_<tyarrow<TyT1, TyT2>, T1>::type,
-      typename subst_<tyarrow<TyT1, TyT2>, T2>::type>;
+      typename subst_impl<tyarrow<TyT1, TyT2>, T1>::type,
+      typename subst_impl<tyarrow<TyT1, TyT2>, T2>::type>;
   };
   template <class TyT1, class TyT2, class Tag>
-  struct subst_<tyarrow<TyT1, TyT2>, value<Tag>> {
+  struct subst_impl<tyarrow<TyT1, TyT2>, value<Tag>> {
     using type = value<Tag>;
   };
   template <class TyT1, class TyT2, class Tag>
-  struct subst_<tyarrow<TyT1, TyT2>, varvalue<Tag>> {
+  struct subst_impl<tyarrow<TyT1, TyT2>, varvalue<Tag>> {
     using type = varvalue<Tag>;
   };
   template <class TyT1, class TyT2, class Tag>
-  struct subst_<tyarrow<TyT1, TyT2>, var<Tag>> {
+  struct subst_impl<tyarrow<TyT1, TyT2>, var<Tag>> {
     using type =
       std::conditional_t<std::is_same_v<TyT1, var<Tag>>, TyT2, var<Tag>>;
   };
   /// Apply TyArrow to Ty
   template <class TyArrow, class Ty>
-  using subst_t = typename subst_<TyArrow, Ty>::type;
+  using subst_t = typename subst_impl<TyArrow, Ty>::type;
 
   template <class Arrows, class Ty>
-  struct subst_all_ {};
+  struct subst_all_impl {};
   template <class Ty>
-  struct subst_all_<std::tuple<>, Ty> {
+  struct subst_all_impl<std::tuple<>, Ty> {
     using type = Ty;
   };
   template <class TyArrow, class... Tail, class Ty>
-  struct subst_all_<std::tuple<TyArrow, Tail...>, Ty> {
+  struct subst_all_impl<std::tuple<TyArrow, Tail...>, Ty> {
     using type =
-      typename subst_all_<std::tuple<Tail...>, subst_t<TyArrow, Ty>>::type;
+      typename subst_all_impl<std::tuple<Tail...>, subst_t<TyArrow, Ty>>::type;
   };
   /// Apply all TyArrows to Ty
   template <class TyArrows, class Ty>
-  using subst_all_t = typename subst_all_<TyArrows, Ty>::type;
+  using subst_all_t = typename subst_all_impl<TyArrows, Ty>::type;
 
   // ------------------------------------------
   // Constr
@@ -203,54 +203,54 @@ namespace TORI_NS::detail {
   };
 
   template <class TyArrow, class Constr>
-  struct subst_constr_ {};
+  struct subst_constr_impl {};
   template <class TyT1, class TyT2, class T1, class T2>
-  struct subst_constr_<tyarrow<TyT1, TyT2>, constr<T1, T2>> {
+  struct subst_constr_impl<tyarrow<TyT1, TyT2>, constr<T1, T2>> {
     using type = constr<
       subst_t<tyarrow<TyT1, TyT2>, T1>,
       subst_t<tyarrow<TyT1, TyT2>, T2>>;
   };
   /// Apply TyArrow to Constr
   template <class TyArrow, class Constr>
-  using subst_constr_t = typename subst_constr_<TyArrow, Constr>::type;
+  using subst_constr_t = typename subst_constr_impl<TyArrow, Constr>::type;
 
   template <class TyArrow, class Constrs>
-  struct subst_constr_all_ {
+  struct subst_constr_all_impl {
     static_assert(false_v<TyArrow>, "Invalid argument(s)");
   };
   template <class TyT1, class TyT2, class... Cs>
-  struct subst_constr_all_<tyarrow<TyT1, TyT2>, std::tuple<Cs...>> {
+  struct subst_constr_all_impl<tyarrow<TyT1, TyT2>, std::tuple<Cs...>> {
     using type = std::tuple<subst_constr_t<tyarrow<TyT1, TyT2>, Cs>...>;
   };
   /// Apply TyArrow to all constrains Cs
   template <class TyArrow, class Cs>
-  using subst_constr_all_t = typename subst_constr_all_<TyArrow, Cs>::type;
+  using subst_constr_all_t = typename subst_constr_all_impl<TyArrow, Cs>::type;
 
   // ------------------------------------------
   // Occurs
   // ------------------------------------------
   template <class X, class T>
-  struct occurs_ {};
+  struct occurs_impl {};
   template <class X, class T1, class T2>
-  struct occurs_<X, arrow<T1, T2>> {
+  struct occurs_impl<X, arrow<T1, T2>> {
     static constexpr bool value =
-      occurs_<X, T1>::value || occurs_<X, T2>::value;
+      occurs_impl<X, T1>::value || occurs_impl<X, T2>::value;
   };
   template <class X, class Tag>
-  struct occurs_<X, value<Tag>> {
+  struct occurs_impl<X, value<Tag>> {
     static constexpr bool value = false;
   };
   template <class X, class Tag>
-  struct occurs_<X, var<Tag>> {
+  struct occurs_impl<X, var<Tag>> {
     static constexpr bool value = std::is_same_v<X, var<Tag>>;
   };
   template <class X, class Tag>
-  struct occurs_<X, varvalue<Tag>> {
+  struct occurs_impl<X, varvalue<Tag>> {
     static constexpr bool value = false;
   };
   /// Does X occur in T?
   template <class X, class T>
-  static constexpr bool occurs_v = occurs_<X, T>::value;
+  static constexpr bool occurs_v = occurs_impl<X, T>::value;
 
   // ------------------------------------------
   // Unify
@@ -258,14 +258,14 @@ namespace TORI_NS::detail {
 
   // error
   template <class ConstrList>
-  struct unify_ {
+  struct unify_impl {
     using type = typename ConstrList::_error_constraints;
     static_assert(
       false_v<ConstrList>, "Unification error: Unsolvable constraints");
   };
 
   template <class T1, class T2, class... Ts>
-  struct unify_<std::tuple<constr<T1, T2>, Ts...>> {
+  struct unify_impl<std::tuple<constr<T1, T2>, Ts...>> {
     using t1 = typename T1::_error_lhs;
     using t2 = typename T2::_error_rhs;
     using t3 = typename std::tuple<Ts...>::_error_other;
@@ -306,72 +306,72 @@ namespace TORI_NS::detail {
   template <class Var, class T, class Tail>
   struct unify_h<Var, T, Tail, true> {
     using type = append_tuple_t<
-      typename unify_<subst_constr_all_t<tyarrow<Var, T>, Tail>>::type,
+      typename unify_impl<subst_constr_all_t<tyarrow<Var, T>, Tail>>::type,
       tyarrow<Var, T>>;
   };
   // helper2
   template <class Tag1, class Tag2, class Tail>
   struct unify_h2<Tag1, Tag2, Tail, true> {
-    using type = typename unify_<Tail>::type;
+    using type = typename unify_impl<Tail>::type;
   };
   // helper3
   template <class Tag1, class Tag2, class Tail>
   struct unify_h3<Tag1, Tag2, Tail, true> {
-    using type = typename unify_<Tail>::type;
+    using type = typename unify_impl<Tail>::type;
   };
 
   // empty set
   template <>
-  struct unify_<std::tuple<>> {
+  struct unify_impl<std::tuple<>> {
     using type = std::tuple<>;
   };
   template <class Tag1, class Tag2, class... Cs>
-  struct unify_<std::tuple<constr<value<Tag1>, value<Tag2>>, Cs...>> {
+  struct unify_impl<std::tuple<constr<value<Tag1>, value<Tag2>>, Cs...>> {
     using type = typename unify_h2<Tag1, Tag2, std::tuple<Cs...>>::type;
   };
   template <class Tag1, class Tag2, class... Cs>
-  struct unify_<std::tuple<constr<varvalue<Tag1>, varvalue<Tag2>>, Cs...>> {
+  struct unify_impl<std::tuple<constr<varvalue<Tag1>, varvalue<Tag2>>, Cs...>> {
     using type = typename unify_h3<Tag1, Tag2, std::tuple<Cs...>>::type;
   };
   template <class Tag1, class Tag2, class... Cs>
-  struct unify_<std::tuple<constr<var<Tag1>, var<Tag2>>, Cs...>> {
+  struct unify_impl<std::tuple<constr<var<Tag1>, var<Tag2>>, Cs...>> {
     using type = std::conditional_t<
       std::is_same_v<var<Tag1>, var<Tag2>>,
-      typename unify_<std::tuple<Cs...>>::type,
+      typename unify_impl<std::tuple<Cs...>>::type,
       typename unify_h<var<Tag2>, var<Tag1>, std::tuple<Cs...>>::type>;
   };
   template <class T1, class Tag, class... Cs>
-  struct unify_<std::tuple<constr<T1, var<Tag>>, Cs...>> {
+  struct unify_impl<std::tuple<constr<T1, var<Tag>>, Cs...>> {
     using type = std::conditional_t<
       std::is_same_v<T1, var<Tag>>,
-      typename unify_<std::tuple<Cs...>>::type,
+      typename unify_impl<std::tuple<Cs...>>::type,
       typename unify_h<var<Tag>, T1, std::tuple<Cs...>>::type>;
   };
   template <class Tag, class T2, class... Cs>
-  struct unify_<std::tuple<constr<var<Tag>, T2>, Cs...>> {
+  struct unify_impl<std::tuple<constr<var<Tag>, T2>, Cs...>> {
     using type = std::conditional_t<
       std::is_same_v<var<Tag>, T2>,
-      typename unify_<std::tuple<Cs...>>::type,
+      typename unify_impl<std::tuple<Cs...>>::type,
       typename unify_h<var<Tag>, T2, std::tuple<Cs...>>::type>;
   };
   template <class S1, class S2, class T1, class T2, class... Cs>
-  struct unify_<std::tuple<constr<arrow<S1, S2>, arrow<T1, T2>>, Cs...>> {
-    using type =
-      typename unify_<std::tuple<constr<S1, T1>, constr<S2, T2>, Cs...>>::type;
+  struct unify_impl<std::tuple<constr<arrow<S1, S2>, arrow<T1, T2>>, Cs...>> {
+    using type = typename unify_impl<
+      std::tuple<constr<S1, T1>, constr<S2, T2>, Cs...>>::type;
   };
 
   /// Unification
   template <class Cs>
-  using unify_t = typename unify_<Cs>::type;
+  using unify_t = typename unify_impl<Cs>::type;
 
   // ------------------------------------------
-  // TmClosure to Tuple
+  // tm_closure to Tuple
   // ------------------------------------------
   template <class T>
   struct to_tuple {};
 
   template <class... Ts>
-  struct to_tuple<TmClosure<Ts...>> {
+  struct to_tuple<tm_closure<Ts...>> {
     using type = std::tuple<Ts...>;
   };
 
@@ -379,17 +379,17 @@ namespace TORI_NS::detail {
   using to_tuple_t = typename to_tuple<T>::type;
 
   // ------------------------------------------
-  // Tuple to TmClosure
+  // Tuple to tm_closure
   // ------------------------------------------
 
   template <class T>
-  struct to_TmClosure {};
+  struct to_tm_closure {};
   template <class... Ts>
-  struct to_TmClosure<std::tuple<Ts...>> {
-    using type = TmClosure<Ts...>;
+  struct to_tm_closure<std::tuple<Ts...>> {
+    using type = tm_closure<Ts...>;
   };
   template <class T>
-  using to_TmClosure_t = typename to_TmClosure<T>::type;
+  using to_tm_closure_t = typename to_tm_closure<T>::type;
 
   // ------------------------------------------
   // Typing
@@ -400,149 +400,151 @@ namespace TORI_NS::detail {
   struct taggen {};
 
   template <class GenTag>
-  struct genvar_ {};
+  struct genvar_impl {};
 
   template <size_t N>
-  struct genvar_<taggen<N>> {
+  struct genvar_impl<taggen<N>> {
     using type = var<taggen<N>>;
     using next = taggen<N + 1>;
   };
 
   /// Generate new type variable
   template <class Gen>
-  using genvar_t = typename genvar_<Gen>::type;
+  using genvar_t = typename genvar_impl<Gen>::type;
 
   /// Get next tag generator
   template <class Gen>
-  using nextgen_t = typename genvar_<Gen>::next;
+  using nextgen_t = typename genvar_impl<Gen>::next;
 
   template <class From, class To, class In>
-  struct subst_term_ {};
+  struct subst_term_impl {};
 
   template <class From, class To, class... Ts>
-  struct subst_term_<From, To, TmClosure<Ts...>> {
+  struct subst_term_impl<From, To, tm_closure<Ts...>> {
     using type = std::conditional_t<
-      std::is_same_v<From, TmClosure<Ts...>>,
+      std::is_same_v<From, tm_closure<Ts...>>,
       To,
-      TmClosure<typename subst_term_<From, To, Ts>::type...>>;
+      tm_closure<typename subst_term_impl<From, To, Ts>::type...>>;
   };
 
   template <class From, class To, class T1, class T2>
-  struct subst_term_<From, To, TmApply<T1, T2>> {
+  struct subst_term_impl<From, To, tm_apply<T1, T2>> {
     using type = std::conditional_t<
-      std::is_same_v<From, TmApply<T1, T2>>,
+      std::is_same_v<From, tm_apply<T1, T2>>,
       To,
-      TmApply<
-        typename subst_term_<From, To, T1>::type,
-        typename subst_term_<From, To, T2>::type>>;
+      tm_apply<
+        typename subst_term_impl<From, To, T1>::type,
+        typename subst_term_impl<From, To, T2>::type>>;
   };
 
   template <class From, class To, class T>
-  struct subst_term_<From, To, TmValue<T>> {
+  struct subst_term_impl<From, To, tm_value<T>> {
     using type =
-      std::conditional_t<std::is_same_v<From, TmValue<T>>, To, TmValue<T>>;
+      std::conditional_t<std::is_same_v<From, tm_value<T>>, To, tm_value<T>>;
   };
 
   template <class From, class To, class Tag>
-  struct subst_term_<From, To, TmVar<Tag>> {
+  struct subst_term_impl<From, To, tm_var<Tag>> {
     using type =
-      std::conditional_t<std::is_same_v<From, TmVar<Tag>>, To, TmVar<Tag>>;
+      std::conditional_t<std::is_same_v<From, tm_var<Tag>>, To, tm_var<Tag>>;
   };
 
   template <class From, class To, class Tag>
-  struct subst_term_<From, To, TmVarValue<Tag>> {
-    using type = std::
-      conditional_t<std::is_same_v<From, TmVarValue<Tag>>, To, TmVarValue<Tag>>;
+  struct subst_term_impl<From, To, tm_varvalue<Tag>> {
+    using type = std::conditional_t<
+      std::is_same_v<From, tm_varvalue<Tag>>,
+      To,
+      tm_varvalue<Tag>>;
   };
 
   template <class From, class To, class Tag>
-  struct subst_term_<From, To, TmFix<Tag>> {
+  struct subst_term_impl<From, To, tm_fix<Tag>> {
     using type =
-      std::conditional_t<std::is_same_v<From, TmFix<Tag>>, To, TmFix<Tag>>;
+      std::conditional_t<std::is_same_v<From, tm_fix<Tag>>, To, tm_fix<Tag>>;
   };
 
   template <class From, class To, class Term>
-  using subst_term_t = typename subst_term_<From, To, Term>::type;
+  using subst_term_t = typename subst_term_impl<From, To, Term>::type;
 
   template <class T, class Gen, class Target>
-  struct genpoly_ {
+  struct genpoly_impl {
     using term = Target;
     using gen = Gen;
   };
 
   template <class T, class Gen, class Target>
-  struct genpoly_impl_ {};
+  struct genpoly_impl2 {};
 
   template <class Tag, class... Ts, class Gen, class Target>
-  struct genpoly_impl_<std::tuple<TmVar<Tag>, Ts...>, Gen, Target> {
-    using _var = TmVar<Gen>;
-    using t = genpoly_impl_<
+  struct genpoly_impl2<std::tuple<tm_var<Tag>, Ts...>, Gen, Target> {
+    using _var = tm_var<Gen>;
+    using t = genpoly_impl2<
       std::tuple<Ts...>,
       nextgen_t<Gen>,
-      subst_term_t<TmVar<Tag>, _var, Target>>;
+      subst_term_t<tm_var<Tag>, _var, Target>>;
 
     using term = typename t::term;
     using gen = typename t::gen;
   };
 
   template <class T, class... Ts, class Gen, class Target>
-  struct genpoly_impl_<std::tuple<T, Ts...>, Gen, Target> {
-    using t = genpoly_impl_<std::tuple<Ts...>, Gen, Target>;
+  struct genpoly_impl2<std::tuple<T, Ts...>, Gen, Target> {
+    using t = genpoly_impl2<std::tuple<Ts...>, Gen, Target>;
     using term = typename t::term;
     using gen = typename t::gen;
   };
 
   template <class Tag, class Gen, class Target>
-  struct genpoly_impl_<std::tuple<TmVar<Tag>>, Gen, Target> {
-    using _var = TmVar<Gen>;
-    using term = subst_term_t<TmVar<Tag>, _var, Target>;
+  struct genpoly_impl2<std::tuple<tm_var<Tag>>, Gen, Target> {
+    using _var = tm_var<Gen>;
+    using term = subst_term_t<tm_var<Tag>, _var, Target>;
     using gen = nextgen_t<Gen>;
   };
 
   template <class T, class Gen, class Target>
-  struct genpoly_impl_<std::tuple<T>, Gen, Target> {
-    using term = typename genpoly_<T, Gen, Target>::term;
-    using gen = typename genpoly_<T, Gen, Target>::gen;
+  struct genpoly_impl2<std::tuple<T>, Gen, Target> {
+    using term = typename genpoly_impl<T, Gen, Target>::term;
+    using gen = typename genpoly_impl<T, Gen, Target>::gen;
   };
 
   template <class T1, class T2, class Gen, class Target>
-  struct genpoly_<TmApply<T1, T2>, Gen, Target> {
-    using t1 = genpoly_<T1, Gen, Target>;
-    using t2 = genpoly_<T2, typename t1::gen, typename t1::term>;
+  struct genpoly_impl<tm_apply<T1, T2>, Gen, Target> {
+    using t1 = genpoly_impl<T1, Gen, Target>;
+    using t2 = genpoly_impl<T2, typename t1::gen, typename t1::term>;
     using term = typename t2::term;
     using gen = typename t2::gen;
   };
 
   template <class... Ts, class Gen, class Target>
-  struct genpoly_<TmClosure<Ts...>, Gen, Target> {
-    using t = genpoly_impl_<std::tuple<Ts...>, Gen, Target>;
+  struct genpoly_impl<tm_closure<Ts...>, Gen, Target> {
+    using t = genpoly_impl2<std::tuple<Ts...>, Gen, Target>;
     using term = typename t::term;
     using gen = typename t::gen;
   };
 
   template <class Term, class Gen>
-  using genpoly_term = typename genpoly_<Term, Gen, Term>::term;
+  using genpoly_term = typename genpoly_impl<Term, Gen, Term>::term;
 
   template <class Term, class Gen>
-  using genpoly_gen = typename genpoly_<Term, Gen, Term>::gen;
+  using genpoly_gen = typename genpoly_impl<Term, Gen, Term>::gen;
 
   template <class T, class Gen>
-  struct type_of_ {};
+  struct type_of_impl {};
 
   template <class T, class Gen>
   struct type_of_h {
-    using type = typename type_of_<T, Gen>::type;
-    using gen = typename type_of_<T, Gen>::gen;
+    using type = typename type_of_impl<T, Gen>::type;
+    using gen = typename type_of_impl<T, Gen>::gen;
   };
 
   template <class T, class... Ts, class Gen>
-  struct type_of_h<TmClosure<T, Ts...>, Gen> {
+  struct type_of_h<tm_closure<T, Ts...>, Gen> {
     // t1
     using _t1 = type_of_h<T, Gen>;
     using _t1_t = typename _t1::type;
     using _t1_gen = typename _t1::gen;
     // t2
-    using _t2 = type_of_h<TmClosure<Ts...>, _t1_gen>;
+    using _t2 = type_of_h<tm_closure<Ts...>, _t1_gen>;
     using _t2_t = typename _t2::type;
     using _t2_gen = typename _t2::gen;
     // here we go...
@@ -550,39 +552,39 @@ namespace TORI_NS::detail {
     using gen = _t2_gen;
   };
   template <class T, class Gen>
-  struct type_of_h<TmClosure<T>, Gen> {
+  struct type_of_h<tm_closure<T>, Gen> {
     // unwrap
     using type = typename type_of_h<T, Gen>::type;
     using gen = typename type_of_h<T, Gen>::gen;
   };
 
   template <class Tag, class Gen>
-  struct type_of_<TmValue<Tag>, Gen> {
-    using type = typename TmValue<Tag>::type;
+  struct type_of_impl<tm_value<Tag>, Gen> {
+    using type = typename tm_value<Tag>::type;
     using gen = Gen;
   };
   template <class Tag, class Gen>
-  struct type_of_<TmVar<Tag>, Gen> {
-    using type = typename TmVar<Tag>::type;
+  struct type_of_impl<tm_var<Tag>, Gen> {
+    using type = typename tm_var<Tag>::type;
     using gen = Gen;
   };
   template <class Tag, class Gen>
-  struct type_of_<TmVarValue<Tag>, Gen> {
-    using type = typename TmVarValue<Tag>::type;
+  struct type_of_impl<tm_varvalue<Tag>, Gen> {
+    using type = typename tm_varvalue<Tag>::type;
     using gen = Gen;
   };
   template <class... Ts, class Gen>
-  struct type_of_<TmClosure<Ts...>, Gen> {
+  struct type_of_impl<tm_closure<Ts...>, Gen> {
     using rcn = type_of_h<
-      genpoly_term<TmClosure<Ts...>, Gen>,
-      genpoly_gen<TmClosure<Ts...>, Gen>>;
+      genpoly_term<tm_closure<Ts...>, Gen>,
+      genpoly_gen<tm_closure<Ts...>, Gen>>;
     using type = typename rcn::type;
     using gen = typename rcn::gen;
   };
   template <class Tag, class T, class Gen>
-  struct type_of_<TmApply<TmFix<Tag>, T>, Gen> {
+  struct type_of_impl<tm_apply<tm_fix<Tag>, T>, Gen> {
     // recon T
-    using _t = type_of_<T, Gen>;
+    using _t = type_of_impl<T, Gen>;
     using _t_t = typename _t::type;
     using _t_gen = typename _t::gen;
     //
@@ -598,10 +600,10 @@ namespace TORI_NS::detail {
     using gen = _gen;
   };
   template <class T1, class T2, class Gen>
-  struct type_of_<TmApply<T1, T2>, Gen> {
+  struct type_of_impl<tm_apply<T1, T2>, Gen> {
     // recon t1 and t2
-    using _t1 = type_of_<T1, Gen>;
-    using _t2 = type_of_<T2, typename _t1::gen>;
+    using _t1 = type_of_impl<T1, Gen>;
+    using _t2 = type_of_impl<T2, typename _t1::gen>;
     using t2_gen = typename _t2::gen;
 
     // generate
@@ -620,133 +622,133 @@ namespace TORI_NS::detail {
 
   /// Infer type of term
   template <class Term>
-  using type_of_t = typename type_of_<Term, taggen<0>>::type;
+  using type_of_t = typename type_of_impl<Term, taggen<0>>::type;
 
   // ------------------------------------------
   // Util
   // ------------------------------------------
   template <class T>
-  struct is_TmApply : std::false_type {};
+  struct is_tm_apply : std::false_type {};
   template <class T1, class T2>
-  struct is_TmApply<TmApply<T1, T2>> : std::true_type {};
+  struct is_tm_apply<tm_apply<T1, T2>> : std::true_type {};
 
   template <class T>
-  struct is_TmValue : std::false_type {};
+  struct is_tm_value : std::false_type {};
   template <class Tag>
-  struct is_TmValue<TmValue<Tag>> : std::true_type {};
+  struct is_tm_value<tm_value<Tag>> : std::true_type {};
 
   template <class T>
-  struct is_TmClosure : std::false_type {};
+  struct is_tm_closure : std::false_type {};
   template <class... Ts>
-  struct is_TmClosure<TmClosure<Ts...>> : std::true_type {};
+  struct is_tm_closure<tm_closure<Ts...>> : std::true_type {};
 
   template <class T>
-  struct is_TmVar : std::false_type {};
+  struct is_tm_var : std::false_type {};
   template <class Tag>
-  struct is_TmVar<TmVar<Tag>> : std::true_type {};
+  struct is_tm_var<tm_var<Tag>> : std::true_type {};
 
   template <class T>
-  struct is_TmVarValue : std::false_type {};
+  struct is_tm_varvalue : std::false_type {};
   template <class Tag>
-  struct is_TmVarValue<TmVarValue<Tag>> : std::true_type {};
+  struct is_tm_varvalue<tm_varvalue<Tag>> : std::true_type {};
 
   template <class T>
-  struct is_TmFix : std::false_type {};
+  struct is_tm_fix : std::false_type {};
   template <class Tag>
-  struct is_TmFix<TmFix<Tag>> : std::true_type {};
+  struct is_tm_fix<tm_fix<Tag>> : std::true_type {};
 
   /// is_apply_v
   template <class T>
-  static constexpr bool is_TmApply_v = is_TmApply<T>::value;
+  static constexpr bool is_tm_apply_v = is_tm_apply<T>::value;
   /// has_apply_v
   template <class T>
-  static constexpr bool has_TmApply_v = is_TmApply_v<typename T::term>;
+  static constexpr bool has_tm_apply_v = is_tm_apply_v<typename T::term>;
   /// is_value_v
   template <class T>
-  static constexpr bool is_TmValue_v = is_TmValue<T>::value;
+  static constexpr bool is_tm_value_v = is_tm_value<T>::value;
   /// has_value_v
   template <class T>
-  static constexpr bool has_TmValue_v = is_TmValue_v<typename T::term>;
+  static constexpr bool has_tm_value_v = is_tm_value_v<typename T::term>;
   /// is_closure_v
   template <class T>
-  static constexpr bool is_TmClosure_v = is_TmClosure<T>::value;
+  static constexpr bool is_tm_closure_v = is_tm_closure<T>::value;
   /// has_closure_v
   template <class T>
-  static constexpr bool has_TmClosure_v = is_TmClosure_v<typename T::term>;
+  static constexpr bool has_tm_closure_v = is_tm_closure_v<typename T::term>;
   /// is_var_v
   template <class T>
-  static constexpr bool is_TmVar_v = is_TmVar<T>::value;
+  static constexpr bool is_tm_var_v = is_tm_var<T>::value;
   /// has_var_v
   template <class T>
-  static constexpr bool has_TmVar_v = is_TmVar_v<typename T::term>;
+  static constexpr bool has_tm_var_v = is_tm_var_v<typename T::term>;
   /// is_varvalue_v
   template <class T>
-  static constexpr bool is_TmVarValue_v = is_TmVarValue<T>::value;
+  static constexpr bool is_tm_varvalue_v = is_tm_varvalue<T>::value;
   /// has_varvalue_v
   template <class T>
-  static constexpr bool has_TmVarValue_v = is_TmVarValue_v<typename T::term>;
-  // is_TmFix
+  static constexpr bool has_tm_varvalue_v = is_tm_varvalue_v<typename T::term>;
+  // is_tm_fix
   template <class T>
-  static constexpr bool is_TmFix_v = is_TmFix<T>::value;
-  // has_TmFix
+  static constexpr bool is_tm_fix_v = is_tm_fix<T>::value;
+  // has_tm_fix
   template <class T>
-  static constexpr bool has_TmFix_v = is_TmFix_v<typename T::term>;
+  static constexpr bool has_tm_fix_v = is_tm_fix_v<typename T::term>;
 
   template <class T>
-  struct is_value_type_ : std::false_type {};
+  struct is_value_type_impl : std::false_type {};
 
   template <class Tag>
-  struct is_value_type_<value<Tag>> : std::true_type {};
+  struct is_value_type_impl<value<Tag>> : std::true_type {};
   /// is_value_v
   template <class T>
-  static constexpr bool is_value_type_v = is_value_type_<T>::value;
+  static constexpr bool is_value_type_v = is_value_type_impl<T>::value;
 
   template <class T>
-  struct is_arrow_type_ : std::false_type {};
+  struct is_arrow_type_impl : std::false_type {};
 
   template <class T1, class T2>
-  struct is_arrow_type_<arrow<T1, T2>> : std::true_type {};
+  struct is_arrow_type_impl<arrow<T1, T2>> : std::true_type {};
   /// is_arrow_type_v
   template <class T>
-  static constexpr bool is_arrow_type_v = is_arrow_type_<T>::value;
+  static constexpr bool is_arrow_type_v = is_arrow_type_impl<T>::value;
 
   template <class T>
-  struct is_vartype_ : std::false_type {};
+  struct is_vartype_impl : std::false_type {};
 
   template <class Tag>
-  struct is_vartype_<var<Tag>> : std::true_type {};
+  struct is_vartype_impl<var<Tag>> : std::true_type {};
   /// is_vartype_v
   template <class T>
-  static constexpr bool is_vartype_v = is_vartype_<T>::value;
+  static constexpr bool is_vartype_v = is_vartype_impl<T>::value;
 
   template <class T>
-  struct is_varvalue_type_ : std::false_type {};
+  struct is_varvalue_type_impl : std::false_type {};
 
   template <class Tag>
-  struct is_varvalue_type_<varvalue<Tag>> : std::true_type {};
+  struct is_varvalue_type_impl<varvalue<Tag>> : std::true_type {};
   /// is_varvalue_v
   template <class T>
-  static constexpr bool is_varvalue_type_v = is_varvalue_type_<T>::value;
+  static constexpr bool is_varvalue_type_v = is_varvalue_type_impl<T>::value;
 
   template <class T>
-  struct tag_of {};
+  struct tag_of_impl {};
   template <class Tag>
-  struct tag_of<TmValue<Tag>> {
+  struct tag_of_impl<tm_value<Tag>> {
     using type = Tag;
   };
   template <class Tag>
-  struct tag_of<TmVar<Tag>> {
+  struct tag_of_impl<tm_var<Tag>> {
     using type = Tag;
   };
   template <class Tag>
-  struct tag_of<TmVarValue<Tag>> {
+  struct tag_of_impl<tm_varvalue<Tag>> {
     using type = Tag;
   };
   template <class Tag>
-  struct tag_of<TmFix<Tag>> {
+  struct tag_of_impl<tm_fix<Tag>> {
     using type = Tag;
   };
   template <class T>
-  using tag_of_t = typename tag_of<T>::type;
+  using tag_of_t = typename tag_of_impl<T>::type;
 
 } // namespace TORI_NS::detail

@@ -18,7 +18,7 @@ namespace TORI_NS::detail {
   } // namespace interface
 
   struct FixValue {
-    using term = TmFix<Fix>;
+    using term = tm_fix<Fix>;
   };
 } // namespace TORI_NS::detail
 

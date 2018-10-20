@@ -11,6 +11,7 @@
 #include <string>
 
 namespace TORI_NS::detail {
+
   class StringValue {
   public:
     StringValue(const std::string& str) {

@@ -50,16 +50,16 @@ namespace TORI_NS::detail {
     struct BoxedHeapObject;
     // handler for heap-allocated object
     template <class>
-    class ObjectPtr;
+    class object_ptr;
     // object info table
-    struct ObjectInfoTable;
+    struct object_info_table;
     // heap-allocated runtime type infomation
     using Type = BoxedHeapObject<TypeValue>;
 
     /// Base class of heap-allocated objects
     struct HeapObject {
       /// term
-      using term = TmValue<HeapObject>;
+      using term = tm_value<HeapObject>;
       /// reference counter
       /// \notes static objects have zero for reference count.
       struct _refcount {
@@ -74,7 +74,7 @@ namespace TORI_NS::detail {
       } mutable refcount;
 
       /// pointer to info-table
-      const ObjectInfoTable* info_table;
+      const object_info_table* info_table;
 
 #if defined(OBJECT_HEADER_EXTEND_BYTES)
       /// additional buffer storage
@@ -84,54 +84,55 @@ namespace TORI_NS::detail {
 
     /// Smart pointer to manage heap-allocated objects
     template <class T = HeapObject>
-    class ObjectPtr {
-      friend class ObjectPtr<HeapObject>;
+    class object_ptr {
+      friend class object_ptr<HeapObject>;
 
       /// move cast function
       template <class U, class S>
-      friend ObjectPtr<U> value_cast(ObjectPtr<S>&&);
+      friend object_ptr<U> value_cast(object_ptr<S>&&);
       /// move cast function
       template <class U, class S>
-      friend ObjectPtr<U> value_cast_if(ObjectPtr<S>&&) noexcept;
+      friend object_ptr<U> value_cast_if(object_ptr<S>&&) noexcept;
       /// move cast function
       template <class U, class S>
-      friend ObjectPtr<U> closure_cast(ObjectPtr<S>&&);
+      friend object_ptr<U> closure_cast(object_ptr<S>&&);
       /// move cast function
       template <class U, class S>
-      friend ObjectPtr<U> closure_cast_if(ObjectPtr<S>&&) noexcept;
+      friend object_ptr<U> closure_cast_if(object_ptr<S>&&) noexcept;
 
     public:
       using value_type = T;
       /// Constructor
-      constexpr ObjectPtr() noexcept : m_ptr{nullptr} {}
+      constexpr object_ptr() noexcept : m_ptr{nullptr} {}
       /// Constructor
-      constexpr ObjectPtr(nullptr_t) noexcept : m_ptr{nullptr} {}
+      constexpr object_ptr(nullptr_t) noexcept : m_ptr{nullptr} {}
       /// Pointer constructor
-      constexpr ObjectPtr(value_type* p) noexcept : m_ptr{p} {}
+      constexpr object_ptr(value_type* p) noexcept : m_ptr{p} {}
       /// Copy constructor
       /// \effects increases reference count.
-      ObjectPtr(const ObjectPtr<value_type>& obj) noexcept : m_ptr{obj.m_ptr} {
+      object_ptr(const object_ptr<value_type>& obj) noexcept
+        : m_ptr{obj.m_ptr} {
         // when not static object
         if (m_ptr && head()->refcount.atomic != 0) {
           head()->refcount.atomic.fetch_add(1u, std::memory_order_relaxed);
         }
       }
       /// Move constructor
-      ObjectPtr(ObjectPtr<value_type>&& obj) noexcept : m_ptr{obj.m_ptr} {
+      object_ptr(object_ptr<value_type>&& obj) noexcept : m_ptr{obj.m_ptr} {
         obj.m_ptr = nullptr;
       }
       /// Copy convert constructor
       /// \effects increases reference count.
       template <class U>
-      ObjectPtr(const ObjectPtr<U>& obj) noexcept : m_ptr{obj.get()} {
+      object_ptr(const object_ptr<U>& obj) noexcept : m_ptr{obj.get()} {
         // when not static object
         if (m_ptr && head()->refcount.atomic != 0) {
           head()->refcount.atomic.fetch_add(1u, std::memory_order_relaxed);
-        } 
+        }
       }
       /// Move convert constructor
       template <class U>
-      ObjectPtr(ObjectPtr<U>&& obj) noexcept : m_ptr{obj.get()} {
+      object_ptr(object_ptr<U>&& obj) noexcept : m_ptr{obj.get()} {
         obj.m_ptr = nullptr;
       }
       /// get address of object
@@ -147,7 +148,7 @@ namespace TORI_NS::detail {
       }
       /// get address of info table
       /// \requires Object is not null.
-      const ObjectInfoTable* info_table() const noexcept {
+      const object_info_table* info_table() const noexcept {
         return head()->info_table;
       };
       /// get address of member `value`
@@ -165,37 +166,37 @@ namespace TORI_NS::detail {
         return head()->refcount.atomic;
       }
       /// swap data
-      void swap(ObjectPtr<value_type>& obj) noexcept {
+      void swap(object_ptr<value_type>& obj) noexcept {
         std::swap(obj.m_ptr, m_ptr);
       }
       /// operator=
-      ObjectPtr<value_type>& operator=(
-        const ObjectPtr<value_type>& obj) noexcept {
-        ObjectPtr(obj).swap(*this);
+      object_ptr<value_type>& operator=(
+        const object_ptr<value_type>& obj) noexcept {
+        object_ptr(obj).swap(*this);
         return *this;
       }
       /// operator=
       template <class U>
-      ObjectPtr<value_type>& operator=(const ObjectPtr<U>& obj) noexcept {
-        ObjectPtr(obj).swap(*this);
+      object_ptr<value_type>& operator=(const object_ptr<U>& obj) noexcept {
+        object_ptr(obj).swap(*this);
         return *this;
       }
       /// operator=
-      ObjectPtr<value_type>& operator=(ObjectPtr<value_type>&& obj) noexcept {
-        ObjectPtr(std::move(obj)).swap(*this);
+      object_ptr<value_type>& operator=(object_ptr<value_type>&& obj) noexcept {
+        object_ptr(std::move(obj)).swap(*this);
         return *this;
       }
       /// operator=
       template <class U>
-      ObjectPtr<value_type>& operator=(ObjectPtr<U>&& obj) noexcept {
-        ObjectPtr(std::move(obj)).swap(*this);
+      object_ptr<value_type>& operator=(object_ptr<U>&& obj) noexcept {
+        object_ptr(std::move(obj)).swap(*this);
         return *this;
       }
 
       // destroy
-      ~ObjectPtr() noexcept;
+      ~object_ptr() noexcept;
       // clone
-      ObjectPtr<value_type> clone() const;
+      object_ptr<value_type> clone() const;
 
     private:
       /// pointer to object
@@ -213,9 +214,9 @@ namespace TORI_NS::detail {
     };
 
     /// Object info table
-    struct ObjectInfoTable {
+    struct object_info_table {
       /// pointer to type object
-      ObjectPtr<const Type> obj_type;
+      object_ptr<const Type> obj_type;
       /// total size of object
       size_t obj_size;
       /// size of additional storage
@@ -228,12 +229,12 @@ namespace TORI_NS::detail {
 
     /// Clone
     /// \effects Call copy constructor of the object from vtable.
-    /// \returns `ObjectPtr<T>` pointing new object.
+    /// \returns `object_ptr<T>` pointing new object.
     /// \throws `std::bad_alloc` when `clone` returned nullptr.
     /// \throws `std::runtime_error` when object is null.
     /// \notes Reference count of new object will be set to 1.
     template <class T>
-    ObjectPtr<T> ObjectPtr<T>::clone() const {
+    object_ptr<T> object_ptr<T>::clone() const {
       if (!m_ptr) throw std::runtime_error("clone() to null object");
       auto r = static_cast<value_type*>(info_table()->clone(m_ptr));
       if (!r) throw std::bad_alloc();
@@ -245,11 +246,13 @@ namespace TORI_NS::detail {
     /// \effects Destroy object with vtable function when reference count become
     /// 0
     template <class T>
-    ObjectPtr<T>::~ObjectPtr() noexcept {
+    object_ptr<T>::~object_ptr() noexcept {
       // when not static object
       if (m_ptr && head()->refcount.atomic != 0) {
         // delete object if needed
-        if (head()->refcount.atomic.fetch_sub(1u, std::memory_order_release) == 1) {
+        if (
+          head()->refcount.atomic.fetch_sub(1u, std::memory_order_release) ==
+          1) {
           std::atomic_thread_fence(std::memory_order_acquire);
           info_table()->destroy(const_cast<std::remove_cv_t<T>*>(m_ptr));
         }
@@ -258,43 +261,45 @@ namespace TORI_NS::detail {
 
     /// operator==
     template <class T, class U>
-    bool operator==(const ObjectPtr<T>& lhs, const ObjectPtr<U>& rhs) noexcept {
+    bool operator==(
+      const object_ptr<T>& lhs, const object_ptr<U>& rhs) noexcept {
       return lhs.get() == rhs.get();
     }
 
     /// operator==
     template <class T>
-    bool operator==(nullptr_t, const ObjectPtr<T>& p) noexcept {
+    bool operator==(nullptr_t, const object_ptr<T>& p) noexcept {
       return !p;
     }
 
     /// operator==
     template <class T>
-    bool operator==(const ObjectPtr<T>& p, nullptr_t) noexcept {
+    bool operator==(const object_ptr<T>& p, nullptr_t) noexcept {
       return !p;
     }
 
     /// operator!=
     template <class T, class U>
-    bool operator!=(const ObjectPtr<T>& lhs, const ObjectPtr<U>& rhs) noexcept {
+    bool operator!=(
+      const object_ptr<T>& lhs, const object_ptr<U>& rhs) noexcept {
       return lhs.get() != rhs.get();
     }
 
     /// operator!=
     template <class T>
-    bool operator!=(nullptr_t, const ObjectPtr<T>& p) noexcept {
+    bool operator!=(nullptr_t, const object_ptr<T>& p) noexcept {
       return static_cast<bool>(p);
     }
 
     /// operator!=
     template <class T>
-    bool operator!=(const ObjectPtr<T>& p, nullptr_t) noexcept {
+    bool operator!=(const object_ptr<T>& p, nullptr_t) noexcept {
       return static_cast<bool>(p);
     }
 
     /// make object
     template <class T, class... Args>
-    ObjectPtr<T> make_object(Args&&... args) {
+    object_ptr<T> make_object(Args&&... args) {
       return new T{std::forward<Args>(args)...};
     }
   } // namespace interface

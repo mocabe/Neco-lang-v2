@@ -74,13 +74,13 @@ namespace TORI_NS::detail {
   struct Closure;
 
   /// Info table for closure
-  struct ClosureInfoTable : ObjectInfoTable {
+  struct ClosureInfoTable : object_info_table {
     /// Number of arguments
     size_t n_args;
     /// Size of extended header
     size_t clsr_ext_bytes;
     /// vtable for code
-    ObjectPtr<> (*code)(Closure<>*);
+    object_ptr<> (*code)(Closure<>*);
   };
 
   template <class Closure1>
@@ -102,21 +102,21 @@ namespace TORI_NS::detail {
 #endif
 
     /// get nth argument
-    ObjectPtr<>& args(size_t n) {
+    object_ptr<>& args(size_t n) {
       constexpr size_t offset = offset_of_member(&Closure1::args);
-      static_assert(offset % sizeof(ObjectPtr<>) == 0);
-      return ((ObjectPtr<>*)this)[offset / sizeof(ObjectPtr<>) + n];
+      static_assert(offset % sizeof(object_ptr<>) == 0);
+      return ((object_ptr<>*)this)[offset / sizeof(object_ptr<>) + n];
     }
 
     /// get nth argument
-    const ObjectPtr<>& args(size_t n) const {
+    const object_ptr<>& args(size_t n) const {
       constexpr size_t offset = offset_of_member(&Closure1::args);
-      static_assert(offset % sizeof(ObjectPtr<>) == 0);
-      return ((ObjectPtr<>*)this)[offset / sizeof(ObjectPtr<>) + n];
+      static_assert(offset % sizeof(object_ptr<>) == 0);
+      return ((object_ptr<>*)this)[offset / sizeof(object_ptr<>) + n];
     }
 
     /// Execute core with vtable function
-    ObjectPtr<> code() noexcept {
+    object_ptr<> code() noexcept {
       return static_cast<const ClosureInfoTable*>(info_table)->code(this);
     }
 
@@ -135,16 +135,16 @@ namespace TORI_NS::detail {
    */
   template <std::size_t N>
   struct ClosureN : Closure<> {
-    ObjectPtr<> args[N] = {};
+    object_ptr<> args[N] = {};
     /// get raw arg
     template <size_t Arg>
-    ObjectPtr<>& nth_arg() noexcept {
+    object_ptr<>& nth_arg() noexcept {
       static_assert(Arg < N, "Invalid index of argument");
       return args[N - Arg - 1];
     }
     /// get raw arg
     template <size_t Arg>
-    const ObjectPtr<>& nth_arg() const noexcept {
+    const object_ptr<>& nth_arg() const noexcept {
       static_assert(Arg < N, "Invalid index of argument");
       return args[N - Arg - 1];
     }
@@ -157,7 +157,7 @@ namespace TORI_NS::detail {
   /// wrapper for main code of closure
   template <class T>
   struct vtbl_eval_wrapper {
-    static ObjectPtr<> code(Closure<>* _this) noexcept {
+    static object_ptr<> code(Closure<>* _this) noexcept {
       try {
         return std::move((static_cast<const T*>(_this)->code()).value);
       } catch (const bad_value_cast& e) {
@@ -169,7 +169,7 @@ namespace TORI_NS::detail {
       } catch (eval_error& e) {
         return new Exception(new EvalError(new String(e.what()), e.src()));
       } catch (result_error& e) {
-        return ObjectPtr<>(e.result());
+        return object_ptr<>(e.result());
       } catch (const std::exception& e) {
         return new Exception(new String(e.what()));
       } catch (...) {
@@ -202,37 +202,37 @@ namespace TORI_NS::detail {
   // ------------------------------------------
 
   template <class T, class Target>
-  struct remove_varvalue_ {
+  struct remove_varvalue_impl {
     using type = Target;
   };
 
-  // replace TmVarValue<Tag> to TmVar<Tag>
+  // replace tm_varvalue<Tag> to tm_var<Tag>
   template <class Tag, class Target>
-  struct remove_varvalue_<TmVarValue<Tag>, Target> {
-    using _var = TmVar<Tag>;
-    using type = subst_term_t<TmVarValue<Tag>, _var, Target>;
+  struct remove_varvalue_impl<tm_varvalue<Tag>, Target> {
+    using _var = tm_var<Tag>;
+    using type = subst_term_t<tm_varvalue<Tag>, _var, Target>;
   };
 
   template <class T, class... Ts, class Target>
-  struct remove_varvalue_<TmClosure<T, Ts...>, Target> {
-    using t = remove_varvalue_<T, Target>;
+  struct remove_varvalue_impl<tm_closure<T, Ts...>, Target> {
+    using t = remove_varvalue_impl<T, Target>;
     using type =
-      typename remove_varvalue_<TmClosure<Ts...>, typename t::type>::type;
+      typename remove_varvalue_impl<tm_closure<Ts...>, typename t::type>::type;
   };
 
   template <class T, class Target>
-  struct remove_varvalue_<TmClosure<T>, Target> {
-    using type = typename remove_varvalue_<T, Target>::type;
+  struct remove_varvalue_impl<tm_closure<T>, Target> {
+    using type = typename remove_varvalue_impl<T, Target>::type;
   };
   template <class T1, class T2, class Target>
-  struct remove_varvalue_<TmApply<T1,T2>, Target> {
-    using t1 = remove_varvalue_<T1, Target>;
-    using t2 = remove_varvalue_<T2, typename t1::type>;
+  struct remove_varvalue_impl<tm_apply<T1, T2>, Target> {
+    using t1 = remove_varvalue_impl<T1, Target>;
+    using t2 = remove_varvalue_impl<T2, typename t1::type>;
     using type = typename t2::type;
   };
 
   template <class Term>
-  using remove_varvalue_t = typename remove_varvalue_<Term, Term>::type;
+  using remove_varvalue_t = typename remove_varvalue_impl<Term, Term>::type;
 
   // ------------------------------------------
   // Function
@@ -244,7 +244,7 @@ namespace TORI_NS::detail {
         sizeof...(Ts) > 1, "Closure should have argument and return type");
 
       /// export term
-      using term = remove_varvalue_t<TmClosure<typename Ts::term...>>;
+      using term = remove_varvalue_t<tm_closure<typename Ts::term...>>;
 
       /// Closure info table initializer
       struct info_table_initializer {
@@ -258,7 +258,7 @@ namespace TORI_NS::detail {
         using To = std::tuple_element_t<N, std::tuple<Ts...>>;
         auto obj = ClosureN<sizeof...(Ts) - 1>::template nth_arg<N>();
         ++(obj.head()->refcount.atomic); // +1
-        return ObjectPtr(static_cast<expected<To>*>(obj.get()));
+        return object_ptr(static_cast<expected<To>*>(obj.get()));
       }
 
       /// Evaluate N'th argument and take result
@@ -270,28 +270,28 @@ namespace TORI_NS::detail {
       /// Ctor
       constexpr Function() noexcept
         : ClosureN<sizeof...(Ts) - 1>{
-            {{1, static_cast<const ObjectInfoTable*>(
+            {{1, static_cast<const object_info_table*>(
                    &info_table_initializer::info_table)},
              sizeof...(Ts) - 1}} {}
 
     private:
       template <class T1, class T2, bool B>
-      struct check_return_type_;
+      struct check_return_type_impl;
 
       template <class T1, class T2>
       struct check_return_type {
         // clang bug(?) workaround
-        using type = check_return_type_<T1, T2, std::is_same_v<T1,T2>>;
+        using type = check_return_type_impl<T1, T2, std::is_same_v<T1, T2>>;
       };
 
       template <class T1, class T2>
-      struct check_return_type_<T1, T2, false> {
+      struct check_return_type_impl<T1, T2, false> {
         using t1 = typename T1::_expected;
         using t2 = typename T2::_provided;
         static_assert(false_v<T1>, "return type does not match");
       };
       template <class T1, class T2>
-      struct check_return_type_<T1, T2, true> {};
+      struct check_return_type_impl<T1, T2, true> {};
 
     protected:
       /// Return type checker
@@ -300,25 +300,25 @@ namespace TORI_NS::detail {
           tuple_element_t<sizeof...(Ts) - 1, std::tuple<Ts...>>::term;
         using return_type = type_of_t<return_term>;
         template <class U>
-        ReturnType(const ObjectPtr<U>& obj) : value{ObjectPtr<>(obj)} {
+        ReturnType(const object_ptr<U>& obj) : value{object_ptr<>(obj)} {
           // check return type
           ignore(check_return_type<return_type, type_of_t<typename U::term>>{});
         }
 
         template <class U>
-        ReturnType(ObjectPtr<U>&& obj) : value{ObjectPtr<>(std::move(obj))} {
+        ReturnType(object_ptr<U>&& obj) : value{object_ptr<>(std::move(obj))} {
           // check return type
           ignore(check_return_type<return_type, type_of_t<typename U::term>>{});
         }
 
         template <class U>
-        ReturnType(U* ptr) : ReturnType(ObjectPtr(ptr)) {}
+        ReturnType(U* ptr) : ReturnType(object_ptr(ptr)) {}
 
         ReturnType() = delete;
         ReturnType(const ReturnType& other) : value{other.value} {}
         ReturnType(ReturnType&& other) : value{std::move(other.value)} {}
 
-        const ObjectPtr<> value;
+        const object_ptr<> value;
       };
 
     private:
@@ -339,7 +339,7 @@ namespace TORI_NS::detail {
     template <class T, class... Ts>
     const ClosureInfoTable
       Function<T, Ts...>::info_table_initializer::info_table = { //
-        {object_type<T>(),                                  //
+        {object_type<T>(),                                       //
          sizeof(T),                                              //
          object_header_extend_bytes,                             //
          vtbl_destroy_func<T>, vtbl_clone_func<T>},              //

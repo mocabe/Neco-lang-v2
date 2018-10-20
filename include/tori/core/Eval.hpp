@@ -14,7 +14,7 @@ namespace TORI_NS::detail {
 
   namespace interface {
     /// copy apply graph
-    [[nodiscard]] ObjectPtr<> copy_apply_graph(const ObjectPtr<>& obj) {
+    [[nodiscard]] object_ptr<> copy_apply_graph(const object_ptr<>& obj) {
       if (auto apply = value_cast_if<ApplyR>(obj)) {
         // return cached value
         if (apply->evaluated()) return apply->get_cache();
@@ -24,10 +24,10 @@ namespace TORI_NS::detail {
       }
       return obj;
     }
-  }
+  } // namespace interface
 
   /// eval implementation
-  [[nodiscard]] ObjectPtr<> eval_impl(const ObjectPtr<>& obj) {
+  [[nodiscard]] object_ptr<> eval_impl(const object_ptr<>& obj) {
     // exception
     if (auto exception = value_cast_if<Exception>(obj))
       throw result_error(exception);
@@ -52,7 +52,7 @@ namespace TORI_NS::detail {
             auto pap = f.clone();
             auto cc = static_cast<Closure<>*>(pap.get());
             cc->args(--cc->arity.atomic) = obj;
-            return eval_impl(ObjectPtr<>(pap));
+            return eval_impl(object_ptr<>(pap));
           }
         }
       }
@@ -74,7 +74,7 @@ namespace TORI_NS::detail {
             return eval_result;
           } else {
             apply->set_cache(pap);
-            return eval_impl(ObjectPtr<>(pap));
+            return eval_impl(object_ptr<>(pap));
           }
         }
       }
@@ -86,13 +86,13 @@ namespace TORI_NS::detail {
 
     /// evaluate each apply node and replace with result
     template <class T>
-    [[nodiscard]] auto eval(const ObjectPtr<T>& obj)
-      ->ObjectPtr<assume_object_type_t<type_of_t<typename T::term>>> {
+    [[nodiscard]] auto eval(const object_ptr<T>& obj)
+      ->object_ptr<assume_object_type_t<type_of_t<typename T::term>>> {
       using To = assume_object_type_t<type_of_t<typename T::term>>;
-      auto result = eval_impl(ObjectPtr<>(obj));
+      auto result = eval_impl(object_ptr<>(obj));
 
       // This conversion is not obvious.
-      // Currently ObjectPtr<T> MUST have type T which has compatible memory
+      // Currently object_ptr<T> MUST have type T which has compatible memory
       // layout with ACTUAL object pointing to.
       // Since it's impossible to decide memory layout of closure types (because
       // of runtime currying), we convert it to closure<...> which is
@@ -103,7 +103,7 @@ namespace TORI_NS::detail {
       // type system is broken or bugged, this conversion will crash the
       // program without throwing any error.
       ++(result.head()->refcount.atomic);
-      return ObjectPtr<To>(static_cast<To*>(result.get()));
+      return object_ptr<To>(static_cast<To*>(result.get()));
     }
 
   } // namespace interface

@@ -18,11 +18,11 @@ namespace TORI_NS::detail {
   /// it requires more computation resources.
   struct ExceptionValue {
     template <class T>
-    ExceptionValue(const ObjectPtr<T>& i) noexcept : info{i} {}
+    ExceptionValue(const object_ptr<T>& i) noexcept : info{i} {}
     template <class T>
-    ExceptionValue(T* ptr) noexcept : ExceptionValue{ObjectPtr(ptr)} {}
+    ExceptionValue(T* ptr) noexcept : ExceptionValue{object_ptr(ptr)} {}
     /// pointer to exception value
-    ObjectPtr<> info;
+    object_ptr<> info;
   };
 
   namespace interface {
@@ -37,9 +37,9 @@ namespace TORI_NS::detail {
   /// TypeErrorValue
   struct TypeErrorValue {
     /// error message
-    ObjectPtr<String> msg;
+    object_ptr<String> msg;
     /// source node
-    ObjectPtr<> src;
+    object_ptr<> src;
   };
 
   namespace interface {
@@ -53,14 +53,14 @@ namespace TORI_NS::detail {
     public:
       /// Ctor string
       template <class T>
-      explicit type_error(const std::string& what, const ObjectPtr<T>& src)
-        : std::logic_error(what), m_src{ObjectPtr<>(src)} {}
+      explicit type_error(const std::string& what, const object_ptr<T>& src)
+        : std::logic_error(what), m_src{object_ptr<>(src)} {}
       template <class T>
       /// Ctor const char*
-      explicit type_error(const char* what, const ObjectPtr<T>& src)
-        : std::logic_error(what), m_src{ObjectPtr<>(src)} {}
+      explicit type_error(const char* what, const object_ptr<T>& src)
+        : std::logic_error(what), m_src{object_ptr<>(src)} {}
       /// get source node
-      ObjectPtr<> src() {
+      object_ptr<> src() {
         return m_src;
       }
       /// format function
@@ -70,7 +70,7 @@ namespace TORI_NS::detail {
 
     private:
       /// source node
-      ObjectPtr<> m_src;
+      object_ptr<> m_src;
     };
   } // namespace interface
 
@@ -81,9 +81,9 @@ namespace TORI_NS::detail {
   /// EvlaErrorValue
   struct EvalErrorValue {
     /// error message
-    ObjectPtr<String> msg;
+    object_ptr<String> msg;
     /// source node
-    ObjectPtr<> src;
+    object_ptr<> src;
   };
 
   namespace interface {
@@ -96,14 +96,14 @@ namespace TORI_NS::detail {
     public:
       /// Ctor string
       template <class T>
-      explicit eval_error(const std::string& what, const ObjectPtr<T>& src)
-        : std::logic_error(what), m_src{ObjectPtr<>(src)} {}
+      explicit eval_error(const std::string& what, const object_ptr<T>& src)
+        : std::logic_error(what), m_src{object_ptr<>(src)} {}
       /// Ctor const char*
       template <class T>
-      explicit eval_error(const char* what, const ObjectPtr<T>& src)
-        : std::logic_error(what), m_src{ObjectPtr<>(src)} {}
+      explicit eval_error(const char* what, const object_ptr<T>& src)
+        : std::logic_error(what), m_src{object_ptr<>(src)} {}
       /// get source node
-      ObjectPtr<> src() {
+      object_ptr<> src() {
         return m_src;
       }
       /// format
@@ -113,7 +113,7 @@ namespace TORI_NS::detail {
 
     private:
       /// source node
-      ObjectPtr<> m_src;
+      object_ptr<> m_src;
     };
   } // namespace interface
 
@@ -125,18 +125,18 @@ namespace TORI_NS::detail {
     /// result error
     class result_error : public std::runtime_error {
     public:
-      result_error(const ObjectPtr<Exception>& result)
+      result_error(const object_ptr<Exception>& result)
         : runtime_error("result_error: Exception detected while evaluation")
         , m_result{result} {}
-      result_error(ObjectPtr<Exception>&& result)
+      result_error(object_ptr<Exception>&& result)
         : runtime_error("result_error: Exception detected while evaluation")
         , m_result{std::move(result)} {}
-      ObjectPtr<Exception> result() {
+      object_ptr<Exception> result() {
         return m_result;
       }
 
     private:
-      ObjectPtr<Exception> m_result;
+      object_ptr<Exception> m_result;
     };
   } // namespace interface
 

@@ -39,14 +39,14 @@ namespace TORI_NS::detail {
     template <class... Ts>
     struct closure : HeapObject {
       /// term
-      using term = TmClosure<typename Ts::term...>;
+      using term = tm_closure<typename Ts::term...>;
     };
 
     /// Type variable value
     template <class Tag>
     struct forall : HeapObject {
       // term
-      using term = TmVarValue<Tag>;
+      using term = tm_varvalue<Tag>;
     };
   } // namespace interface
 
@@ -96,8 +96,8 @@ namespace TORI_NS::detail {
   };
   /// Arrow type
   struct ArrowType {
-    ObjectPtr<const Type> captured;
-    ObjectPtr<const Type> returns;
+    object_ptr<const Type> captured;
+    object_ptr<const Type> returns;
   };
   /// Any type
   struct VarType {
@@ -129,7 +129,7 @@ namespace TORI_NS::detail {
   struct arrow_type;
 
   template <class... Ts>
-  struct arrow_type<TmClosure<Ts...>> {
+  struct arrow_type<tm_closure<Ts...>> {
     static constexpr const Type* type = &arrow_type_impl<Ts...>::type;
   };
 
@@ -148,41 +148,41 @@ namespace TORI_NS::detail {
 
   // value
   template <class T>
-  struct object_type_h<T, std::enable_if_t<is_TmValue_v<T>>> {
+  struct object_type_h<T, std::enable_if_t<is_tm_value_v<T>>> {
     static constexpr const Type* type = &value_type<T>::type;
-    static ObjectPtr<const Type> get() {
+    static object_ptr<const Type> get() {
       return type;
     }
   };
   // closure
   template <class T>
-  struct object_type_h<T, std::enable_if_t<is_TmClosure_v<T>>> {
+  struct object_type_h<T, std::enable_if_t<is_tm_closure_v<T>>> {
     static constexpr const Type* type = arrow_type<T>::type;
-    static ObjectPtr<const Type> get() {
+    static object_ptr<const Type> get() {
       return type;
     }
   };
   // var
   template <class T>
-  struct object_type_h<T, std::enable_if_t<is_TmVar_v<T>>> {
+  struct object_type_h<T, std::enable_if_t<is_tm_var_v<T>>> {
     static constexpr const Type* type = &vartype<T>::type;
-    static ObjectPtr<const Type> get() {
+    static object_ptr<const Type> get() {
       return type;
     }
   };
   // var value
   template <class T>
-  struct object_type_h<T, std::enable_if_t<is_TmVarValue_v<T>>> {
+  struct object_type_h<T, std::enable_if_t<is_tm_varvalue_v<T>>> {
     static constexpr const Type* type = &vartype<T>::type;
-    static ObjectPtr<const Type> get() {
+    static object_ptr<const Type> get() {
       return type;
     }
   };
   // fix
   template <class T>
-  struct object_type_h<T, std::enable_if_t<is_TmFix_v<T>>> {
+  struct object_type_h<T, std::enable_if_t<is_tm_fix_v<T>>> {
     static constexpr const Type* type = &value_type<T>::type;
-    static ObjectPtr<const Type> get() {
+    static object_ptr<const Type> get() {
       return type;
     }
   };
@@ -190,7 +190,7 @@ namespace TORI_NS::detail {
   namespace interface {
     /// object type generator
     template <class T>
-    [[nodiscard]] ObjectPtr<const Type> object_type() {
+    [[nodiscard]] object_ptr<const Type> object_type() {
       return object_type_h<typename T::term>::type;
     }
   } // namespace interface

@@ -10,17 +10,17 @@
 
 namespace TORI_NS::detail {
 
-  /// ApplyValue for runtime
+  /// value of ApplyR
   struct ApplyRValue {
     template <class App, class Arg>
     ApplyRValue(App&& app, Arg&& arg)
       : m_app{std::forward<App>(app)}, m_arg{std::forward<Arg>(arg)} {}
 
-    const ObjectPtr<>& app() const {
+    const object_ptr<>& app() const {
       assert(m_app != nullptr);
       return m_app;
     }
-    const ObjectPtr<>& arg() const {
+    const object_ptr<>& arg() const {
       assert(m_app != nullptr);
       return m_arg;
     }
@@ -29,12 +29,12 @@ namespace TORI_NS::detail {
       return m_app == nullptr;
     }
 
-    const ObjectPtr<>& get_cache() const {
+    const object_ptr<>& get_cache() const {
       assert(evaluated());
       return m_arg;
     }
 
-    void set_cache(const ObjectPtr<>& obj) {
+    void set_cache(const object_ptr<>& obj) {
       assert(!evaluated());
       m_app = nullptr;
       m_arg = obj;
@@ -43,10 +43,10 @@ namespace TORI_NS::detail {
   private:
     /// closure
     /// when evaluated: nullptr
-    ObjectPtr<> m_app;
+    object_ptr<> m_app;
     /// argument
     /// when evaluated: result
-    ObjectPtr<> m_arg; 
+    object_ptr<> m_arg;
   };
 
   namespace interface {
@@ -61,31 +61,31 @@ namespace TORI_NS::detail {
       /// base
       using base = ApplyR;
       /// term
-      using term = TmApply<typename App::term, typename Arg::term>;
+      using term = tm_apply<typename App::term, typename Arg::term>;
 
-      Apply(const ObjectPtr<App>& ap, const ObjectPtr<Arg>& ar)
-        : base{ObjectPtr<>{ap}, ObjectPtr<>{ar}} {}
-      Apply(ObjectPtr<App>&& ap, const ObjectPtr<Arg>& ar)
-        : base{ObjectPtr<>{std::move(ap)}, ObjectPtr<>{ar}} {}
-      Apply(const ObjectPtr<App>& ap, ObjectPtr<Arg>&& ar)
-        : base{ObjectPtr<>{ap}, ObjectPtr<>{std::move(ar)}} {}
-      Apply(ObjectPtr<App>&& ap, ObjectPtr<Arg>&& ar)
-        : base{ObjectPtr<>{std::move(ap)}, ObjectPtr<>{std::move(ar)}} {}
+      Apply(const object_ptr<App>& ap, const object_ptr<Arg>& ar)
+        : base{object_ptr<>{ap}, object_ptr<>{ar}} {}
+      Apply(object_ptr<App>&& ap, const object_ptr<Arg>& ar)
+        : base{object_ptr<>{std::move(ap)}, object_ptr<>{ar}} {}
+      Apply(const object_ptr<App>& ap, object_ptr<Arg>&& ar)
+        : base{object_ptr<>{ap}, object_ptr<>{std::move(ar)}} {}
+      Apply(object_ptr<App>&& ap, object_ptr<Arg>&& ar)
+        : base{object_ptr<>{std::move(ap)}, object_ptr<>{std::move(ar)}} {}
 
       // NOTE: msvc 15.8 Preview 3 can't compile CTAD with delegate constructors
 
-      Apply(const ObjectPtr<App>& ap, Arg* ar) //
-        : base{ObjectPtr<>{ap}, ObjectPtr<>{ar}} {}
-      Apply(App* ap, const ObjectPtr<Arg>& ar) //
-        : base{ObjectPtr<>{ap}, ObjectPtr<>{ar}} {}
+      Apply(const object_ptr<App>& ap, Arg* ar) //
+        : base{object_ptr<>{ap}, object_ptr<>{ar}} {}
+      Apply(App* ap, const object_ptr<Arg>& ar) //
+        : base{object_ptr<>{ap}, object_ptr<>{ar}} {}
 
-      Apply(App* ap, ObjectPtr<Arg>&& ar)
-        : base{ObjectPtr<>{ap}, ObjectPtr<>{std::move(ar)}} {}
-      Apply(ObjectPtr<App>&& ap, Arg* ar)
-        : base{ObjectPtr<>{std::move(ap)}, ObjectPtr<>{ar}} {}
+      Apply(App* ap, object_ptr<Arg>&& ar)
+        : base{object_ptr<>{ap}, object_ptr<>{std::move(ar)}} {}
+      Apply(object_ptr<App>&& ap, Arg* ar)
+        : base{object_ptr<>{std::move(ap)}, object_ptr<>{ar}} {}
 
       Apply(App* ap, Arg* ar) //
-        : base{ObjectPtr<>{ap}, ObjectPtr<>{ar}} {}
+        : base{object_ptr<>{ap}, object_ptr<>{ar}} {}
     };
   } // namespace interface
 
@@ -96,7 +96,7 @@ namespace TORI_NS::detail {
     static constexpr bool value = std::is_base_of_v<HeapObject, T>;
   };
   template <class T>
-  struct is_valid_app_arg<ObjectPtr<T>> : std::true_type {};
+  struct is_valid_app_arg<object_ptr<T>> : std::true_type {};
   template <class T>
   static constexpr bool is_valid_app_arg_v =
     is_valid_app_arg<std::decay_t<T>>::value;
@@ -109,7 +109,8 @@ namespace TORI_NS::detail {
       class =
         std::enable_if_t<is_valid_app_arg_v<T1> && is_valid_app_arg_v<T2>>>
     [[nodiscard]] auto operator<<(T1&& lhs, T2&& rhs) {
-      return ObjectPtr{new Apply{std::forward<T1>(lhs), std::forward<T2>(rhs)}};
+      return object_ptr{
+        new Apply{std::forward<T1>(lhs), std::forward<T2>(rhs)}};
     }
     /// dynamic apply operator
     template <
@@ -117,9 +118,9 @@ namespace TORI_NS::detail {
       class T2,
       class =
         std::enable_if_t<is_valid_app_arg_v<T1> && is_valid_app_arg_v<T2>>>
-    [[nodiscard]] ObjectPtr<> operator>>(T1&& lhs, T2&& rhs) {
-      return new ApplyR{ObjectPtr<>(std::forward<T1>(lhs)),
-                        ObjectPtr<>(std::forward<T2>(rhs))};
+    [[nodiscard]] object_ptr<> operator>>(T1&& lhs, T2&& rhs) {
+      return new ApplyR{object_ptr<>(std::forward<T1>(lhs)),
+                        object_ptr<>(std::forward<T2>(rhs))};
     }
   } // namespace interface
 

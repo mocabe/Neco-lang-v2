@@ -24,7 +24,7 @@ namespace TORI_NS::detail {
     inline constexpr static_construct_t static_construct = static_construct_t();
     // forward decl
     template <class T>
-    ObjectPtr<const Type> object_type(); // see TypeGen.hpp
+    object_ptr<const Type> object_type(); // see TypeGen.hpp
 
   } // namespace interface
 
@@ -56,7 +56,7 @@ namespace TORI_NS::detail {
 
   template <class T, bool B = has_term_v<T>>
   struct value_object_term {
-    using type = TmValue<BoxedHeapObject<T>>;
+    using type = tm_value<BoxedHeapObject<T>>;
   };
 
   template <class T>
@@ -87,7 +87,7 @@ namespace TORI_NS::detail {
       /// info table initializer
       struct info_table_initializer {
         /// static object info table
-        static const ObjectInfoTable info_table;
+        static const object_info_table info_table;
       };
 
       /// Ctor
@@ -150,12 +150,12 @@ namespace TORI_NS::detail {
 
     // Initialize object header
     template <class T, template <class> class AllocatorTemplate>
-    const ObjectInfoTable BoxedHeapObject<T, AllocatorTemplate>::
+    const object_info_table BoxedHeapObject<T, AllocatorTemplate>::
       info_table_initializer::info_table = {
-        object_type<BoxedHeapObject>(), //
-        sizeof(BoxedHeapObject),             //
-        object_header_extend_bytes,          //
-        vtbl_destroy_func<BoxedHeapObject>,  //
+        object_type<BoxedHeapObject>(),     //
+        sizeof(BoxedHeapObject),            //
+        object_header_extend_bytes,         //
+        vtbl_destroy_func<BoxedHeapObject>, //
         vtbl_clone_func<BoxedHeapObject>};
 
   } // namespace interface

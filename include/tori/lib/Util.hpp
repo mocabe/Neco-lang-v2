@@ -14,8 +14,8 @@ namespace TORI_NS::detail {
 
   /// get string represents type
   [[nodiscard]] std::string to_string_impl(
-    const ObjectPtr<const Type>& type,
-    std::vector<ObjectPtr<const Type>>& stack) {
+    const object_ptr<const Type>& type,
+    std::vector<object_ptr<const Type>>& stack) {
     if (is_value_type(type)) return std::get<ValueType>(*type).c_str();
     if (is_arrow_type(type))
       return "(" +                                                        //
@@ -34,8 +34,8 @@ namespace TORI_NS::detail {
 
   namespace interface {
     /// convert type to string
-    [[nodiscard]] std::string to_string(const ObjectPtr<const Type>& type) {
-      std::vector<ObjectPtr<const Type>> stack;
+    [[nodiscard]] std::string to_string(const object_ptr<const Type>& type) {
+      std::vector<object_ptr<const Type>> stack;
       return to_string_impl(type, stack);
     }
   } // namespace interface

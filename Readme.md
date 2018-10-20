@@ -101,11 +101,11 @@ You can create object with `make_object<T>()`
 ```cpp
 auto i = make_object<Int>(42);
 ```
-Or initialize `ObjectPtr` from raw pointer.
+Or initialize `object_ptr` from raw pointer.
 ```cpp
-auto i = ObjectPtr(new Int(42));
+auto i = object_ptr(new Int(42));
 ```
-`ObjectPtr` is smart pointer like `std::shared_ptr` to manage `Tori` objects.  
+`object_ptr` is smart pointer like `std::shared_ptr` to manage `Tori` objects.  
 
 You can access to the object just like a pointer.
 ```cpp
