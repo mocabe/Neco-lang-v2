@@ -207,17 +207,25 @@ namespace TORI_NS::detail {
   // ------------------------------------------
 
   namespace interface {
+
     // unification error
-    struct unification_error : type_error {
+    struct type_error::unification_error : type_error {
       unification_error(const std::string& msg, const object_ptr<>& src)
         : type_error(msg, src) {}
+
+    public:
+      /// Circular constraints while unification
+      struct circular_constraint;
+      /// Type missmatch while unification
+      struct type_missmatch;
     };
-    // unification error(circular constraint)
-    struct unification_circular_constraint : unification_error {
-      unification_circular_constraint(
+
+    /// unification error(circular constraint)
+    struct type_error::unification_error::circular_constraint
+      : type_error::unification_error {
+      circular_constraint(
         const object_ptr<>& src, const object_ptr<const Type>& var)
-        : unification_error(
-            "unification_circular_constraint: Circular constraints", src)
+        : unification_error("type_error: Circular constraints", src)
         , m_var{var} {}
 
       object_ptr<const Type> var() const {
@@ -225,13 +233,15 @@ namespace TORI_NS::detail {
       }
       object_ptr<const Type> m_var;
     };
-    // unification error(missmatch)
-    struct unification_missmatch : unification_error {
-      unification_missmatch(
+
+    /// unification error(missmatch)
+    struct type_error::unification_error::type_missmatch
+      : type_error::unification_error {
+      type_missmatch(
         const object_ptr<>& src,
         const object_ptr<const Type>& t1,
         const object_ptr<const Type>& t2)
-        : unification_error("unification_missmatch: Type missmatch", src)
+        : unification_error("type_error: Type missmatch", src)
         , m_t1{t1}
         , m_t2{t2} {}
 
@@ -246,7 +256,7 @@ namespace TORI_NS::detail {
       object_ptr<const Type> m_t1;
       object_ptr<const Type> m_t2;
     };
-  }
+  } // namespace interface
 
   void unify_func_impl(
     std::vector<Constr>& cs,
@@ -263,7 +273,7 @@ namespace TORI_NS::detail {
           ta.push_back(arr);
           continue;
         }
-        throw unification_circular_constraint(src, c.t1);
+        throw type_error::unification_error::circular_constraint(src, c.t1);
       }
       if (is_vartype(c.t1)) {
         if (likely(!occurs(c.t1, c.t2))) {
@@ -272,7 +282,7 @@ namespace TORI_NS::detail {
           ta.push_back(arr);
           continue;
         }
-        throw unification_circular_constraint(src, c.t1);
+        throw type_error::unification_error::circular_constraint(src, c.t1);
       }
       if (auto arrow1 = std::get_if<ArrowType>(c.t1.value())) {
         if (auto arrow2 = std::get_if<ArrowType>(c.t2.value())) {
@@ -281,7 +291,7 @@ namespace TORI_NS::detail {
           continue;
         }
       }
-      throw unification_missmatch(src, c.t1, c.t2);
+      throw type_error::unification_error::type_missmatch(src, c.t1, c.t2);
     }
   }
 

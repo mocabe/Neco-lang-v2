@@ -71,6 +71,12 @@ namespace TORI_NS::detail {
     private:
       /// source node
       object_ptr<> m_src;
+
+    public:
+      /// type check error
+      struct type_check_error;
+      /// unification error
+      struct unification_error;
     };
   } // namespace interface
 
@@ -114,7 +120,16 @@ namespace TORI_NS::detail {
     private:
       /// source node
       object_ptr<> m_src;
+
+    public:
+      /// Invalid usage of Fix
+      struct invalid_fix;
+      /// Invalid usage of Apply
+      struct invalid_apply;
+      /// Invalid number of arguments
+      struct too_many_arguments;
     };
+
   } // namespace interface
 
   // ------------------------------------------

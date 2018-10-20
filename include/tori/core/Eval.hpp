@@ -26,6 +26,21 @@ namespace TORI_NS::detail {
     }
   } // namespace interface
 
+  namespace interface {
+    struct eval_error::invalid_fix : eval_error {
+      invalid_fix(const char* msg, const object_ptr<>& obj)
+        : eval_error(msg, obj) {}
+    };
+    struct eval_error::invalid_apply : eval_error {
+      invalid_apply(const char* msg, const object_ptr<>& obj)
+        : eval_error(msg, obj) {}
+    };
+    struct eval_error::too_many_arguments : eval_error {
+      too_many_arguments(const char* msg, const object_ptr<>& obj)
+        : eval_error(msg, obj) {}
+    };
+  } // namespace interface
+
   /// eval implementation
   [[nodiscard]] object_ptr<> eval_impl(const object_ptr<>& obj) {
     // exception
@@ -42,12 +57,13 @@ namespace TORI_NS::detail {
       if (has_type<Fix>(app)) {
         auto f = eval_impl(arg);
         if (unlikely(has_value_type(f))) {
-          throw eval_error{"eval_error: Expected Closure after Fix", obj};
+          throw eval_error::invalid_fix(
+            "eval_error: Expected closure after Fix", obj);
         } else {
           auto c = static_cast<Closure<>*>(f.get());
           if (unlikely(c->arity.atomic == 0)) {
-            throw eval_error{"eval_error: Expected appliable closure after Fix",
-                             obj};
+            throw eval_error::invalid_fix(
+              "eval_error: Expected appliable closure after Fix", obj);
           } else {
             auto pap = f.clone();
             auto cc = static_cast<Closure<>*>(pap.get());
@@ -58,12 +74,13 @@ namespace TORI_NS::detail {
       }
       // Apply
       if (unlikely(has_value_type(app))) {
-        throw eval_error{"eval_error: Apply to value type", obj};
+        throw eval_error::invalid_apply("eval_error: Apply to value type", obj);
       } else {
         // create pap
         auto c = static_cast<Closure<>*>(app.get());
         if (unlikely(c->arity.atomic == 0)) {
-          throw eval_error{"eval_error: Too many arguments", obj};
+          throw eval_error::too_many_arguments(
+            "eval_error: Too many arguments", obj);
         } else {
           auto pap = app.clone();
           auto cc = static_cast<Closure<>*>(pap.get());

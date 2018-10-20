@@ -94,14 +94,29 @@ namespace TORI_NS::detail {
   } // namespace interface
 
   namespace interface {
+
+    struct type_error::type_check_error : type_error {
+      type_check_error(
+        const object_ptr<const Type>& expected,
+        const object_ptr<const Type>& result,
+        const object_ptr<>& obj)
+        : type_error(
+            "type_error: check_type failed. Result type is invalid", obj)
+        , m_expected{expected}
+        , m_result{result} {}
+
+    private:
+      object_ptr<const Type> m_expected;
+      object_ptr<const Type> m_result;
+    };
+
     /// check type
     template <class T>
     void check_type(const object_ptr<>& obj) {
       auto t1 = object_type<T>();
       auto t2 = type_of(obj);
       if (unlikely(!same_type(t1, t2)))
-        throw type_error{
-          "type_error: check_type failed. Result type is invalid", obj};
+        throw type_error::type_check_error(t1, t2, obj);
     }
   } // namespace interface
 
