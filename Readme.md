@@ -1,10 +1,11 @@
 # Tori
 
 **This library is still work in progress.**  
+**...and not a serious project at all.**
 
 ---
 
-`Tori` is light-weight, header-only functional module library written in C++17
+`Tori` is light-weight, header-only functional plugin library written in C++17
 
 ## Overview
 - Runtime typed closure object which supports lazy evaluation, currying, etc.
@@ -20,6 +21,11 @@
 | `g++` | 7.3 |  
 | `clang++` | 6.0.1 |  
 | `msvc`    | Visual Studio 2017 15.8 Preview 3 |  
+
+## Binary compatibility
+Since this library is heavily relying on inheritance and other features which C++ standard does not specify binary compatibility,
+This library currently does NOT (and WONT) support "C++ standard compliant" binary compatibility across compilers.
+But we DO want to make this library somewhat binary compatible across some compilers(gcc,clang,msvc) on some platform(Ubuntu,Windows).
 
 ## Exsamples
 
