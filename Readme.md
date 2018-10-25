@@ -1,6 +1,6 @@
 # Tori
 
-**This library is still work in progress.**  
+**This library is still work in progress**  
 **...and not a serious project at all.**
 
 ---

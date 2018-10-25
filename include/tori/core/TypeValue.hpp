@@ -168,7 +168,7 @@ namespace TORI_NS::detail {
     }
 
 
-  private: // Helps accessing this class from TypeValue
+  private: // Helps accessing storage
     TypeValueStorage& get_storage() & {
       return *this;
     }
