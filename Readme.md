@@ -23,9 +23,9 @@
 | `msvc`    | Visual Studio 2017 15.8 Preview 3 |  
 
 ## Binary compatibility
-Since this library is heavily relying on inheritance and other features which C++ standard does not specify binary compatibility,
-This library currently does NOT (and WONT) support "C++ standard compliant" binary compatibility across compilers.
-But we DO want to make this library somewhat binary compatible across some compilers(gcc,clang,msvc) on some platform(Ubuntu,Windows).
+Since this library is heavily relying on inheritance and other features which C++ standard does not specify binary compatibility,  
+This library currently does NOT (and WONT) support "C++ standard compliant" binary compatibility across compilers.  
+But we DO want to make this library somewhat binary compatible across some compilers(gcc,clang,msvc) on some platform(Ubuntu,Windows).  
 
 ## Exsamples
 
