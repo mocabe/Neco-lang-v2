@@ -16,20 +16,21 @@ namespace TORI_NS::detail {
   [[nodiscard]] std::string to_string_impl(
     const object_ptr<const Type>& type,
     std::vector<object_ptr<const Type>>& stack) {
-    if (is_value_type(type)) return std::get<ValueType>(*type).c_str();
+    if (is_value_type(type)) return get<ValueType>(*type).c_str();
     if (is_arrow_type(type))
       return "(" +                                                        //
-             to_string_impl(std::get<ArrowType>(*type).captured, stack) + //
+             to_string_impl(get<ArrowType>(*type).captured, stack) + //
              " -> " +                                                     //
-             to_string_impl(std::get<ArrowType>(*type).returns, stack) +  //
+             to_string_impl(get<ArrowType>(*type).returns, stack) +  //
              ")";                                                         //
     if (is_vartype(type)) {
       return "Var[" +                                                 //
-             std::to_string(std::get_if<VarType>(type.value())->id) + //
+             std::to_string(get_if<VarType>(type.value())->id) + //
              "]";                                                     //
     }
+
     assert(false);
-    throw std::invalid_argument("to_string(): invalid variant index");
+    unreachable();
   }
 
   namespace interface {

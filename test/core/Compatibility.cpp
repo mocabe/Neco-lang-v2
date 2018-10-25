@@ -9,12 +9,12 @@ void comp() {
   // ----------------------------------------
   // no padding
   static_assert(sizeof(HeapObject) == 16 + object_header_extend_bytes);
-  static_assert(sizeof(ObjectInfoTable) == 40);
+  static_assert(sizeof(object_info_table) == 40);
 
   // ----------------------------------------
-  // ObjectPtr
+  // object_ptr
   // ----------------------------------------
-  static_assert(sizeof(ObjectPtr<>) == 8);
+  static_assert(sizeof(object_ptr<>) == 8);
 
   // ----------------------------------------
   // Type
@@ -23,12 +23,6 @@ void comp() {
   static_assert(sizeof(ArrowType) == 16);
   static_assert(sizeof(VarType) == 8);
   static_assert(sizeof(TypeValue) == 24);
-  static_assert(
-    std::is_same_v<ValueType, std::variant_alternative_t<0, TypeValue>>);
-  static_assert(
-    std::is_same_v<ArrowType, std::variant_alternative_t<1, TypeValue>>);
-  static_assert(
-    std::is_same_v<VarType, std::variant_alternative_t<2, TypeValue>>);
 
   // ----------------------------------------
   // Closure
@@ -37,7 +31,7 @@ void comp() {
   static_assert(
     sizeof(ClosureN<4>) ==
     sizeof(HeapObject) + 8 + closure_header_extend_bytes + 4 * 8);
-  static_assert(sizeof(ClosureInfoTable) == sizeof(ObjectInfoTable) + 24);
+  static_assert(sizeof(ClosureInfoTable) == sizeof(object_info_table) + 24);
 
   // ----------------------------------------
   // Object

@@ -6,6 +6,7 @@
 /// \file Compile time type info generator
 
 #include "BoxedHeapObject.hpp"
+#include "TypeValue.hpp"
 #include <cstring>
 #include <string>
 #include <memory>
@@ -55,53 +56,6 @@ namespace TORI_NS::detail {
   struct expected : HeapObject {
     // term
     using term = typename T::term;
-  };
-
-  // ------------------------------------------
-  // Type
-  // ------------------------------------------
-
-  /// Value type
-  struct ValueType {
-    /// Max name length
-    static constexpr size_t max_name_size = 32;
-    /// buffer type
-    using buffer_type = std::array<char, max_name_size>;
-    /// buffer
-    const buffer_type* name;
-    /// get C-style string
-    const char* c_str() const {
-      return name->data();
-    }
-    /// compare two value types
-    static bool compare(const ValueType& lhs, const ValueType& rhs) {
-      if (lhs.name == rhs.name) return true;
-      // AVX2
-      if constexpr (has_AVX2 && max_name_size == 32) {
-        // buffers should be aligned as 32byte
-        auto ymm0 =
-          _mm256_load_si256(reinterpret_cast<const __m256i*>(lhs.name->data()));
-        auto ymm1 =
-          _mm256_load_si256(reinterpret_cast<const __m256i*>(rhs.name->data()));
-        auto cmpeq = _mm256_cmpeq_epi8(ymm0, ymm1);
-        unsigned mask = _mm256_movemask_epi8(cmpeq);
-        _mm256_zeroupper();
-        return mask == 0xffffffffU;
-      } else
-        return std::memcmp(        //
-                 lhs.name->data(), //
-                 rhs.name->data(), //
-                 max_name_size) == 0;
-    }
-  };
-  /// Arrow type
-  struct ArrowType {
-    object_ptr<const Type> captured;
-    object_ptr<const Type> returns;
-  };
-  /// Any type
-  struct VarType {
-    uint64_t id;
   };
 
   // ------------------------------------------

@@ -9,7 +9,6 @@
 #include <type_traits>
 #include <atomic>
 #include <cassert>
-#include <variant>
 #include <stdexcept>
 
 // config
@@ -38,7 +37,8 @@ namespace TORI_NS::detail {
   struct VarType;
 
   // TypeValue
-  using TypeValue = std::variant<ValueType, ArrowType, VarType>;
+  // using TypeValue = std::variant<ValueType, ArrowType, VarType>;
+  class TypeValue;
 
   // interface
   namespace interface {

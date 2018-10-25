@@ -25,8 +25,8 @@ namespace TORI_NS::detail {
       }();
     }
     if (is_arrow_type(tp)) {
-      vars_impl(std::get_if<ArrowType>(tp.value())->captured, vars);
-      vars_impl(std::get_if<ArrowType>(tp.value())->returns, vars);
+      vars_impl(get_if<ArrowType>(tp.value())->captured, vars);
+      vars_impl(get_if<ArrowType>(tp.value())->returns, vars);
       return;
     }
 
