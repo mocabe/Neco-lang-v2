@@ -72,6 +72,9 @@ namespace TORI_NS::detail {
 #  define unreachable() __assume(0)
 #endif
 
+// inline
+#define TORI_INLINE inline
+
   // for std::visit
   template <class... Ts>
   struct overloaded : Ts... {

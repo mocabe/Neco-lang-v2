@@ -15,12 +15,12 @@ namespace TORI_NS::detail {
     /// \brief get **RAW** type of the object
     /// \notes NO null check.
     /// \notes use type_of() to get actual type of terms.
-    [[nodiscard]] object_ptr<const Type> get_type(const object_ptr<>& obj) {
-      return obj.info_table()->obj_type;
-    }; // clang-format workaround
+    [[nodiscard]] TORI_INLINE object_ptr<const Type> get_type(
+      const object_ptr<>& obj) { return obj.info_table()->obj_type; };
 
     /// is_value_type
-    [[nodiscard]] bool is_value_type(const object_ptr<const Type>& tp) {
+    [[nodiscard]] TORI_INLINE bool is_value_type(
+      const object_ptr<const Type>& tp) {
       if (get_if<ValueType>(tp.value()))
         return true;
       else
@@ -28,7 +28,8 @@ namespace TORI_NS::detail {
     };
 
     /// is_arrow_type
-    [[nodiscard]] bool is_arrow_type(const object_ptr<const Type>& tp) {
+    [[nodiscard]] TORI_INLINE bool is_arrow_type(
+      const object_ptr<const Type>& tp) {
       if (get_if<ArrowType>(tp.value()))
         return true;
       else
@@ -36,7 +37,8 @@ namespace TORI_NS::detail {
     };
 
     /// is_vartype
-    [[nodiscard]] bool is_vartype(const object_ptr<const Type>& tp) {
+    [[nodiscard]] TORI_INLINE bool is_vartype(
+      const object_ptr<const Type>& tp) {
       if (get_if<VarType>(tp.value()))
         return true;
       else
@@ -44,23 +46,23 @@ namespace TORI_NS::detail {
     };
 
     /// has_value_type
-    [[nodiscard]] bool has_value_type(const object_ptr<>& obj) {
+    [[nodiscard]] TORI_INLINE bool has_value_type(const object_ptr<>& obj) {
       return is_value_type(get_type(obj));
     };
 
     /// has_arrow_type
-    [[nodiscard]] bool has_arrow_type(const object_ptr<>& obj) {
+    [[nodiscard]] TORI_INLINE bool has_arrow_type(const object_ptr<>& obj) {
       return is_arrow_type(get_type(obj));
     };
-    
+
     /// has_vartype
-    [[nodiscard]] bool has_vartype(const object_ptr<>& obj) {
+    [[nodiscard]] TORI_INLINE bool has_vartype(const object_ptr<>& obj) {
       return is_vartype(get_type(obj));
     };
 
   } // namespace interface
 
-  [[nodiscard]] object_ptr<const Type> copy_type_impl(
+  [[nodiscard]] TORI_INLINE object_ptr<const Type> copy_type_impl(
     const object_ptr<const Type>& ptp) {
     if (get_if<ValueType>(ptp.value())) return ptp;
     if (get_if<VarType>(ptp.value())) return ptp;
@@ -76,11 +78,13 @@ namespace TORI_NS::detail {
 
   namespace interface {
     /// Deep copy type object
-    [[nodiscard]] object_ptr<const Type> copy_type(
-      const object_ptr<const Type>& tp) { return copy_type_impl(tp); };
+    [[nodiscard]] TORI_INLINE object_ptr<const Type> copy_type(
+      const object_ptr<const Type>& tp) {
+      return copy_type_impl(tp);
+    };
   } // namespace interface
 
-  [[nodiscard]] bool same_type_impl(
+  [[nodiscard]] TORI_INLINE bool same_type_impl(
     const object_ptr<const Type>& lhs, const object_ptr<const Type>& rhs) {
     if (lhs.get() == rhs.get()) return true;
 
@@ -113,7 +117,7 @@ namespace TORI_NS::detail {
 
   namespace interface {
     /// check type equality
-    [[nodiscard]] bool same_type(
+    [[nodiscard]] TORI_INLINE bool same_type(
       const object_ptr<const Type>& lhs, const object_ptr<const Type>& rhs) {
       return same_type_impl(lhs, rhs);
     }
@@ -124,7 +128,7 @@ namespace TORI_NS::detail {
     object_ptr<const Type> to;
   };
 
-  [[nodiscard]] object_ptr<const Type> subst_type_impl(
+  [[nodiscard]] TORI_INLINE object_ptr<const Type> subst_type_impl(
     const TyArrow& ta, const object_ptr<const Type>& in) {
     auto& from = ta.from;
     auto& to = ta.to;
@@ -147,12 +151,12 @@ namespace TORI_NS::detail {
   };
 
   /// emulate type-substitution
-  [[nodiscard]] object_ptr<const Type> subst_type(
+  [[nodiscard]] TORI_INLINE object_ptr<const Type> subst_type(
     const TyArrow& ta, const object_ptr<const Type>& in) {
     return subst_type_impl(ta, in);
   };
 
-  [[nodiscard]] object_ptr<const Type> subst_type_all(
+  [[nodiscard]] TORI_INLINE object_ptr<const Type> subst_type_all(
     const std::vector<TyArrow>& tas, const object_ptr<const Type>& ty) {
     auto t = ty;
     for (auto tyArrow : tas) {
@@ -172,12 +176,13 @@ namespace TORI_NS::detail {
   };
 
   /// subst_constr
-  [[nodiscard]] Constr subst_constr(const TyArrow& ta, const Constr& constr) {
+  [[nodiscard]] TORI_INLINE Constr
+  subst_constr(const TyArrow& ta, const Constr& constr) {
     return {subst_type(ta, constr.t1), subst_type(ta, constr.t2)};
   };
 
   /// subst_constr_all
-  [[nodiscard]] std::vector<Constr> subst_constr_all(
+  [[nodiscard]] TORI_INLINE std::vector<Constr> subst_constr_all(
     const TyArrow& ta, const std::vector<Constr>& cs) {
     std::vector<Constr> ret;
     ret.reserve(cs.size());
@@ -191,7 +196,7 @@ namespace TORI_NS::detail {
   // ------------------------------------------
 
   /// occurs
-  [[nodiscard]] bool occurs(
+  [[nodiscard]] TORI_INLINE bool occurs(
     const object_ptr<const Type>& x, const object_ptr<const Type>& t) {
     if (get_if<ValueType>(t.value())) return false;
     if (get_if<VarType>(t.value())) return same_type(x, t);
@@ -258,7 +263,7 @@ namespace TORI_NS::detail {
     };
   } // namespace interface
 
-  void unify_func_impl(
+  TORI_INLINE void unify_func_impl(
     std::vector<Constr>& cs,
     std::vector<TyArrow>& ta,
     const object_ptr<>& src) {
@@ -298,7 +303,7 @@ namespace TORI_NS::detail {
   /// unify
   /// \param cs Type constraints
   /// \param src Source node (for error handling)
-  [[nodiscard]] std::vector<TyArrow> unify(
+  [[nodiscard]] TORI_INLINE std::vector<TyArrow> unify(
     const std::vector<Constr>& cs, const object_ptr<>& src) {
     auto _cs = cs;
     std::vector<TyArrow> as;
@@ -310,7 +315,7 @@ namespace TORI_NS::detail {
   // Recon
   // ------------------------------------------
 
-  [[nodiscard]] object_ptr<const Type> genvar() {
+  [[nodiscard]] TORI_INLINE object_ptr<const Type> genvar() {
     auto var = make_object<Type>(VarType{0});
     get_if<VarType>(var.value())->id = uintptr_t(var.get());
     return object_ptr<const Type>(var);
