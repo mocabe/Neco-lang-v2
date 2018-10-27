@@ -91,19 +91,19 @@ namespace TORI_NS::detail {
 
     /// Get index of type in union
     template <class T>
-    static constexpr size_t index_of() {
+    static constexpr uint64_t index_of() {
       if constexpr (std::is_same_v<T, ValueType>)
         return value_index;
       else if constexpr (std::is_same_v<T, ArrowType>)
         return arrow_index;
       else if constexpr (std::is_same_v<T, VarType>)
         return var_index;
-      else 
+      else
         static_assert(false_v<T>, "Invalid type");
     }
 
     /// Provides raw access to union
-    template <size_t Idx, class TpValStorage>
+    template <uint64_t Idx, class TpValStorage>
     static constexpr decltype(auto) raw_access(TpValStorage&& v) {
       if constexpr (Idx == index_of<ValueType>())
         return (v.value);
@@ -122,15 +122,15 @@ namespace TORI_NS::detail {
   
   private:
     // hard-coded type index
-    static constexpr size_t value_index = 0;
-    static constexpr size_t arrow_index = 1;
-    static constexpr size_t var_index = 2;
+    static constexpr uint64_t value_index = 0;
+    static constexpr uint64_t arrow_index = 1;
+    static constexpr uint64_t var_index = 2;
 
   public:
-    /// Get type from index value.  
+    /// Get type from index value.
     /// Returns void when index is invalid
-    template <size_t Idx>
-    using type_of_t = std::conditional_t<
+    template <uint64_t Idx>
+    using type_of = std::conditional_t<
       Idx == value_index,
       ValueType,
       std::conditional_t<
@@ -155,7 +155,7 @@ namespace TORI_NS::detail {
     using storage = TypeValueStorage;
 
   public: // friend functions
-    template <size_t Idx, class TpVal>
+    template <uint64_t Idx, class TpVal>
     friend constexpr decltype(auto) TypeValue_get(TpVal&&);
 
   public:
@@ -163,7 +163,7 @@ namespace TORI_NS::detail {
     using TypeValueStorage::TypeValueStorage;
 
     /// Get index
-    constexpr size_t index() const {
+    constexpr uint64_t index() const {
       return storage::index();
     }
 
@@ -185,32 +185,32 @@ namespace TORI_NS::detail {
 
   /// Access TypeValue from index.
   /// Throws std::bad_cast when index is wrong.
-  template <size_t Idx, class TpVal>
+  template <uint64_t Idx, class TpVal>
   constexpr decltype(auto) TypeValue_get(TpVal&& val) {
     if (Idx != val.index()) throw std::bad_cast();
     return TypeValueStorage::raw_access<Idx>(val.get_storage());
   }
 
   /// std::get() equivalent
-  template <size_t Idx>
+  template <uint64_t Idx>
   decltype(auto) get(const TypeValue& val) {
     return TypeValue_get<Idx>(val);
   }
 
   /// std::get() equivalent
-  template <size_t Idx>
+  template <uint64_t Idx>
   decltype(auto) get(const TypeValue&& val) {
     return TypeValue_get<Idx>(std::move(val));
   }
 
   /// std::get() equivalent
-  template <size_t Idx>
+  template <uint64_t Idx>
   decltype(auto) get(TypeValue& val) {
     return TypeValue_get<Idx>(val);
   }
 
   /// std::get() equivalent
-  template <size_t Idx>
+  template <uint64_t Idx>
   decltype(auto) get(TypeValue&& val) {
     return TypeValue_get<Idx>(std::move(val));
   }
@@ -241,7 +241,7 @@ namespace TORI_NS::detail {
 
   /// std::get_if() equivalent
   template <size_t Idx>
-  constexpr std::add_pointer_t<const TypeValueStorage::type_of_t<Idx>> get_if(
+  constexpr std::add_pointer_t<const TypeValueStorage::type_of<Idx>> get_if(
     const TypeValue* val) {
     if (val && Idx == val->index()) return &get<Idx>(*val);
     return nullptr;
@@ -249,7 +249,7 @@ namespace TORI_NS::detail {
 
   /// std::get_if() equivalent
   template <size_t Idx>
-  constexpr std::add_pointer_t<TypeValueStorage::type_of_t<Idx>> get_if(
+  constexpr std::add_pointer_t<TypeValueStorage::type_of<Idx>> get_if(
     TypeValue* val) {
     if (val && Idx == val->index()) return &get<Idx>(*val);
     return nullptr;
