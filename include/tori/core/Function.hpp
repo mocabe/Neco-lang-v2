@@ -200,6 +200,16 @@ namespace TORI_NS::detail {
   template <class Term>
   using remove_varvalue_t = typename remove_varvalue_impl<Term, Term>::type;
 
+  template <class T1, class T2, bool B = std::is_same_v<T1, T2>>
+  struct check_return_type {};
+
+  template <class T1, class T2>
+  struct check_return_type<T1, T2, false> {
+    using t1 = typename T1::_expected;
+    using t2 = typename T2::_provided;
+    static_assert(false_v<T1>, "return type does not match");
+  };
+
   // ------------------------------------------
   // Function
   // ------------------------------------------
@@ -241,25 +251,6 @@ namespace TORI_NS::detail {
             {{1, static_cast<const object_info_table*>(
                    &info_table_initializer::info_table)},
              sizeof...(Ts) - 1}} {}
-
-    private:
-      template <class T1, class T2, bool B>
-      struct check_return_type_impl;
-
-      template <class T1, class T2>
-      struct check_return_type {
-        // clang bug(?) workaround
-        using type = check_return_type_impl<T1, T2, std::is_same_v<T1, T2>>;
-      };
-
-      template <class T1, class T2>
-      struct check_return_type_impl<T1, T2, false> {
-        using t1 = typename T1::_expected;
-        using t2 = typename T2::_provided;
-        static_assert(false_v<T1>, "return type does not match");
-      };
-      template <class T1, class T2>
-      struct check_return_type_impl<T1, T2, true> {};
 
     protected:
       /// Return type checker
