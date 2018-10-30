@@ -59,13 +59,10 @@ namespace TORI_NS::detail {
       /// Ctor const char*
       explicit type_error(const char* what, const object_ptr<T>& src)
         : std::logic_error(what), m_src{object_ptr<>(src)} {}
+
       /// get source node
-      object_ptr<> src() {
+      object_ptr<> src() const {
         return m_src;
-      }
-      /// format function
-      virtual std::string format() {
-        return {what()};
       }
 
     private:
@@ -108,13 +105,10 @@ namespace TORI_NS::detail {
       template <class T>
       explicit eval_error(const char* what, const object_ptr<T>& src)
         : std::logic_error(what), m_src{object_ptr<>(src)} {}
+
       /// get source node
-      object_ptr<> src() {
+      object_ptr<> src() const {
         return m_src;
-      }
-      /// format
-      virtual std::string format() {
-        return {what()};
       }
 
     private:
@@ -146,7 +140,8 @@ namespace TORI_NS::detail {
       result_error(object_ptr<Exception>&& result)
         : runtime_error("result_error: Exception detected while evaluation")
         , m_result{std::move(result)} {}
-      object_ptr<Exception> result() {
+
+      object_ptr<Exception> result() const {
         return m_result;
       }
 

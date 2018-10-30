@@ -31,7 +31,7 @@ namespace TORI_NS::detail {
       delete[] m_ptr;
     }
     const char* c_str() const noexcept {
-      return (const char*)m_ptr;
+      return reinterpret_cast<const char*>(m_ptr);
     }
 
   private:

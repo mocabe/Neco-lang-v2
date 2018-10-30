@@ -35,9 +35,9 @@ namespace TORI_NS::detail {
 
 // debug macros
 #if defined(NDEBUG)
-  constexpr bool is_debug = false;
+  constexpr bool debug_mode = false;
 #else
-  constexpr bool is_debug = true;
+  constexpr bool debug_mode = true;
 #endif
 
 // env macros

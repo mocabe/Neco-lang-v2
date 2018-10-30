@@ -40,7 +40,7 @@ namespace TORI_NS::detail {
   struct Closure;
 
   /// Info table for closure
-  struct ClosureInfoTable : object_info_table {
+  struct closure_info_table : object_info_table {
     /// Number of arguments
     size_t n_args;
     /// Size of extended header
@@ -51,16 +51,9 @@ namespace TORI_NS::detail {
 
   template <class Closure1>
   struct Closure : HeapObject {
-    /// Arity of this object.
-    struct _arity {
-      constexpr _arity() noexcept : atomic{0} {}
-      constexpr _arity(size_t v) noexcept : atomic{v} {}
-      constexpr _arity(const _arity& arty) noexcept : atomic{arty.raw} {}
-      union {
-        std::atomic<size_t> atomic;
-        size_t raw;
-      };
-    } arity;
+
+    /// Arity of this closure
+    atomic_refcount<uint64_t> arity;
 
 #if defined(CLOSURE_HEADER_EXTEND_BYTES)
     /// additional buffer storage
@@ -83,12 +76,12 @@ namespace TORI_NS::detail {
 
     /// Execute core with vtable function
     object_ptr<> code() noexcept {
-      return static_cast<const ClosureInfoTable*>(info_table)->code(this);
+      return static_cast<const closure_info_table*>(info_table)->code(this);
     }
 
     /// Get number of args
     size_t n_args() const noexcept {
-      return static_cast<const ClosureInfoTable*>(info_table)->n_args;
+      return static_cast<const closure_info_table*>(info_table)->n_args;
     }
   };
 
@@ -125,16 +118,16 @@ namespace TORI_NS::detail {
   struct vtbl_eval_wrapper {
     static object_ptr<> code(Closure<>* _this) noexcept {
       try {
-        return std::move((static_cast<const T*>(_this)->code()).value);
+        return (static_cast<const T*>(_this)->code()).value;
       } catch (const bad_value_cast& e) {
         return new Exception(new BadValueCast(e.from(), e.to()));
       } catch (const bad_closure_cast& e) {
         return new Exception(new BadClosureCast(e.from(), e.to()));
-      } catch (type_error& e) {
+      } catch (const type_error& e) {
         return new Exception(new TypeError(new String(e.what()), e.src()));
-      } catch (eval_error& e) {
+      } catch (const eval_error& e) {
         return new Exception(new EvalError(new String(e.what()), e.src()));
-      } catch (result_error& e) {
+      } catch (const result_error& e) {
         return object_ptr<>(e.result());
       } catch (const std::exception& e) {
         return new Exception(new String(e.what()));
@@ -215,7 +208,7 @@ namespace TORI_NS::detail {
   // ------------------------------------------
   namespace interface {
 
-    /// CRTP utility to create closure type.  
+    /// CRTP utility to create closure type.
     template <class T, class... Ts>
     struct Function : ClosureN<sizeof...(Ts) - 1> {
       static_assert(
@@ -227,7 +220,7 @@ namespace TORI_NS::detail {
       /// Closure info table initializer
       struct info_table_initializer {
         /// static closure infor
-        static const ClosureInfoTable info_table;
+        static const closure_info_table info_table;
       };
 
       /// Get N'th argument
@@ -235,7 +228,7 @@ namespace TORI_NS::detail {
       auto arg() const {
         using To = std::tuple_element_t<N, std::tuple<Ts...>>;
         auto obj = ClosureN<sizeof...(Ts) - 1>::template nth_arg<N>();
-        ++(obj.head()->refcount.atomic); // +1
+        obj.head()->refcount.fetch_add(); // +1
         return object_ptr(static_cast<expected<To>*>(obj.get()));
       }
 
@@ -296,7 +289,7 @@ namespace TORI_NS::detail {
     };
     // Initialize closure infotable
     template <class T, class... Ts>
-    const ClosureInfoTable
+    const closure_info_table
       Function<T, Ts...>::info_table_initializer::info_table = { //
         {object_type<T>(),                                       //
          sizeof(T),                                              //

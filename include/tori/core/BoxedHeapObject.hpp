@@ -106,7 +106,7 @@ namespace TORI_NS::detail {
       constexpr BoxedHeapObject(static_construct_t, Args &&... args)
         : BoxedHeapObject(std::forward<Args>(args)...) {
         // set refcount ZERO to avoid deletion
-        refcount.atomic = 0;
+        refcount = 0u;
       }
 
       /// Ctor

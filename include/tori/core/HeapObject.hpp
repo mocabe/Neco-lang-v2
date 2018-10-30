@@ -43,6 +43,49 @@ namespace TORI_NS::detail {
   // interface
   namespace interface {
 
+    /// reference count
+    template <class T>
+    class atomic_refcount {
+    public:
+      constexpr atomic_refcount() noexcept : atomic{0} {}
+      constexpr atomic_refcount(T v) noexcept : atomic{v} {}
+      constexpr atomic_refcount(const atomic_refcount& refcnt) noexcept
+        : atomic{refcnt.raw} {}
+
+      atomic_refcount& operator=(const atomic_refcount& other) noexcept {
+        atomic.store(other.atomic.load());
+        return *this;
+      }
+
+      atomic_refcount& operator=(T v) noexcept {
+        atomic.store(v);
+        return *this;
+      }
+
+      inline T load() const noexcept {
+        return atomic.load();
+      }
+
+      inline void store(T v) noexcept {
+        atomic.store(v);
+      }
+
+      inline T fetch_add() noexcept {
+        return atomic.fetch_add(1u, std::memory_order_relaxed);
+      }
+
+      inline T fetch_sub() noexcept {
+        return atomic.fetch_sub(1u, std::memory_order_release);
+      }
+
+    private:
+      static_assert(sizeof(T) == sizeof(std::atomic<T>));
+      union {
+        std::atomic<T> atomic;
+        T raw;
+      };
+    };
+
     // heap-allocated object of type T
     template <
       class T,
@@ -60,18 +103,8 @@ namespace TORI_NS::detail {
     struct HeapObject {
       /// term
       using term = tm_value<HeapObject>;
-      /// reference counter
-      /// \notes static objects have zero for reference count.
-      struct _refcount {
-        constexpr _refcount() noexcept : atomic{0} {}
-        constexpr _refcount(size_t v) noexcept : atomic{v} {}
-        constexpr _refcount(const _refcount& refcnt) noexcept
-          : atomic{refcnt.raw} {}
-        union {
-          std::atomic<size_t> atomic;
-          size_t raw;
-        };
-      } mutable refcount;
+
+      mutable atomic_refcount<uint64_t> refcount;
 
       /// pointer to info-table
       const object_info_table* info_table;
@@ -113,9 +146,7 @@ namespace TORI_NS::detail {
       object_ptr(const object_ptr<value_type>& obj) noexcept
         : m_ptr{obj.m_ptr} {
         // when not static object
-        if (m_ptr && head()->refcount.atomic != 0) {
-          head()->refcount.atomic.fetch_add(1u, std::memory_order_relaxed);
-        }
+        if (m_ptr && head()->refcount.load() != 0) head()->refcount.fetch_add();
       }
       /// Move constructor
       object_ptr(object_ptr<value_type>&& obj) noexcept : m_ptr{obj.m_ptr} {
@@ -126,9 +157,7 @@ namespace TORI_NS::detail {
       template <class U>
       object_ptr(const object_ptr<U>& obj) noexcept : m_ptr{obj.get()} {
         // when not static object
-        if (m_ptr && head()->refcount.atomic != 0) {
-          head()->refcount.atomic.fetch_add(1u, std::memory_order_relaxed);
-        }
+        if (m_ptr && head()->refcount.load() != 0) head()->refcount.fetch_add();
       }
       /// Move convert constructor
       template <class U>
@@ -238,7 +267,7 @@ namespace TORI_NS::detail {
       if (!m_ptr) throw std::runtime_error("clone() to null object");
       auto r = static_cast<value_type*>(info_table()->clone(m_ptr));
       if (unlikely(!r)) throw std::bad_alloc();
-      r->refcount.atomic = 1;
+      r->refcount = 1u;
       return r;
     }
 
@@ -248,11 +277,9 @@ namespace TORI_NS::detail {
     template <class T>
     object_ptr<T>::~object_ptr() noexcept {
       // when not static object
-      if (m_ptr && head()->refcount.atomic != 0) {
+      if (m_ptr && head()->refcount.load() != 0) {
         // delete object if needed
-        if (
-          head()->refcount.atomic.fetch_sub(1u, std::memory_order_release) ==
-          1) {
+        if (head()->refcount.fetch_sub() == 1) {
           std::atomic_thread_fence(std::memory_order_acquire);
           info_table()->destroy(const_cast<std::remove_cv_t<T>*>(m_ptr));
         }

@@ -31,7 +31,7 @@ void comp() {
   static_assert(
     sizeof(ClosureN<4>) ==
     sizeof(HeapObject) + 8 + closure_header_extend_bytes + 4 * 8);
-  static_assert(sizeof(ClosureInfoTable) == sizeof(object_info_table) + 24);
+  static_assert(sizeof(closure_info_table) == sizeof(object_info_table) + 24);
 
   // ----------------------------------------
   // Object

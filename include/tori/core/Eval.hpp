@@ -27,6 +27,7 @@ namespace TORI_NS::detail {
     }
   } // namespace interface
 
+  // related exceptions
   namespace interface {
     struct eval_error::invalid_fix : eval_error {
       invalid_fix(const char* msg, const object_ptr<>& obj)
@@ -53,7 +54,7 @@ namespace TORI_NS::detail {
       if (apply->evaluated()) return apply->get_cache();
       // reduce app
       auto app = eval_impl(apply->app());
-      auto& arg = apply->arg();
+      const auto& arg = apply->arg();
       // Fix
       if (has_type<Fix>(app)) {
         auto f = eval_impl(arg);
@@ -62,14 +63,14 @@ namespace TORI_NS::detail {
             "eval_error: Expected closure after Fix", obj);
         } else {
           auto c = static_cast<Closure<>*>(f.get());
-          if (unlikely(c->arity.atomic == 0)) {
+          if (unlikely(c->arity.load() == 0)) {
             throw eval_error::invalid_fix(
               "eval_error: Expected appliable closure after Fix", obj);
           } else {
             auto pap = f.clone();
             auto cc = static_cast<Closure<>*>(pap.get());
-            cc->args(--cc->arity.atomic) = obj;
-            return eval_impl(object_ptr<>(pap));
+            cc->args(cc->arity.fetch_sub() - 1) = obj;
+            return eval_impl(pap);
           }
         }
       }
@@ -79,20 +80,20 @@ namespace TORI_NS::detail {
       } else {
         // create pap
         auto c = static_cast<Closure<>*>(app.get());
-        if (unlikely(c->arity.atomic == 0)) {
+        if (unlikely(c->arity.load() == 0)) {
           throw eval_error::too_many_arguments(
             "eval_error: Too many arguments", obj);
         } else {
           auto pap = app.clone();
           auto cc = static_cast<Closure<>*>(pap.get());
-          cc->args(--cc->arity.atomic) = arg;
-          if (cc->arity.atomic == 0) {
+          cc->args(cc->arity.fetch_sub() - 1) = arg;
+          if (cc->arity.load() == 0) {
             auto eval_result = eval_impl(cc->code());
             apply->set_cache(eval_result);
             return eval_result;
           } else {
             apply->set_cache(pap);
-            return eval_impl(object_ptr<>(pap));
+            return eval_impl(pap);
           }
         }
       }
@@ -109,7 +110,7 @@ namespace TORI_NS::detail {
       using To = assume_object_type_t<type_of_t<typename T::term>>;
       auto result = eval_impl(object_ptr<>(obj));
 
-      ++(result.head()->refcount.atomic);
+      result.head()->refcount.fetch_add();
 
       // This conversion is not obvious.
       // Currently object_ptr<T> MUST have type T which has compatible memory
