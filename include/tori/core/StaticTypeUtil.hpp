@@ -600,98 +600,179 @@ namespace TORI_NS::detail {
   template <class Term, class Gen>
   using genpoly_gen = typename genpoly_impl<Term, Gen, Term>::gen;
 
-  template <class T, class Gen>
+  template <class T, class Gen, bool Assert>
   struct type_of_impl;
 
-  template <class T, class Gen>
+  template <class T, class Gen, bool Assert>
   struct type_of_h {
-    using type = typename type_of_impl<T, Gen>::type;
-    using gen = typename type_of_impl<T, Gen>::gen;
+    using type = typename type_of_impl<T, Gen, Assert>::type;
+    using gen = typename type_of_impl<T, Gen, Assert>::gen;
   };
 
-  template <class T, class... Ts, class Gen>
-  struct type_of_h<tm_closure<T, Ts...>, Gen> {
+  template <class T, class... Ts, class Gen, bool Assert>
+  struct type_of_h<tm_closure<T, Ts...>, Gen, Assert> {
     // t1
-    using _t1 = type_of_h<T, Gen>;
+    using _t1 = type_of_h<T, Gen, Assert>;
     using _t1_t = typename _t1::type;
     using _t1_gen = typename _t1::gen;
     // t2
-    using _t2 = type_of_h<tm_closure<Ts...>, _t1_gen>;
+    using _t2 = type_of_h<tm_closure<Ts...>, _t1_gen, Assert>;
     using _t2_t = typename _t2::type;
     using _t2_gen = typename _t2::gen;
     // here we go...
     using type = arrow<_t1_t, _t2_t>;
     using gen = _t2_gen;
   };
-  template <class T, class Gen>
-  struct type_of_h<tm_closure<T>, Gen> {
+  template <class T, class Gen, bool Assert>
+  struct type_of_h<tm_closure<T>, Gen, Assert> {
     // unwrap
-    using type = typename type_of_h<T, Gen>::type;
-    using gen = typename type_of_h<T, Gen>::gen;
+    using type = typename type_of_h<T, Gen, Assert>::type;
+    using gen = typename type_of_h<T, Gen, Assert>::gen;
   };
 
-  template <class Tag, class Gen>
-  struct type_of_impl<tm_value<Tag>, Gen> {
+  template <class Tag, class Gen, bool Assert>
+  struct type_of_impl<tm_value<Tag>, Gen, Assert> {
     using type = typename tm_value<Tag>::type;
     using gen = Gen;
   };
-  template <class Tag, class Gen>
-  struct type_of_impl<tm_var<Tag>, Gen> {
+  template <class Tag, class Gen, bool Assert>
+  struct type_of_impl<tm_var<Tag>, Gen, Assert> {
     using type = typename tm_var<Tag>::type;
     using gen = Gen;
   };
-  template <class Tag, class Gen>
-  struct type_of_impl<tm_varvalue<Tag>, Gen> {
+  template <class Tag, class Gen, bool Assert>
+  struct type_of_impl<tm_varvalue<Tag>, Gen, Assert> {
     using type = typename tm_varvalue<Tag>::type;
     using gen = Gen;
   };
-  template <class... Ts, class Gen>
-  struct type_of_impl<tm_closure<Ts...>, Gen> {
+  template <class... Ts, class Gen, bool Assert>
+  struct type_of_impl<tm_closure<Ts...>, Gen, Assert> {
     using rcn = type_of_h<
       genpoly_term<tm_closure<Ts...>, Gen>,
-      genpoly_gen<tm_closure<Ts...>, Gen>>;
+      genpoly_gen<tm_closure<Ts...>, Gen>,
+      Assert>;
     using type = typename rcn::type;
     using gen = typename rcn::gen;
   };
 
-  template <class Tag, class T, class Gen>
-  struct type_of_impl<tm_apply<tm_fix<Tag>, T>, Gen> {
-    using _t1 = type_of_impl<T, Gen>;
-    using _t1_type = typename _t1::type;
-    using _t1_gen = typename _t1::gen;
-    using _var = genvar_t<_t1_gen>;
-    using _c = std::tuple<constr<_t1_type, arrow<_var, _var>>>;
-    using _s = unify_t<_c>;
-
-    using gen = nextgen_t<_t1_gen>;
-    using type = subst_all_t<_s, _var>;
+  template <class S, class Gen, bool Error = is_error_type_v<S>>
+  struct type_of_impl_applyfix_impl {
+    using _var = genvar_t<Gen>;
+    using type = subst_all_t<S, _var>;
+    using gen = nextgen_t<Gen>;
   };
 
-  template <class T1, class T2, class Gen>
-  struct type_of_impl<tm_apply<T1, T2>, Gen> {
-    // get type of T1
-    using _t1 = type_of_impl<T1, Gen>;
-    using _t1_type = typename _t1::type;
-    using _t1_gen = typename _t1::gen;
-    // get type of T2
-    using _t2 = type_of_impl<T2, _t1_gen>;
-    using _t2_type = typename _t2::type;
-    using _t2_gen = typename _t2::gen;
+  template <class S, class Gen>
+  struct type_of_impl_applyfix_impl<S, Gen, true> {
+    using type = S;
+    using gen = void;
+  };
+
+  // When Assert==true Error is always false
+  template <
+    class T1,
+    bool Assert,
+    bool Error = is_error_type_v<typename T1::type>>
+  struct type_of_impl_applyfix {
+    using _t1_type = typename T1::type;
+    using _t1_gen = typename T1::gen;
+    using _var = genvar_t<_t1_gen>;
+    using _c = std::tuple<constr<_t1_type, arrow<_var, _var>>>;
+    using _s = unify_t<_c, Assert>;
+    using _impl = type_of_impl_applyfix_impl<_s, _t1_gen>;
+    using type = typename _impl::type;
+    using gen = typename _impl::gen;
+  };
+
+  // Assert==false && type check failed
+  template <class T1, bool Assert>
+  struct type_of_impl_applyfix<T1, Assert, true> {
+    using type = typename T1::type;
+    using gen = void;
+  };
+
+  template <class Tag, class T, class Gen, bool Assert>
+  struct type_of_impl<tm_apply<tm_fix<Tag>, T>, Gen, Assert> {
+    using _t1 = type_of_impl<T, Gen, Assert>;
+    using _impl = type_of_impl_applyfix<_t1, Assert>;
+    using type = typename _impl::type;
+    using gen = typename _impl::gen;
+  };
+
+  template <class S, class Var, class Gen, bool Error = is_error_type_v<S>>
+  struct type_of_impl_apply_impl {
+    using type = subst_all_t<S, Var>;
+    using gen = nextgen_t<Gen>;
+  };
+
+  template <class S, class Var, class Gen>
+  struct type_of_impl_apply_impl<S, Var, Gen, true> {
+    using type = S;
+    using gen = void;
+  };
+
+  template <
+    class T2,
+    class T1T,
+    class Gen,
+    bool Assert,
+    bool Error = is_error_type_v<typename T2::type>>
+  struct type_of_impl_apply_t2 {
+    using _t2_type = typename T2::type;
+    using _t2_gen = typename T2::gen;
     // create new type variable
     using _var = genvar_t<_t2_gen>;
     // constraint
-    using _c = std::tuple<constr<_t1_type, arrow<_t2_type, _var>>>;
+    using _c = std::tuple<constr<T1T, arrow<_t2_type, _var>>>;
     // solve constraint
-    using _s = unify_t<_c>;
+    using _s = unify_t<_c, Assert>;
     // apply result
 
-    using gen = nextgen_t<_t2_gen>;
-    using type = subst_all_t<_s, _var>;
+    using _impl = type_of_impl_apply_impl<_s, _var, _t2_gen>;
+    using type = typename _impl::type;
+    using gen = typename _impl::gen;
+  };
+
+  template <class T2, class T1T, class Gen, bool Assert>
+  struct type_of_impl_apply_t2<T2, T1T, Gen, Assert, true> {
+    using type = typename T2::type;
+    using gen = Gen;
+  };
+
+  template <
+    class T1,
+    class T2,
+    bool Assert,
+    bool Error = is_error_type_v<typename T1::type>>
+  struct type_of_impl_apply_t1 {
+    using _t1_type = typename T1::type;
+    using _t1_gen = typename T1::gen;
+    // get type of T2
+    using _t2 = type_of_impl<T2, _t1_gen, Assert>;
+
+    using _impl = type_of_impl_apply_t2<_t2, _t1_type, _t1_gen, Assert>;
+    using type = typename _impl::type;
+    using gen = typename _impl::gen;
+  };
+
+  template <class T1, class T2, bool Assert>
+  struct type_of_impl_apply_t1<T1, T2, Assert, true> {
+    using type = typename T1::type;
+    using gen = void;
+  };
+
+  template <class T1, class T2, class Gen, bool Assert>
+  struct type_of_impl<tm_apply<T1, T2>, Gen, Assert> {
+    // get type of T1
+    using _t1 = type_of_impl<T1, Gen, Assert>;
+    using _impl = type_of_impl_apply_t1<_t1, T2, Assert>;
+    using type = typename _impl::type;
+    using gen = typename _impl::gen;
   };
 
   /// Infer type of term
-  template <class Term>
-  using type_of_t = typename type_of_impl<Term, taggen<0>>::type;
+  template <class Term, bool Assert = true>
+  using type_of_t = typename type_of_impl<Term, taggen<0>, Assert>::type;
 
   // ------------------------------------------
   // Util
