@@ -83,32 +83,54 @@ namespace TORI_NS::detail {
 
   /// Arrow type
   template <class T1, class T2>
-  struct arrow {
-    using type = arrow<T1, T2>;
-    using t1 = T1;
-    using t2 = T2;
-  };
+  struct arrow {};
   /// Type variable
   template <class Tag>
-  struct var {
-    using type = var<Tag>;
-  };
+  struct var {};
   /// Value type
   template <class Tag>
-  struct value {
-    using type = value<Tag>;
-  };
+  struct value {};
   // Var value
   template <class Tag>
-  struct varvalue {
-    using type = varvalue<Tag>;
-  };
+  struct varvalue {};
 
   /// Type mapping
   template <class T1, class T2>
-  struct tyarrow {
-    using type = tyarrow<T1, T2>;
-  };
+  struct tyarrow {};
+
+  /// error_type
+  template <class Tag>
+  struct error_type {};
+
+  namespace error_tags {
+    /// type_missmatch
+    template <class T1, class T2, class Other = std::tuple<>>
+    struct type_missmatch {};
+    /// unsolvable_constraints
+    template <class T1, class T2, class Other = std::tuple<>>
+    struct unsolvable_constraints {};
+    /// circular_constraints
+    template <class Var, class Other = std::tuple<>>
+    struct circular_constraints {};
+    /// none
+    struct none {};
+  } // namespace error_tags
+
+  template <class T>
+  struct is_error_type : std::false_type {};
+  template <class T1, class T2, class Other>
+  struct is_error_type<error_type<error_tags::type_missmatch<T1, T2, Other>>>
+    : std::true_type {};
+  template <class T1, class T2, class Other>
+  struct is_error_type<
+    error_type<error_tags::unsolvable_constraints<T1, T2, Other>>>
+    : std::true_type {};
+  template <class Var, class Other>
+  struct is_error_type<error_type<error_tags::circular_constraints<Var, Other>>>
+    : std::true_type {};
+  /// is_error_type_v
+  template <class T>
+  static constexpr bool is_error_type_v = is_error_type<T>::value;
 
   // ------------------------------------------
   // Terms
@@ -176,7 +198,7 @@ namespace TORI_NS::detail {
   using subst_t = typename subst_impl<TyArrow, Ty>::type;
 
   template <class Arrows, class Ty>
-  struct subst_all_impl {};
+  struct subst_all_impl;
   template <class Ty>
   struct subst_all_impl<std::tuple<>, Ty> {
     using type = Ty;
@@ -256,27 +278,25 @@ namespace TORI_NS::detail {
   // Unify
   // ------------------------------------------
 
-  // error
   template <class ConstrList>
   struct unify_impl {
-    using type = typename ConstrList::_error_constraints;
-    static_assert(
-      false_v<ConstrList>, "Unification error: Unsolvable constraints");
+    // error
+    using type = error_type<
+      error_tags::
+        unsolvable_constraints<error_tags::none, error_tags::none, ConstrList>>;
   };
 
   template <class T1, class T2, class... Ts>
   struct unify_impl<std::tuple<constr<T1, T2>, Ts...>> {
-    using t1 = typename T1::_error_lhs;
-    using t2 = typename T2::_error_rhs;
-    using t3 = typename std::tuple<Ts...>::_error_other;
-    static_assert(false_v<T1>, "Unification error: Unsolvable constraints");
+    // error
+    using type =
+      error_type<error_tags::unsolvable_constraints<T1, T2, std::tuple<Ts...>>>;
   };
   // helper
   template <class Var, class T, class Tail, bool B = !occurs_v<Var, T>>
   struct unify_h {
-    using t1 = typename T::_error_var;
-    using t2 = typename Tail::_error_other;
-    static_assert(false_v<T>, "Unification error: Circular constraints");
+    // error
+    using type = error_type<error_tags::circular_constraints<Var, Tail>>;
   };
   // helper2
   template <
@@ -285,10 +305,9 @@ namespace TORI_NS::detail {
     class Tail,
     bool B = std::is_same_v<Tag1, Tag2>>
   struct unify_h2 {
-    using t1 = typename value<Tag1>::_error_lhs;
-    using t2 = typename value<Tag2>::_error_rhs;
-    using t3 = typename Tail::_error_other;
-    static_assert(false_v<Tag1>, "Unification error: Type missmatch");
+    // error
+    using type =
+      error_type<error_tags::type_missmatch<value<Tag1>, value<Tag2>, Tail>>;
   };
   // helper3
   template <
@@ -297,17 +316,20 @@ namespace TORI_NS::detail {
     class Tail,
     bool B = std::is_same_v<Tag1, Tag2>>
   struct unify_h3 {
-    using t1 = typename varvalue<Tag1>::_error_lhs;
-    using t2 = typename varvalue<Tag2>::_error_rhs;
-    static_assert(false_v<Tag1>, "Unification error: Type missmatch");
+    // error
+    using type = error_type<
+      error_tags::type_missmatch<varvalue<Tag1>, varvalue<Tag2>, Tail>>;
   };
 
   // helper
   template <class Var, class T, class Tail>
   struct unify_h<Var, T, Tail, true> {
-    using type = append_tuple_t<
-      typename unify_impl<subst_constr_all_t<tyarrow<Var, T>, Tail>>::type,
-      tyarrow<Var, T>>;
+    using _t =
+      typename unify_impl<subst_constr_all_t<tyarrow<Var, T>, Tail>>::type;
+    using type = std::conditional_t<
+      is_error_type_v<_t>,
+      _t,
+      append_tuple_t<_t, tyarrow<Var, T>>>;
   };
   // helper2
   template <class Tag1, class Tag2, class Tail>
@@ -360,9 +382,59 @@ namespace TORI_NS::detail {
       std::tuple<constr<S1, T1>, constr<S2, T2>, Cs...>>::type;
   };
 
-  /// Unification
+  template <class T>
+  struct unify_assert {
+    using type = T;
+  };
+
+  template <class T1, class T2, class Other>
+  struct unify_assert<error_type<error_tags::type_missmatch<T1, T2, Other>>> {
+    using info1 = typename T1::_error_expected;
+    using info2 = typename T2::_error_provided;
+    using info3 = typename Other::_error_other;
+    static_assert(false_v<T1>, "Unification error: Type missmatch");
+  };
+
+  template <class Constrs>
+  struct unify_assert<error_type<
+    error_tags::
+      unsolvable_constraints<error_tags::none, error_tags::none, Constrs>>> {
+    using info = typename Constrs::_error_constraints;
+    static_assert(
+      false_v<Constrs>, "Unification error: Unsolvable constraints");
+  };
+
+  template <class T1, class T2, class Other>
+  struct unify_assert<
+    error_type<error_tags::unsolvable_constraints<T1, T2, Other>>> {
+    using info1 = typename T1::_error_lhs;
+    using info2 = typename T2::_error_rhs;
+    using info3 = typename Other::_error_other;
+    static_assert(false_v<T1>, "Unification error: Unsolvable constraints");
+  };
+
+  template <class Var, class Other>
+  struct unify_assert<
+    error_type<error_tags::circular_constraints<Var, Other>>> {
+    using info1 = typename Var::_error_var;
+    using info2 = typename Other::_error_other;
+    static_assert(false_v<Var>, "Unification error: Circular constraints");
+  };
+
+  template <class Cs, bool Assert>
+  struct unify_switch {
+    using _t = typename unify_impl<Cs>::type;
+    using type = typename unify_assert<_t>::type;
+  };
+
   template <class Cs>
-  using unify_t = typename unify_impl<Cs>::type;
+  struct unify_switch<Cs, false> {
+    using type = typename unify_impl<Cs>::type;
+  };
+
+  /// Unification
+  template <class Cs, bool Assert = true>
+  using unify_t = typename unify_switch<Cs, Assert>::type;
 
   // ------------------------------------------
   // tm_closure to Tuple
@@ -529,7 +601,7 @@ namespace TORI_NS::detail {
   using genpoly_gen = typename genpoly_impl<Term, Gen, Term>::gen;
 
   template <class T, class Gen>
-  struct type_of_impl {};
+  struct type_of_impl;
 
   template <class T, class Gen>
   struct type_of_h {
@@ -581,43 +653,40 @@ namespace TORI_NS::detail {
     using type = typename rcn::type;
     using gen = typename rcn::gen;
   };
+
   template <class Tag, class T, class Gen>
   struct type_of_impl<tm_apply<tm_fix<Tag>, T>, Gen> {
-    // recon T
-    using _t = type_of_impl<T, Gen>;
-    using _t_t = typename _t::type;
-    using _t_gen = typename _t::gen;
-    //
-    using _type = genvar_t<_t_gen>;
-    using _gen = nextgen_t<_t_gen>;
-    using _c = std::tuple<constr<_t_t, arrow<_type, _type>>>;
+    using _t1 = type_of_impl<T, Gen>;
+    using _t1_type = typename _t1::type;
+    using _t1_gen = typename _t1::gen;
+    using _var = genvar_t<_t1_gen>;
+    using _c = std::tuple<constr<_t1_type, arrow<_var, _var>>>;
+    using _s = unify_t<_c>;
 
-    // unify
-    using _u = unify_t<_c>;
-
-    // return
-    using type = subst_all_t<_u, _type>;
-    using gen = _gen;
+    using gen = nextgen_t<_t1_gen>;
+    using type = subst_all_t<_s, _var>;
   };
+
   template <class T1, class T2, class Gen>
   struct type_of_impl<tm_apply<T1, T2>, Gen> {
-    // recon t1 and t2
+    // get type of T1
     using _t1 = type_of_impl<T1, Gen>;
-    using _t2 = type_of_impl<T2, typename _t1::gen>;
-    using t2_gen = typename _t2::gen;
+    using _t1_type = typename _t1::type;
+    using _t1_gen = typename _t1::gen;
+    // get type of T2
+    using _t2 = type_of_impl<T2, _t1_gen>;
+    using _t2_type = typename _t2::type;
+    using _t2_gen = typename _t2::gen;
+    // create new type variable
+    using _var = genvar_t<_t2_gen>;
+    // constraint
+    using _c = std::tuple<constr<_t1_type, arrow<_t2_type, _var>>>;
+    // solve constraint
+    using _s = unify_t<_c>;
+    // apply result
 
-    // generate
-    using _type = genvar_t<t2_gen>;
-    using _gen = nextgen_t<t2_gen>;
-    using _c =
-      std::tuple<constr<typename _t1::type, arrow<typename _t2::type, _type>>>;
-
-    // unify
-    using _u = unify_t<_c>;
-
-    // return
-    using type = subst_all_t<_u, _type>;
-    using gen = _gen;
+    using gen = nextgen_t<_t2_gen>;
+    using type = subst_all_t<_s, _var>;
   };
 
   /// Infer type of term
