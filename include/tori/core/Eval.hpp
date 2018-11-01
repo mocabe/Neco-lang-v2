@@ -105,25 +105,21 @@ namespace TORI_NS::detail {
 
     /// evaluate each apply node and replace with result
     template <class T>
-    [[nodiscard]] auto eval(const object_ptr<T>& obj)
-      ->object_ptr<assume_object_type_t<type_of_t<typename T::term>>> {
-      using To = assume_object_type_t<type_of_t<typename T::term>>;
+    [[nodiscard]] auto eval(const object_ptr<T>& obj) {
       auto result = eval_impl(object_ptr<>(obj));
-
-      result.head()->refcount.fetch_add();
-
-      // This conversion is not obvious.
-      // Currently object_ptr<T> MUST have type T which has compatible memory
-      // layout with ACTUAL object pointing to.
-      // Since it's impossible to decide memory layout of closure types (because
-      // of runtime currying), we convert it to closure<...> which is
-      // essentially equal to to HeapObject.
-      // Type variables are also undecidable so we just convert them to
-      // HeapObject.
-      // Finally, we get type To from compile time checker. So when compile time
-      // type system is broken or bugged, this conversion will crash the
-      // program without throwing any error.
-      return object_ptr<To>(static_cast<To*>(result.get()));
+      if constexpr (!is_error_type_v<type_of_t<typename T::term, false>>) {
+        // Currently object_ptr<T> MUST have type T which has compatible memory
+        // layout with actual object pointing to.
+        // Since it's impossible to decide memory layout of closure types,
+        // we convert it to closure<...> which is essentially equal to to
+        // HeapObject. Type variables are also undecidable so we just convert
+        // them to HeapObject.
+        using To = assume_object_type_t<type_of_t<typename T::term>>;
+        result.head()->refcount.fetch_add(); // +1
+        return object_ptr<To>(static_cast<To*>(result.get()));
+      } else {
+        return result;
+      }
     }
 
   } // namespace interface
