@@ -118,7 +118,7 @@ namespace TORI_NS::detail {
       class T2,
       class =
         std::enable_if_t<is_valid_app_arg_v<T1> && is_valid_app_arg_v<T2>>>
-    [[nodiscard]] object_ptr<> operator>>(T1&& lhs, T2&& rhs) {
+    [[nodiscard]][[deprecated]] object_ptr<> operator>>(T1&& lhs, T2&& rhs) {
       return new ApplyR{object_ptr<>(std::forward<T1>(lhs)),
                         object_ptr<>(std::forward<T2>(rhs))};
     }

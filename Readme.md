@@ -49,7 +49,7 @@ int main() {
   // create closure
   auto print = make_object<Print>();
   // apply
-  auto apply = print >> new String("Hello, World!");
+  auto apply = print << new String("Hello, World!");
   // runtime type check
   check_type<Unit>(apply);
   // eval
@@ -82,6 +82,8 @@ struct ApplyTwice : Function<ApplyTwice, closure<Int, Int>, Int, Int> {
 
 ### Polymorphic function
 ```cpp
+class X; // only for clang++
+
 // Bool -> X -> X -> X
 struct If : Function<If, Bool, forall<class X>, forall<class X>, forall<class X>> {
   ReturnType code() {
