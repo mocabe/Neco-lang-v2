@@ -45,9 +45,6 @@ namespace TORI_NS::detail {
 
   /// eval implementation
   [[nodiscard]] TORI_INLINE object_ptr<> eval_impl(const object_ptr<>& obj) {
-    // exception
-    if (auto exception = value_cast_if<Exception>(obj))
-      throw result_error(exception);
     // apply
     if (auto apply = value_cast_if<ApplyR>(obj)) {
       // graph reduction
@@ -58,46 +55,56 @@ namespace TORI_NS::detail {
       // Fix
       if (has_type<Fix>(app)) {
         auto f = eval_impl(arg);
-        if (unlikely(has_value_type(f))) {
+        // check arg
+        if (unlikely(has_value_type(f)))
           throw eval_error::invalid_fix(
             "eval_error: Expected closure after Fix", obj);
+        // cast to closure
+        auto c = static_cast<Closure<>*>(f.get());
+        // check arity
+        if (unlikely(c->arity.load() == 0))
+          throw eval_error::invalid_fix(
+            "eval_error: Expected appliable closure after Fix", obj);
+        // process
+        auto pap = f.clone();
+        auto cc = static_cast<Closure<>*>(pap.get());
+        auto arity = cc->arity.fetch_sub() - 1;
+        cc->args(arity) = obj;
+        if (arity == 0) {
+          auto eval_result = eval_impl(cc->code());
+          apply->set_cache(eval_result);
+          return eval_result;
         } else {
-          auto c = static_cast<Closure<>*>(f.get());
-          if (unlikely(c->arity.load() == 0)) {
-            throw eval_error::invalid_fix(
-              "eval_error: Expected appliable closure after Fix", obj);
-          } else {
-            auto pap = f.clone();
-            auto cc = static_cast<Closure<>*>(pap.get());
-            cc->args(cc->arity.fetch_sub() - 1) = obj;
-            return eval_impl(pap);
-          }
+          return eval_impl(pap);
         }
       }
-      // Apply
-      if (unlikely(has_value_type(app))) {
+      // check app
+      if (unlikely(has_value_type(app)))
         throw eval_error::invalid_apply("eval_error: Apply to value type", obj);
+      // too many arguments
+      auto c = static_cast<Closure<>*>(app.get());
+      if (unlikely(c->arity.load() == 0))
+        throw eval_error::too_many_arguments(
+          "eval_error: Too many arguments", obj);
+      // create pap
+      auto pap = app.clone();
+      // process
+      auto cc = static_cast<Closure<>*>(pap.get());
+      auto arity = cc->arity.fetch_sub() - 1;
+      cc->args(arity) = arg;
+      if (arity == 0) {
+        auto eval_result = eval_impl(cc->code());
+        apply->set_cache(eval_result);
+        return eval_result;
       } else {
-        // create pap
-        auto c = static_cast<Closure<>*>(app.get());
-        if (unlikely(c->arity.load() == 0)) {
-          throw eval_error::too_many_arguments(
-            "eval_error: Too many arguments", obj);
-        } else {
-          auto pap = app.clone();
-          auto cc = static_cast<Closure<>*>(pap.get());
-          cc->args(cc->arity.fetch_sub() - 1) = arg;
-          if (cc->arity.load() == 0) {
-            auto eval_result = eval_impl(cc->code());
-            apply->set_cache(eval_result);
-            return eval_result;
-          } else {
-            apply->set_cache(pap);
-            return eval_impl(pap);
-          }
-        }
+        apply->set_cache(pap);
+        return eval_impl(pap);
       }
     }
+    // detect exception
+    if (auto exception = value_cast_if<Exception>(obj))
+      throw result_error(exception);
+
     return obj;
   }
 
