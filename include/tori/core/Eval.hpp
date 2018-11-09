@@ -20,8 +20,8 @@ namespace TORI_NS::detail {
         // return cached value
         if (apply->evaluated()) return apply->get_cache();
         // create new apply
-        return new ApplyR{copy_apply_graph(apply->arg()),
-                          copy_apply_graph(apply->app())};
+        return new ApplyR{copy_apply_graph(apply->app()),
+                          copy_apply_graph(apply->arg())};
       }
       return obj;
     }
