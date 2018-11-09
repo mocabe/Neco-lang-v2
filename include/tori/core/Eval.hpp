@@ -51,10 +51,16 @@ namespace TORI_NS::detail {
       if (apply->evaluated()) return apply->get_cache();
       // reduce app
       auto app = eval_impl(apply->app());
+      // detect exception
+      if (auto exception = value_cast_if<Exception>(app))
+        throw result_error(exception);
       const auto& arg = apply->arg();
       // Fix
       if (has_type<Fix>(app)) {
         auto f = eval_impl(arg);
+        // detect exception
+        if (auto exception = value_cast_if<Exception>(app))
+          throw result_error(exception);
         // check arg
         if (unlikely(has_value_type(f)))
           throw eval_error::invalid_fix(
