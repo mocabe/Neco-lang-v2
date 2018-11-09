@@ -59,7 +59,7 @@ namespace TORI_NS::detail {
       if (has_type<Fix>(app)) {
         auto f = eval_impl(arg);
         // detect exception
-        if (auto exception = value_cast_if<Exception>(app))
+        if (auto exception = value_cast_if<Exception>(f))
           throw result_error(exception);
         // check arg
         if (unlikely(has_value_type(f)))
