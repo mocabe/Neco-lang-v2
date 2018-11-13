@@ -1,2 +1,5 @@
-Test(StaticTyping core)
-Test(Function core)
+TORI_TEST(Compatibility core)
+TORI_TEST(StaticTyping core)
+TORI_TEST(TypeGen core)
+TORI_TEST(DynamicTyping core)
+TORI_TEST(Function core)

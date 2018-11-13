@@ -1,3 +1,8 @@
 function (Example NAME)
-  add_executable(${NAME} ${NAME}.cpp)
+  TORI_TEST(${NAME} example)
 endfunction()
+
+Example(hello_world)
+Example(higher_order)
+Example(fibonacci)
+Example(if)

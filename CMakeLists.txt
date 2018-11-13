@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.1)
 
 # ------------------------------------------
 # Project
@@ -13,42 +13,55 @@ option(TORI_BUILD_TEST "Build tests" OFF)
 option(TORI_BUILD_EXAMPLE "Build examples" OFF)
 option(TORI_BUILD_BENCHMARK "Build benchmarks" OFF)
 
-# ------------------------------------------
-# Testing
-# ------------------------------------------
 if(TORI_BUILD_TEST OR TORI_BUILD_BENCHMARK OR TORI_BUILD_EXAMPLE)
-  include (CTest)
-  enable_testing()
-  # add test
-  function (Test NAME LABEL)
-    add_executable(${NAME} ${NAME}.cpp)
-    target_include_directories(${NAME} PUBLIC "${TORI_DIR}/test")
-    add_test(NAME ${NAME} COMMAND ${NAME})
-    set_tests_properties(${NAME} PROPERTIES LABELS ${LABEL})
-  endfunction()
+  set(TORI_BUILD ON)
 endif()
 
 # ------------------------------------------
-# Include
+# Add library
 # ------------------------------------------
-include_directories("${TORI_DIR}/include")
+add_library(tori INTERFACE)
+
+# ------------------------------------------
+# Add include directory
+# ------------------------------------------
+target_include_directories(tori INTERFACE ${TORI_DIR}/include/)
 
 # ------------------------------------------
 # Compiler Flags
 # ------------------------------------------
 if(MSVC)
-  set(CMAKE_CXX_FLAGS "/W4 /Zi /EHsc /std:c++latest /permissive-")
+  set(TORI_COMPILE_FLAGS /O2 /W4 /Zi /EHsc /std:c++17 /permissive- /arch:AVX2)
 else()
-  set(CMAKE_CXX_FLAGS "-O0 -Wall -Wextra -g -std=c++17")
+  set(TORI_COMPILE_FLAGS -O2 -Wall -Wextra -g -std=c++17 -march=native -save-temps)
 endif()
 
 # ------------------------------------------
 # valgrind
 # ------------------------------------------
-add_custom_target(valgrind
-    COMMAND ${CMAKE_CTEST_COMMAND} 
-        --force-new-ctest-process --test-action memcheck
-COMMAND cat "${CMAKE_BINARY_DIR}/Testing/Temporary/MemoryChecker.*.log")
+if(TORI_BUILD)
+  add_custom_target(valgrind
+      COMMAND ${CMAKE_CTEST_COMMAND} 
+          --force-new-ctest-process --test-action memcheck
+  COMMAND cat "${CMAKE_BINARY_DIR}/Testing/Temporary/MemoryChecker.*.log")
+endif()
+
+# ------------------------------------------
+# Testing
+# ------------------------------------------
+if(TORI_BUILD)
+  include (CTest)
+  enable_testing()
+  # add test
+  function (TORI_TEST NAME LABEL)
+    add_executable(${NAME} ${NAME}.cpp)
+    target_link_libraries(${NAME} tori)
+    target_include_directories(${NAME} PRIVATE "${TORI_DIR}/test")
+    target_compile_options(${NAME} PRIVATE ${TORI_COMPILE_FLAGS})
+    add_test(NAME ${NAME} COMMAND ${NAME})
+    set_tests_properties(${NAME} PROPERTIES LABELS ${LABEL})
+  endfunction()
+endif()
 
 # ------------------------------------------
 # Subdirectories
