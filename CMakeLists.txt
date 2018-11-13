@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.1)
+cmake_minimum_required(VERSION 3.8)
 
 # ------------------------------------------
 # Project
@@ -28,12 +28,17 @@ add_library(tori INTERFACE)
 target_include_directories(tori INTERFACE ${TORI_DIR}/include/)
 
 # ------------------------------------------
+# Add target requirements
+# ------------------------------------------
+target_compile_features(tori INTERFACE cxx_std_17)
+
+# ------------------------------------------
 # Compiler Flags
 # ------------------------------------------
 if(MSVC)
-  set(TORI_COMPILE_FLAGS /O2 /W4 /Zi /EHsc /std:c++17 /permissive- /arch:AVX2)
+  set(TORI_COMPILE_FLAGS /W4 /Zi /EHsc /std:c++17 /permissive-)
 else()
-  set(TORI_COMPILE_FLAGS -O2 -Wall -Wextra -g -std=c++17 -march=native -save-temps)
+  set(TORI_COMPILE_FLAGS -O0 -Wall -Wextra -g -std=c++17 -save-temps)
 endif()
 
 # ------------------------------------------
