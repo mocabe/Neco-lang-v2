@@ -25,7 +25,7 @@ add_library(tori INTERFACE)
 # ------------------------------------------
 # Add include directory
 # ------------------------------------------
-target_include_directories(tori INTERFACE ${TORI_DIR}/include/)
+target_include_directories(tori INTERFACE ${TORI_DIR}/include)
 
 # ------------------------------------------
 # Add target requirements
@@ -60,7 +60,7 @@ if(TORI_BUILD)
   # add test
   function (TORI_TEST NAME LABEL)
     add_executable(${NAME} ${NAME}.cpp)
-    target_link_libraries(${NAME} tori)
+    target_link_libraries(${NAME} PRIVATE tori)
     target_include_directories(${NAME} PRIVATE "${TORI_DIR}/test")
     target_compile_options(${NAME} PRIVATE ${TORI_COMPILE_FLAGS})
     add_test(NAME ${NAME} COMMAND ${NAME})
