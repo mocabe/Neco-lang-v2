@@ -120,10 +120,10 @@ You can access to the object just like a pointer.
 std::cout << *i << std::endl; // 42
 ```
 
----
-
-You can define your own data types.  
+### Custom data types
+You can define your own data types through template API.  
 `BoxedHeapObject` is utility class template to create value type object.  
+`object_type_traits` is customization point to specify unique name for the value type.
 ```cpp
 struct MyVector {
   float_t x,y,z;
@@ -131,9 +131,8 @@ struct MyVector {
 // define custom data type
 using MyVectorObject = BoxedHeapObject<MyVector>;
 
-namespace Tori {
   template <>
-  struct object_type_traits<MyVectorObject> {
+struct tori::object_type_traits<MyVectorObject> {
     // define unique name of your type here
     static constexpr const char[] name = "MyVectorObject";
   };
