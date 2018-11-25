@@ -30,17 +30,39 @@ namespace TORI_NS::detail {
     /// compare two value types
     static bool compare(const ValueType& lhs, const ValueType& rhs) {
       if (lhs.name == rhs.name) return true;
-      // AVX2
       if constexpr (has_AVX2 && max_name_size == 32) {
+        // AVX2
         // buffers should be aligned as 32byte
+        // load each buffers into 256-bit registers
         auto ymm0 =
           _mm256_load_si256(reinterpret_cast<const __m256i*>(lhs.name->data()));
         auto ymm1 =
           _mm256_load_si256(reinterpret_cast<const __m256i*>(rhs.name->data()));
+        // compare
         auto cmpeq = _mm256_cmpeq_epi8(ymm0, ymm1);
+        // get mask
         unsigned mask = _mm256_movemask_epi8(cmpeq);
+        // clear upper bits for other SIMD operations
         _mm256_zeroupper();
         return mask == 0xffffffffU;
+      } else if constexpr (has_AVX && max_name_size == 32) {
+        // AVX
+        // buffers should be aligned as 16byte
+        // load buffer into 2 xmm registers
+        auto xmm0 = _mm_load_si128(
+          reinterpret_cast<const __m128i*>(lhs.name->data() + 0));
+        auto xmm1 = _mm_load_si128(
+          reinterpret_cast<const __m128i*>(lhs.name->data() + 16));
+        // compare registers to another buffer on memory
+        auto cmp1 = _mm_cmpeq_epi8(
+          xmm0, *reinterpret_cast<const __m128i*>(rhs.name->data() + 0));
+        auto cmp2 = _mm_cmpeq_epi8(
+          xmm1, *reinterpret_cast<const __m128i*>(rhs.name->data() + 16));
+        // get cmp result
+        auto cmp = _mm_and_si128(cmp1, cmp2);
+        // get mask
+        auto mask = _mm_movemask_epi8(cmp);
+        return mask == 0xffffU;
       } else
         return std::memcmp(        //
                  lhs.name->data(), //
