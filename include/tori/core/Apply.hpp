@@ -102,7 +102,7 @@ namespace TORI_NS::detail {
     is_valid_app_arg<std::decay_t<T>>::value;
 
   namespace interface {
-    /// static apply operator
+    /// apply operator
     template <
       class T1,
       class T2,
@@ -111,16 +111,6 @@ namespace TORI_NS::detail {
     [[nodiscard]] auto operator<<(T1&& lhs, T2&& rhs) {
       return object_ptr{
         new Apply{std::forward<T1>(lhs), std::forward<T2>(rhs)}};
-    }
-    /// dynamic apply operator
-    template <
-      class T1,
-      class T2,
-      class =
-        std::enable_if_t<is_valid_app_arg_v<T1> && is_valid_app_arg_v<T2>>>
-    [[nodiscard]][[deprecated]] object_ptr<> operator>>(T1&& lhs, T2&& rhs) {
-      return new ApplyR{object_ptr<>(std::forward<T1>(lhs)),
-                        object_ptr<>(std::forward<T2>(rhs))};
     }
   } // namespace interface
 
