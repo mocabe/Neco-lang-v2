@@ -123,11 +123,11 @@ namespace TORI_NS::detail {
         return new Exception(new BadValueCast(e.from(), e.to()));
       } catch (const bad_closure_cast& e) {
         return new Exception(new BadClosureCast(e.from(), e.to()));
-      } catch (const type_error& e) {
+      } catch (const type_error::type_error& e) {
         return new Exception(new TypeError(new String(e.what()), e.src()));
-      } catch (const eval_error& e) {
+      } catch (const eval_error::eval_error& e) {
         return new Exception(new EvalError(new String(e.what()), e.src()));
-      } catch (const result_error& e) {
+      } catch (const result_error::result_error& e) {
         return object_ptr<>(e.result());
       } catch (const std::exception& e) {
         return new Exception(new String(e.what()));

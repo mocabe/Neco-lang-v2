@@ -13,6 +13,24 @@
 namespace TORI_NS::detail {
 
   namespace interface {
+    namespace eval_error {
+      /// bad appli for fix
+      struct bad_fix : eval_error {
+        bad_fix(const char* msg, const object_ptr<>& obj)
+          : eval_error(msg, obj) {}
+      };
+      /// bad apply (apply for value)
+      struct bad_apply : eval_error {
+        bad_apply(const char* msg, const object_ptr<>& obj)
+          : eval_error(msg, obj) {}
+      };
+      /// too many arguments
+      struct too_many_arguments : eval_error {
+        too_many_arguments(const char* msg, const object_ptr<>& obj)
+          : eval_error(msg, obj) {}
+      };
+    } // namespace eval_error
+
     /// copy apply graph
     [[nodiscard]] TORI_INLINE object_ptr<> copy_apply_graph(
       const object_ptr<>& obj) {
@@ -27,21 +45,6 @@ namespace TORI_NS::detail {
     }
   } // namespace interface
 
-  // related exceptions
-  namespace interface {
-    struct eval_error::invalid_fix : eval_error {
-      invalid_fix(const char* msg, const object_ptr<>& obj)
-        : eval_error(msg, obj) {}
-    };
-    struct eval_error::invalid_apply : eval_error {
-      invalid_apply(const char* msg, const object_ptr<>& obj)
-        : eval_error(msg, obj) {}
-    };
-    struct eval_error::too_many_arguments : eval_error {
-      too_many_arguments(const char* msg, const object_ptr<>& obj)
-        : eval_error(msg, obj) {}
-    };
-  } // namespace interface
 
   /// eval implementation
   [[nodiscard]] TORI_INLINE object_ptr<> eval_impl(const object_ptr<>& obj) {
@@ -53,23 +56,23 @@ namespace TORI_NS::detail {
       auto app = eval_impl(apply->app());
       // detect exception
       if (auto exception = value_cast_if<Exception>(app))
-        throw result_error(exception);
+        throw result_error::result_error(exception);
       const auto& arg = apply->arg();
       // Fix
       if (has_type<Fix>(app)) {
         auto f = eval_impl(arg);
         // detect exception
         if (auto exception = value_cast_if<Exception>(f))
-          throw result_error(exception);
+          throw result_error::result_error(exception);
         // check arg
         if (unlikely(has_value_type(f)))
-          throw eval_error::invalid_fix(
+          throw eval_error::bad_fix(
             "eval_error: Expected closure after Fix", obj);
         // cast to closure
         auto c = static_cast<Closure<>*>(f.get());
         // check arity
         if (unlikely(c->arity.load() == 0))
-          throw eval_error::invalid_fix(
+          throw eval_error::bad_fix(
             "eval_error: Expected appliable closure after Fix", obj);
         // process
         auto pap = f.clone();
@@ -86,7 +89,7 @@ namespace TORI_NS::detail {
       }
       // check app
       if (unlikely(has_value_type(app)))
-        throw eval_error::invalid_apply("eval_error: Apply to value type", obj);
+        throw eval_error::bad_apply("eval_error: Apply to value type", obj);
       // too many arguments
       auto c = static_cast<Closure<>*>(app.get());
       if (unlikely(c->arity.load() == 0))
@@ -109,7 +112,7 @@ namespace TORI_NS::detail {
     }
     // detect exception
     if (auto exception = value_cast_if<Exception>(obj))
-      throw result_error(exception);
+      throw result_error::result_error(exception);
 
     return obj;
   }

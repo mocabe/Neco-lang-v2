@@ -48,33 +48,29 @@ namespace TORI_NS::detail {
   } // namespace interface
 
   namespace interface {
-    /// type_error
-    class type_error : public std::logic_error {
-    public:
-      /// Ctor string
-      template <class T>
-      explicit type_error(const std::string& what, const object_ptr<T>& src)
-        : std::logic_error(what), m_src{object_ptr<>(src)} {}
-      template <class T>
-      /// Ctor const char*
-      explicit type_error(const char* what, const object_ptr<T>& src)
-        : std::logic_error(what), m_src{object_ptr<>(src)} {}
+    namespace type_error {
+      /// type_error
+      class type_error : public std::logic_error {
+      public:
+        /// Ctor string
+        template <class T>
+        explicit type_error(const std::string& what, const object_ptr<T>& src)
+          : std::logic_error(what), m_src{object_ptr<>(src)} {}
+        template <class T>
+        /// Ctor const char*
+        explicit type_error(const char* what, const object_ptr<T>& src)
+          : std::logic_error(what), m_src{object_ptr<>(src)} {}
 
-      /// get source node
-      object_ptr<> src() const {
-        return m_src;
-      }
+        /// get source node
+        object_ptr<> src() const {
+          return m_src;
+        }
 
-    private:
-      /// source node
-      object_ptr<> m_src;
-
-    public:
-      /// type check error
-      struct type_check_error;
-      /// unification error
-      struct unification_error;
-    };
+      private:
+        /// source node
+        object_ptr<> m_src;
+      };
+    } // namespace type_error
   } // namespace interface
 
   // ------------------------------------------
@@ -95,35 +91,29 @@ namespace TORI_NS::detail {
   } // namespace interface
 
   namespace interface {
-    class eval_error : public std::logic_error {
-    public:
-      /// Ctor string
-      template <class T>
-      explicit eval_error(const std::string& what, const object_ptr<T>& src)
-        : std::logic_error(what), m_src{object_ptr<>(src)} {}
-      /// Ctor const char*
-      template <class T>
-      explicit eval_error(const char* what, const object_ptr<T>& src)
-        : std::logic_error(what), m_src{object_ptr<>(src)} {}
+    namespace eval_error {
+      /// evaluation error
+      class eval_error : public std::logic_error {
+      public:
+        /// Ctor string
+        template <class T>
+        explicit eval_error(const std::string& what, const object_ptr<T>& src)
+          : std::logic_error(what), m_src{object_ptr<>(src)} {}
+        /// Ctor const char*
+        template <class T>
+        explicit eval_error(const char* what, const object_ptr<T>& src)
+          : std::logic_error(what), m_src{object_ptr<>(src)} {}
 
-      /// get source node
-      object_ptr<> src() const {
-        return m_src;
-      }
+        /// get source node
+        object_ptr<> src() const {
+          return m_src;
+        }
 
-    private:
-      /// source node
-      object_ptr<> m_src;
-
-    public:
-      /// Invalid usage of Fix
-      struct invalid_fix;
-      /// Invalid usage of Apply
-      struct invalid_apply;
-      /// Invalid number of arguments
-      struct too_many_arguments;
-    };
-
+      private:
+        /// source node
+        object_ptr<> m_src;
+      };
+    } // namespace eval_error
   } // namespace interface
 
   // ------------------------------------------
@@ -131,25 +121,26 @@ namespace TORI_NS::detail {
   // ------------------------------------------
 
   namespace interface {
-    /// result error
-    class result_error : public std::runtime_error {
-    public:
-      result_error(const object_ptr<Exception>& result)
-        : runtime_error("result_error: Exception detected while evaluation")
-        , m_result{result} {}
-      result_error(object_ptr<Exception>&& result)
-        : runtime_error("result_error: Exception detected while evaluation")
-        , m_result{std::move(result)} {}
+    namespace result_error {
+      /// result error
+      class result_error : public std::runtime_error {
+      public:
+        result_error(const object_ptr<Exception>& result)
+          : runtime_error("result_error: Exception detected while evaluation")
+          , m_result{result} {}
+        result_error(object_ptr<Exception>&& result)
+          : runtime_error("result_error: Exception detected while evaluation")
+          , m_result{std::move(result)} {}
 
-      object_ptr<Exception> result() const {
-        return m_result;
-      }
+        object_ptr<Exception> result() const {
+          return m_result;
+        }
 
-    private:
-      object_ptr<Exception> m_result;
-    };
-  } // namespace interface
-
+      private:
+        object_ptr<Exception> m_result;
+      };
+    } // namespace result_error
+  }   // namespace interface
 } // namespace TORI_NS::detail
 
 namespace TORI_NS {

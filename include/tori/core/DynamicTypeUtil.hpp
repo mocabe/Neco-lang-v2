@@ -12,6 +12,48 @@ namespace TORI_NS::detail {
 
   namespace interface {
 
+    // ------------------------------------------
+    // Exceptions
+    // ------------------------------------------
+
+    namespace type_error {
+      /// unification error(circular constraint)
+      struct circular_constraint : type_error {
+        circular_constraint(
+          const object_ptr<>& src, const object_ptr<const Type>& var)
+          : type_error("type_error: Circular constraints", src), m_var{var} {}
+
+        object_ptr<const Type> var() const {
+          return m_var;
+        }
+        object_ptr<const Type> m_var;
+      };
+
+      /// unification error(missmatch)
+      struct type_missmatch : type_error {
+        type_missmatch(
+          const object_ptr<>& src,
+          const object_ptr<const Type>& t1,
+          const object_ptr<const Type>& t2)
+          : type_error("type_error: Type missmatch", src), m_t1{t1}, m_t2{t2} {}
+
+        object_ptr<const Type> t1() const {
+          return m_t1;
+        }
+        object_ptr<const Type> t2() const {
+          return m_t2;
+        }
+
+      private:
+        object_ptr<const Type> m_t1;
+        object_ptr<const Type> m_t2;
+      };
+    } // namespace type_error
+
+    // ------------------------------------------
+    // Utils
+    // ------------------------------------------
+
     /// \brief get **RAW** type of the object
     /// \notes NO null check.
     /// \notes use type_of() to get actual type of terms.
@@ -121,6 +163,13 @@ namespace TORI_NS::detail {
       const object_ptr<const Type>& lhs, const object_ptr<const Type>& rhs) {
       return same_type_impl(lhs, rhs);
     }
+
+    /// has_type
+    template <class T>
+    [[nodiscard]] bool has_type(const object_ptr<>& obj) {
+      if (same_type(get_type(obj), object_type<T>())) return true;
+      return false;
+    };
   } // namespace interface
 
   struct TyArrow {
@@ -207,61 +256,6 @@ namespace TORI_NS::detail {
     unreachable();
   };
 
-  // ------------------------------------------
-  // Unify
-  // ------------------------------------------
-
-  namespace interface {
-
-    // unification error
-    struct type_error::unification_error : type_error {
-      unification_error(const std::string& msg, const object_ptr<>& src)
-        : type_error(msg, src) {}
-
-    public:
-      /// Circular constraints while unification
-      struct circular_constraint;
-      /// Type missmatch while unification
-      struct type_missmatch;
-    };
-
-    /// unification error(circular constraint)
-    struct type_error::unification_error::circular_constraint
-      : type_error::unification_error {
-      circular_constraint(
-        const object_ptr<>& src, const object_ptr<const Type>& var)
-        : unification_error("type_error: Circular constraints", src)
-        , m_var{var} {}
-
-      object_ptr<const Type> var() const {
-        return m_var;
-      }
-      object_ptr<const Type> m_var;
-    };
-
-    /// unification error(missmatch)
-    struct type_error::unification_error::type_missmatch
-      : type_error::unification_error {
-      type_missmatch(
-        const object_ptr<>& src,
-        const object_ptr<const Type>& t1,
-        const object_ptr<const Type>& t2)
-        : unification_error("type_error: Type missmatch", src)
-        , m_t1{t1}
-        , m_t2{t2} {}
-
-      object_ptr<const Type> t1() const {
-        return m_t1;
-      }
-      object_ptr<const Type> t2() const {
-        return m_t2;
-      }
-
-    private:
-      object_ptr<const Type> m_t1;
-      object_ptr<const Type> m_t2;
-    };
-  } // namespace interface
 
   TORI_INLINE void unify_func_impl(
     std::vector<Constr>& cs,
@@ -278,7 +272,7 @@ namespace TORI_NS::detail {
           ta.push_back(arr);
           continue;
         }
-        throw type_error::unification_error::circular_constraint(src, c.t1);
+        throw type_error::circular_constraint(src, c.t1);
       }
       if (is_vartype(c.t1)) {
         if (likely(!occurs(c.t1, c.t2))) {
@@ -287,7 +281,7 @@ namespace TORI_NS::detail {
           ta.push_back(arr);
           continue;
         }
-        throw type_error::unification_error::circular_constraint(src, c.t1);
+        throw type_error::circular_constraint(src, c.t1);
       }
       if (auto arrow1 = get_if<ArrowType>(c.t1.value())) {
         if (auto arrow2 = get_if<ArrowType>(c.t2.value())) {
@@ -296,7 +290,7 @@ namespace TORI_NS::detail {
           continue;
         }
       }
-      throw type_error::unification_error::type_missmatch(src, c.t1, c.t2);
+      throw type_error::type_missmatch(src, c.t1, c.t2);
     }
   }
 
@@ -321,16 +315,4 @@ namespace TORI_NS::detail {
     return object_ptr<const Type>(var);
   };
 
-  // ------------------------------------------
-  // Util
-  // ------------------------------------------
-
-  namespace interface {
-    /// has_type
-    template <class T>
-    [[nodiscard]] bool has_type(const object_ptr<>& obj) {
-      if (same_type(get_type(obj), object_type<T>())) return true;
-      return false;
-    };
-  } // namespace interface
 } // namespace TORI_NS::detail
