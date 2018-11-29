@@ -9,9 +9,9 @@ set(TORI_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 # ------------------------------------------
 # Options
 # ------------------------------------------
-option(TORI_BUILD_TEST "Build tests" OFF)
-option(TORI_BUILD_EXAMPLE "Build examples" OFF)
-option(TORI_BUILD_BENCHMARK "Build benchmarks" OFF)
+option(TORI_BUILD_TEST "Build tests" ON)
+option(TORI_BUILD_EXAMPLE "Build examples" ON)
+option(TORI_BUILD_BENCHMARK "Build benchmarks" ON)
 
 if(TORI_BUILD_TEST OR TORI_BUILD_BENCHMARK OR TORI_BUILD_EXAMPLE)
   set(TORI_BUILD ON)
