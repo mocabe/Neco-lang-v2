@@ -56,13 +56,6 @@ matrix:
       env:
         - MATRIX_EVAL="COMPILER=clang++-6.0"
 
-    # osx g++
-    - os: osx
-      osx_image: xcode9.1
-      compiler: gcc
-      env: 
-        - MATRIX_EVAL="brew install gcc && COMPILER=g++-7"
-
     # osx clang xcode9.1
     - os: osx
       osx_image: xcode9.1
