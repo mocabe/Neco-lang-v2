@@ -46,12 +46,15 @@ matrix:
     
     # linux clang
     - os: linux
+      before_install:
+        sudo apt-get purge g++
       addons:
         apt:
           sources:
             - ubuntu-toolchain-r-test
             - llvm-toolchain-trusty-6.0
           packages:
+            - g++-7
             - clang-6.0
       env:
         - MATRIX_EVAL="COMPILER=clang++-6.0"
