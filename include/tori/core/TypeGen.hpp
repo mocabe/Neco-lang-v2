@@ -10,7 +10,6 @@
 #include <cstring>
 #include <string>
 #include <memory>
-#include <variant>
 #include <vector>
 #include <utility>
 #include <exception>
