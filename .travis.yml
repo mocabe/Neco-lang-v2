@@ -49,6 +49,7 @@ matrix:
       addons:
         apt:
           sources:
+            - ubuntu-toolchain-r-test
             - llvm-toolchain-trusty-6.0
           packages:
             - clang-6.0
@@ -79,7 +80,6 @@ matrix:
         - MATRIX_EVAL=""
 
 before_install:
-  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew cask uninstall oclint; fi # travis-ci issues #8826
   - eval "${MATRIX_EVAL}"
 
 # lets go
