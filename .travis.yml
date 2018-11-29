@@ -8,18 +8,6 @@ language: cpp
 
 matrix:
   include:
-    # linux g++6
-    - os: linux
-      compiler: gcc
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-          packages:
-            - g++-6
-      env: 
-        - MATRIX_EVAL="COMPILER=g++-6"
-
     # linux g++7
     - os: linux
       compiler: gcc
@@ -47,33 +35,17 @@ matrix:
     # linux clang
     - os: linux
       before_install:
-        sudo apt-get purge g++
+        - sudo apt-get update
+        - sudo apt-get purge g++
+        - sudo apt-get install g++-7
+        - sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-7 1000
+        - sudo apt-get install clang-6.0
+        - COMPILER=clang++-6.0
       addons:
         apt:
           sources:
             - ubuntu-toolchain-r-test
             - llvm-toolchain-trusty-6.0
-          packages:
-            - g++-7
-            - clang-6.0
-      env:
-        - MATRIX_EVAL="COMPILER=clang++-6.0"
-
-    # osx clang xcode9.1
-    - os: osx
-      osx_image: xcode9.1
-      compiler: clang
-      env: 
-        - COMPILER=clang++
-        - MATRIX_EVAL=""
-
-    # osx clang xcode9.2
-    - os: osx
-      osx_image: xcode9.2
-      compiler: clang
-      env: 
-        - COMPILER=clang++
-        - MATRIX_EVAL=""
 
 before_install:
   - eval "${MATRIX_EVAL}"
