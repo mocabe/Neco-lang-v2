@@ -1,0 +1,81 @@
+# enable trusty
+dist: trusty
+sudo: required
+# c++
+language: cpp
+# new stuff is good stuff
+# test on clang and gcc
+
+matrix:
+  include:
+    # linux g++6
+    - os: linux
+      compiler: gcc
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-6
+      env: 
+        - MATRIX_EVAL="COMPILER=g++-6"
+
+    # linux g++7
+    - os: linux
+      compiler: gcc
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-7
+      env: 
+        - MATRIX_EVAL="COMPILER=g++-7"
+
+    # linux g++8
+    - os: linux
+      compiler: gcc
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-8
+      env: 
+        - MATRIX_EVAL="COMPILER=g++-8"
+    
+    # osx g++
+    - os: osx
+      osx_image: xcode9.1
+      compiler: gcc
+      env: 
+        - MATRIX_EVAL="brew install gcc && COMPILER=g++-7"
+
+    # osx clang xcode9.1
+    - os: osx
+      osx_image: xcode9.1
+      compiler: clang
+      env: 
+        - COMPILER=clang++
+        - MATRIX_EVAL=""
+
+    # osx clang xcode9.2
+    - os: osx
+      osx_image: xcode9.2
+      compiler: clang
+      env: 
+        - COMPILER=clang++
+        - MATRIX_EVAL=""
+
+before_install:
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew cask uninstall oclint; fi # travis-ci issues #8826
+  - eval "${MATRIX_EVAL}"
+
+# lets go
+script:
+  - $COMPILER --version
+  - mkdir build
+  - cd build 
+  - cmake .. -DCMAKE_CXX_COMPILER=$COMPILER
+  - cmake --build .
+- ctest -V
