@@ -16,18 +16,14 @@
 // type
 #include "StaticTypeUtil.hpp"
 
-/// size of additional buffer in heap object header
-#if defined(OBJECT_HEADER_EXTEND_BYTES)
 namespace TORI_NS::detail {
-  constexpr size_t object_header_extend_bytes = OBJECT_HEADER_EXTEND_BYTES;
-}
-#else
-namespace TORI_NS::detail {
-  constexpr size_t object_header_extend_bytes = 0;
-}
-#endif
 
-namespace TORI_NS::detail {
+#if defined(OBJECT_HEADER_EXTEND_BYTES)
+  constexpr size_t object_header_extend_bytes = OBJECT_HEADER_EXTEND_BYTES;
+#else
+  /// size of additional buffer in heap object header
+  constexpr size_t object_header_extend_bytes = 0;
+#endif
 
   // value type
   struct ValueType;
@@ -37,7 +33,6 @@ namespace TORI_NS::detail {
   struct VarType;
 
   // TypeValue
-  // using TypeValue = std::variant<ValueType, ArrowType, VarType>;
   class TypeValue;
 
   // interface
@@ -62,19 +57,19 @@ namespace TORI_NS::detail {
         return *this;
       }
 
-      inline T load() const noexcept {
+      T load() const noexcept {
         return atomic.load();
       }
 
-      inline void store(T v) noexcept {
+      void store(T v) noexcept {
         atomic.store(v);
       }
 
-      inline T fetch_add() noexcept {
+      T fetch_add() noexcept {
         return atomic.fetch_add(1u, std::memory_order_relaxed);
       }
 
-      inline T fetch_sub() noexcept {
+      T fetch_sub() noexcept {
         return atomic.fetch_sub(1u, std::memory_order_release);
       }
 
@@ -91,11 +86,14 @@ namespace TORI_NS::detail {
       class T,
       template <class> class AllocatorTemplate = std::allocator>
     struct BoxedHeapObject;
+
     // handler for heap-allocated object
     template <class>
     class object_ptr;
+
     // object info table
     struct object_info_table;
+
     // heap-allocated runtime type infomation
     using Type = BoxedHeapObject<TypeValue>;
 
@@ -104,6 +102,7 @@ namespace TORI_NS::detail {
       /// term
       using term = tm_value<HeapObject>;
 
+      // reference count
       mutable atomic_refcount<uint64_t> refcount;
 
       /// pointer to info-table
@@ -118,6 +117,7 @@ namespace TORI_NS::detail {
     /// Smart pointer to manage heap-allocated objects
     template <class T = HeapObject>
     class object_ptr {
+      // friend
       friend class object_ptr<HeapObject>;
 
       /// move cast function
@@ -134,13 +134,16 @@ namespace TORI_NS::detail {
       friend object_ptr<U> closure_cast_if(object_ptr<S>&&) noexcept;
 
     public:
+      // value type
       using value_type = T;
+
       /// Constructor
       constexpr object_ptr() noexcept : m_ptr{nullptr} {}
       /// Constructor
       constexpr object_ptr(nullptr_t) noexcept : m_ptr{nullptr} {}
       /// Pointer constructor
       constexpr object_ptr(value_type* p) noexcept : m_ptr{p} {}
+
       /// Copy constructor
       /// \effects increases reference count.
       object_ptr(const object_ptr<value_type>& obj) noexcept
@@ -148,10 +151,12 @@ namespace TORI_NS::detail {
         // when not static object
         if (m_ptr && head()->refcount.load() != 0) head()->refcount.fetch_add();
       }
+
       /// Move constructor
       object_ptr(object_ptr<value_type>&& obj) noexcept : m_ptr{obj.m_ptr} {
         obj.m_ptr = nullptr;
       }
+
       /// Copy convert constructor
       /// \effects increases reference count.
       template <class U>
@@ -159,15 +164,18 @@ namespace TORI_NS::detail {
         // when not static object
         if (m_ptr && head()->refcount.load() != 0) head()->refcount.fetch_add();
       }
+
       /// Move convert constructor
       template <class U>
       object_ptr(object_ptr<U>&& obj) noexcept : m_ptr{obj.get()} {
         obj.m_ptr = nullptr;
       }
+
       /// get address of object
       value_type* get() const noexcept {
         return m_ptr;
       }
+
       /// get address of header
       auto head() const noexcept {
         if constexpr (std::is_const_v<value_type>)
@@ -175,46 +183,55 @@ namespace TORI_NS::detail {
         else
           return static_cast<HeapObject*>(m_ptr);
       }
+
       /// get address of info table
       /// \requires Object is not null.
       const object_info_table* info_table() const noexcept {
         return head()->info_table;
-      };
+      }
+
       /// get address of member `value`
       /// \requires Object is not null.
       auto* value() const noexcept {
         return &m_ptr->value;
       }
+
       /// operator bool
       explicit operator bool() const noexcept {
         return m_ptr != nullptr;
       }
+
       /// use_count
       /// \requires Object is not null.
       size_t use_count() const noexcept {
         return head()->refcount.atomic;
       }
+
       /// swap data
       void swap(object_ptr<value_type>& obj) noexcept {
         std::swap(obj.m_ptr, m_ptr);
       }
+
       /// operator=
       object_ptr<value_type>& operator=(
         const object_ptr<value_type>& obj) noexcept {
         object_ptr(obj).swap(*this);
         return *this;
       }
+
       /// operator=
       template <class U>
       object_ptr<value_type>& operator=(const object_ptr<U>& obj) noexcept {
         object_ptr(obj).swap(*this);
         return *this;
       }
+
       /// operator=
       object_ptr<value_type>& operator=(object_ptr<value_type>&& obj) noexcept {
         object_ptr(std::move(obj)).swap(*this);
         return *this;
       }
+
       /// operator=
       template <class U>
       object_ptr<value_type>& operator=(object_ptr<U>&& obj) noexcept {
@@ -222,10 +239,11 @@ namespace TORI_NS::detail {
         return *this;
       }
 
-      // destroy
-      ~object_ptr() noexcept;
       // clone
       object_ptr<value_type> clone() const;
+
+      // destroy
+      ~object_ptr() noexcept;
 
     private:
       /// pointer to object

@@ -19,13 +19,13 @@ namespace TORI_NS::detail {
   struct static_construct_t {
     explicit static_construct_t() = default;
   };
+
   namespace interface {
     /// static_construct
     inline constexpr static_construct_t static_construct = static_construct_t();
     // forward decl
     template <class T>
-    object_ptr<const Type> object_type(); // see TypeGen.hpp
-
+    object_ptr<const Type> object_type();
   } // namespace interface
 
   /// \brief vtable function to delete object
@@ -51,7 +51,10 @@ namespace TORI_NS::detail {
     try {
       auto p = static_cast<const T *>(obj);
       return new T{*p};
-    } catch (...) { return nullptr; }
+    } catch (...) {
+      // TODO: return Exception object
+      return nullptr;
+    }
   }
 
   template <class T, bool B = has_term_v<T>>
@@ -151,12 +154,12 @@ namespace TORI_NS::detail {
     // Initialize object header
     template <class T, template <class> class AllocatorTemplate>
     const object_info_table BoxedHeapObject<T, AllocatorTemplate>::
-      info_table_initializer::info_table = {
-        object_type<BoxedHeapObject>(),     //
-        sizeof(BoxedHeapObject),            //
-        object_header_extend_bytes,         //
-        vtbl_destroy_func<BoxedHeapObject>, //
-        vtbl_clone_func<BoxedHeapObject>};
+      info_table_initializer::info_table = { //
+        object_type<BoxedHeapObject>(),      //
+        sizeof(BoxedHeapObject),             //
+        object_header_extend_bytes,          //
+        vtbl_destroy_func<BoxedHeapObject>,  //
+        vtbl_clone_func<BoxedHeapObject>};   //
 
   } // namespace interface
 } // namespace TORI_NS::detail

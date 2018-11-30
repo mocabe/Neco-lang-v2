@@ -12,7 +12,10 @@ namespace TORI_NS::detail {
 
   /// value of ApplyR
   struct ApplyRValue {
-    template <class App, class Arg>
+    template <
+      class App,
+      class Arg,
+      class = std::enable_if_t<!std::is_same_v<std::decay_t<App>, ApplyRValue>>>
     ApplyRValue(App&& app, Arg&& arg)
       : m_app{std::forward<App>(app)}, m_arg{std::forward<Arg>(arg)} {}
 
@@ -63,29 +66,16 @@ namespace TORI_NS::detail {
       /// term
       using term = tm_apply<typename App::term, typename Arg::term>;
 
-      Apply(const object_ptr<App>& ap, const object_ptr<Arg>& ar)
+      // clang-format off
+      Apply(object_ptr<App> ap, object_ptr<Arg> ar) 
+        : base{std::move(ap), std::move(ar)} {}
+      Apply(App* ap, Arg* ar) 
         : base{object_ptr<>{ap}, object_ptr<>{ar}} {}
-      Apply(object_ptr<App>&& ap, const object_ptr<Arg>& ar)
-        : base{object_ptr<>{std::move(ap)}, object_ptr<>{ar}} {}
-      Apply(const object_ptr<App>& ap, object_ptr<Arg>&& ar)
-        : base{object_ptr<>{ap}, object_ptr<>{std::move(ar)}} {}
-      Apply(object_ptr<App>&& ap, object_ptr<Arg>&& ar)
-        : base{object_ptr<>{std::move(ap)}, object_ptr<>{std::move(ar)}} {}
-
-      // NOTE: msvc 15.8 Preview 3 can't compile CTAD with delegate constructors
-
-      Apply(const object_ptr<App>& ap, Arg* ar) //
-        : base{object_ptr<>{ap}, object_ptr<>{ar}} {}
-      Apply(App* ap, const object_ptr<Arg>& ar) //
-        : base{object_ptr<>{ap}, object_ptr<>{ar}} {}
-
-      Apply(App* ap, object_ptr<Arg>&& ar)
-        : base{object_ptr<>{ap}, object_ptr<>{std::move(ar)}} {}
-      Apply(object_ptr<App>&& ap, Arg* ar)
-        : base{object_ptr<>{std::move(ap)}, object_ptr<>{ar}} {}
-
-      Apply(App* ap, Arg* ar) //
-        : base{object_ptr<>{ap}, object_ptr<>{ar}} {}
+      Apply(App* ap, object_ptr<Arg> ar) 
+        : base{ap, std::move(ar)} {}
+      Apply(object_ptr<App> ap, Arg* ar) 
+        : base{std::move(ap), ar} {}
+      // clang-format on
     };
   } // namespace interface
 
