@@ -42,34 +42,41 @@ namespace TORI_NS::detail {
     template <class T>
     class atomic_refcount {
     public:
-      constexpr atomic_refcount() noexcept : atomic{0} {}
-      constexpr atomic_refcount(T v) noexcept : atomic{v} {}
+      constexpr atomic_refcount() noexcept : atomic {0} {}
+      constexpr atomic_refcount(T v) noexcept : atomic {v} {}
       constexpr atomic_refcount(const atomic_refcount& refcnt) noexcept
-        : atomic{refcnt.raw} {}
+        : atomic {refcnt.raw}
+      {}
 
-      atomic_refcount& operator=(const atomic_refcount& other) noexcept {
+      atomic_refcount& operator=(const atomic_refcount& other) noexcept
+      {
         atomic.store(other.atomic.load());
         return *this;
       }
 
-      atomic_refcount& operator=(T v) noexcept {
+      atomic_refcount& operator=(T v) noexcept
+      {
         atomic.store(v);
         return *this;
       }
 
-      T load() const noexcept {
+      T load() const noexcept
+      {
         return atomic.load();
       }
 
-      void store(T v) noexcept {
+      void store(T v) noexcept
+      {
         atomic.store(v);
       }
 
-      T fetch_add() noexcept {
+      T fetch_add() noexcept
+      {
         return atomic.fetch_add(1u, std::memory_order_relaxed);
       }
 
-      T fetch_sub() noexcept {
+      T fetch_sub() noexcept
+      {
         return atomic.fetch_sub(1u, std::memory_order_release);
       }
 
@@ -82,9 +89,8 @@ namespace TORI_NS::detail {
     };
 
     // heap-allocated object of type T
-    template <
-      class T,
-      template <class> class AllocatorTemplate = std::allocator>
+    template <class T,
+              template <class> class AllocatorTemplate = std::allocator>
     struct BoxedHeapObject;
 
     // handler for heap-allocated object
@@ -138,46 +144,53 @@ namespace TORI_NS::detail {
       using value_type = T;
 
       /// Constructor
-      constexpr object_ptr() noexcept : m_ptr{nullptr} {}
+      constexpr object_ptr() noexcept : m_ptr {nullptr} {}
       /// Constructor
-      constexpr object_ptr(nullptr_t) noexcept : m_ptr{nullptr} {}
+      constexpr object_ptr(nullptr_t) noexcept : m_ptr {nullptr} {}
       /// Pointer constructor
-      constexpr object_ptr(value_type* p) noexcept : m_ptr{p} {}
+      constexpr object_ptr(value_type* p) noexcept : m_ptr {p} {}
 
       /// Copy constructor
       /// \effects increases reference count.
-      object_ptr(const object_ptr<value_type>& obj) noexcept
-        : m_ptr{obj.m_ptr} {
+      object_ptr(const object_ptr<value_type>& obj) noexcept : m_ptr {obj.m_ptr}
+      {
         // when not static object
-        if (m_ptr && head()->refcount.load() != 0) head()->refcount.fetch_add();
+        if (m_ptr && head()->refcount.load() != 0)
+          head()->refcount.fetch_add();
       }
 
       /// Move constructor
-      object_ptr(object_ptr<value_type>&& obj) noexcept : m_ptr{obj.m_ptr} {
+      object_ptr(object_ptr<value_type>&& obj) noexcept : m_ptr {obj.m_ptr}
+      {
         obj.m_ptr = nullptr;
       }
 
       /// Copy convert constructor
       /// \effects increases reference count.
       template <class U>
-      object_ptr(const object_ptr<U>& obj) noexcept : m_ptr{obj.get()} {
+      object_ptr(const object_ptr<U>& obj) noexcept : m_ptr {obj.get()}
+      {
         // when not static object
-        if (m_ptr && head()->refcount.load() != 0) head()->refcount.fetch_add();
+        if (m_ptr && head()->refcount.load() != 0)
+          head()->refcount.fetch_add();
       }
 
       /// Move convert constructor
       template <class U>
-      object_ptr(object_ptr<U>&& obj) noexcept : m_ptr{obj.get()} {
+      object_ptr(object_ptr<U>&& obj) noexcept : m_ptr {obj.get()}
+      {
         obj.m_ptr = nullptr;
       }
 
       /// get address of object
-      value_type* get() const noexcept {
+      value_type* get() const noexcept
+      {
         return m_ptr;
       }
 
       /// get address of header
-      auto head() const noexcept {
+      auto head() const noexcept
+      {
         if constexpr (std::is_const_v<value_type>)
           return static_cast<const HeapObject*>(m_ptr);
         else
@@ -186,55 +199,64 @@ namespace TORI_NS::detail {
 
       /// get address of info table
       /// \requires Object is not null.
-      const object_info_table* info_table() const noexcept {
+      const object_info_table* info_table() const noexcept
+      {
         return head()->info_table;
       }
 
       /// get address of member `value`
       /// \requires Object is not null.
-      auto* value() const noexcept {
+      auto* value() const noexcept
+      {
         return &m_ptr->value;
       }
 
       /// operator bool
-      explicit operator bool() const noexcept {
+      explicit operator bool() const noexcept
+      {
         return m_ptr != nullptr;
       }
 
       /// use_count
       /// \requires Object is not null.
-      size_t use_count() const noexcept {
+      size_t use_count() const noexcept
+      {
         return head()->refcount.atomic;
       }
 
       /// swap data
-      void swap(object_ptr<value_type>& obj) noexcept {
+      void swap(object_ptr<value_type>& obj) noexcept
+      {
         std::swap(obj.m_ptr, m_ptr);
       }
 
       /// operator=
-      object_ptr<value_type>& operator=(
-        const object_ptr<value_type>& obj) noexcept {
+      object_ptr<value_type>&
+        operator=(const object_ptr<value_type>& obj) noexcept
+      {
         object_ptr(obj).swap(*this);
         return *this;
       }
 
       /// operator=
       template <class U>
-      object_ptr<value_type>& operator=(const object_ptr<U>& obj) noexcept {
+      object_ptr<value_type>& operator=(const object_ptr<U>& obj) noexcept
+      {
         object_ptr(obj).swap(*this);
         return *this;
       }
 
       /// operator=
-      object_ptr<value_type>& operator=(object_ptr<value_type>&& obj) noexcept {
+      object_ptr<value_type>& operator=(object_ptr<value_type>&& obj) noexcept
+      {
         object_ptr(std::move(obj)).swap(*this);
         return *this;
       }
 
       /// operator=
       template <class U>
-      object_ptr<value_type>& operator=(object_ptr<U>&& obj) noexcept {
+      object_ptr<value_type>& operator=(object_ptr<U>&& obj) noexcept
+      {
         object_ptr(std::move(obj)).swap(*this);
         return *this;
       }
@@ -251,11 +273,13 @@ namespace TORI_NS::detail {
 
     public:
       /// operator*
-      auto& operator*() const noexcept {
+      auto& operator*() const noexcept
+      {
         return *value();
       }
       /// operator->
-      auto operator-> () const noexcept {
+      auto operator-> () const noexcept
+      {
         return value();
       }
     };
@@ -281,10 +305,13 @@ namespace TORI_NS::detail {
     /// \throws `std::runtime_error` when object is null.
     /// \notes Reference count of new object will be set to 1.
     template <class T>
-    object_ptr<T> object_ptr<T>::clone() const {
-      if (!m_ptr) throw std::runtime_error("clone() to null object");
+    object_ptr<T> object_ptr<T>::clone() const
+    {
+      if (!m_ptr)
+        throw std::runtime_error("clone() to null object");
       auto r = static_cast<value_type*>(info_table()->clone(m_ptr));
-      if (unlikely(!r)) throw std::bad_alloc();
+      if (unlikely(!r))
+        throw std::bad_alloc();
       r->refcount = 1u;
       return r;
     }
@@ -293,7 +320,8 @@ namespace TORI_NS::detail {
     /// \effects Destroy object with vtable function when reference count become
     /// 0
     template <class T>
-    object_ptr<T>::~object_ptr() noexcept {
+    object_ptr<T>::~object_ptr() noexcept
+    {
       // when not static object
       if (m_ptr && head()->refcount.load() != 0) {
         // delete object if needed
@@ -306,46 +334,51 @@ namespace TORI_NS::detail {
 
     /// operator==
     template <class T, class U>
-    bool operator==(
-      const object_ptr<T>& lhs, const object_ptr<U>& rhs) noexcept {
+    bool operator==(const object_ptr<T>& lhs, const object_ptr<U>& rhs) noexcept
+    {
       return lhs.get() == rhs.get();
     }
 
     /// operator==
     template <class T>
-    bool operator==(nullptr_t, const object_ptr<T>& p) noexcept {
+    bool operator==(nullptr_t, const object_ptr<T>& p) noexcept
+    {
       return !p;
     }
 
     /// operator==
     template <class T>
-    bool operator==(const object_ptr<T>& p, nullptr_t) noexcept {
+    bool operator==(const object_ptr<T>& p, nullptr_t) noexcept
+    {
       return !p;
     }
 
     /// operator!=
     template <class T, class U>
-    bool operator!=(
-      const object_ptr<T>& lhs, const object_ptr<U>& rhs) noexcept {
+    bool operator!=(const object_ptr<T>& lhs, const object_ptr<U>& rhs) noexcept
+    {
       return lhs.get() != rhs.get();
     }
 
     /// operator!=
     template <class T>
-    bool operator!=(nullptr_t, const object_ptr<T>& p) noexcept {
+    bool operator!=(nullptr_t, const object_ptr<T>& p) noexcept
+    {
       return static_cast<bool>(p);
     }
 
     /// operator!=
     template <class T>
-    bool operator!=(const object_ptr<T>& p, nullptr_t) noexcept {
+    bool operator!=(const object_ptr<T>& p, nullptr_t) noexcept
+    {
       return static_cast<bool>(p);
     }
 
     /// make object
     template <class T, class... Args>
-    object_ptr<T> make_object(Args&&... args) {
-      return new T{std::forward<Args>(args)...};
+    object_ptr<T> make_object(Args&&... args)
+    {
+      return new T {std::forward<Args>(args)...};
     }
   } // namespace interface
 } // namespace TORI_NS::detail

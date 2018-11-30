@@ -32,10 +32,10 @@ namespace TORI_NS::detail {
   ///
   /// vtable function to delete heap allocated object.
   template <class T>
-  void vtbl_destroy_func(HeapObject *obj) noexcept {
-    static_assert(
-      std::is_nothrow_destructible_v<T>,
-      "Boxed object should have nothrow destructor");
+  void vtbl_destroy_func(HeapObject *obj) noexcept
+  {
+    static_assert(std::is_nothrow_destructible_v<T>,
+                  "Boxed object should have nothrow destructor");
     auto *p = static_cast<T *>(obj);
     delete p;
   }
@@ -47,10 +47,11 @@ namespace TORI_NS::detail {
   /// \returns pointer to generated object.
   /// \notes return nullptr when allocation/initialization failed.
   template <class T>
-  HeapObject *vtbl_clone_func(const HeapObject *obj) noexcept {
+  HeapObject *vtbl_clone_func(const HeapObject *obj) noexcept
+  {
     try {
       auto p = static_cast<const T *>(obj);
-      return new T{*p};
+      return new T {*p};
     } catch (...) {
       // TODO: return Exception object
       return nullptr;
@@ -94,56 +95,65 @@ namespace TORI_NS::detail {
       };
 
       /// Ctor
-      template <
-        class U,
-        class... Args,
-        class = std::enable_if_t<
-          !std::is_same_v<std::decay_t<U>, BoxedHeapObject> &&
-          !std::is_same_v<std::decay_t<U>, static_construct_t>>>
+      template <class U,
+                class... Args,
+                class = std::enable_if_t<
+                  !std::is_same_v<std::decay_t<U>, BoxedHeapObject> &&
+                  !std::is_same_v<std::decay_t<U>, static_construct_t>>>
       constexpr BoxedHeapObject(U &&u, Args &&... args)
-        : HeapObject{1u, &info_table_initializer::info_table}
-        , value{std::forward<U>(u), std::forward<Args>(args)...} {}
+        : HeapObject {1u, &info_table_initializer::info_table}
+        , value {std::forward<U>(u), std::forward<Args>(args)...}
+      {}
 
       /// Ctor (static initialization)
       template <class... Args>
       constexpr BoxedHeapObject(static_construct_t, Args &&... args)
-        : BoxedHeapObject(std::forward<Args>(args)...) {
+        : BoxedHeapObject(std::forward<Args>(args)...)
+      {
         // set refcount ZERO to avoid deletion
         refcount = 0u;
       }
 
       /// Ctor
       constexpr BoxedHeapObject()
-        : HeapObject{1u, &info_table_initializer::info_table}, value{} {}
+        : HeapObject {1u, &info_table_initializer::info_table}, value {}
+      {}
       /// Copy ctor
       constexpr BoxedHeapObject(const BoxedHeapObject &obj)
-        : HeapObject{obj}, value{obj.value} {}
+        : HeapObject {obj}, value {obj.value}
+      {}
       /// Move ctor
       constexpr BoxedHeapObject(BoxedHeapObject &&obj)
-        : HeapObject{obj}, value{std::move(obj.value)} {}
+        : HeapObject {obj}, value {std::move(obj.value)}
+      {}
 
       /// operator=
-      BoxedHeapObject &operator=(const BoxedHeapObject &obj) {
+      BoxedHeapObject &operator=(const BoxedHeapObject &obj)
+      {
         HeapObject::operator=(obj);
         value = obj.value;
       }
       /// operator=
-      BoxedHeapObject &operator=(BoxedHeapObject &&obj) {
+      BoxedHeapObject &operator=(BoxedHeapObject &&obj)
+      {
         HeapObject::operator=(obj);
         value = std::move(obj.value);
       }
       /// operator new
-      void *operator new(std::size_t n) {
+      void *operator new(std::size_t n)
+      {
         AllocatorTemplate<BoxedHeapObject> allocator;
         return allocator.allocate(n);
       }
       /// operator delete
-      void operator delete(void *p) noexcept {
+      void operator delete(void *p) noexcept
+      {
         AllocatorTemplate<BoxedHeapObject> allocator;
         allocator.deallocate(static_cast<BoxedHeapObject *>(p), 1);
       }
       /// operator delete
-      void operator delete(void *p, std::size_t n) noexcept {
+      void operator delete(void *p, std::size_t n) noexcept
+      {
         AllocatorTemplate<BoxedHeapObject> allocator;
         allocator.deallocate(static_cast<BoxedHeapObject *>(p), n);
       }

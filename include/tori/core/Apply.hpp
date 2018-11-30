@@ -17,27 +17,33 @@ namespace TORI_NS::detail {
       class Arg,
       class = std::enable_if_t<!std::is_same_v<std::decay_t<App>, ApplyRValue>>>
     ApplyRValue(App&& app, Arg&& arg)
-      : m_app{std::forward<App>(app)}, m_arg{std::forward<Arg>(arg)} {}
+      : m_app {std::forward<App>(app)}, m_arg {std::forward<Arg>(arg)}
+    {}
 
-    const object_ptr<>& app() const {
+    const object_ptr<>& app() const
+    {
       assert(m_app != nullptr);
       return m_app;
     }
-    const object_ptr<>& arg() const {
+    const object_ptr<>& arg() const
+    {
       assert(m_app != nullptr);
       return m_arg;
     }
 
-    bool evaluated() const {
+    bool evaluated() const
+    {
       return m_app == nullptr;
     }
 
-    const object_ptr<>& get_cache() const {
+    const object_ptr<>& get_cache() const
+    {
       assert(evaluated());
       return m_arg;
     }
 
-    void set_cache(const object_ptr<>& obj) {
+    void set_cache(const object_ptr<>& obj)
+    {
       assert(!evaluated());
       m_app = nullptr;
       m_arg = obj;
@@ -93,14 +99,14 @@ namespace TORI_NS::detail {
 
   namespace interface {
     /// apply operator
-    template <
-      class T1,
-      class T2,
-      class =
-        std::enable_if_t<is_valid_app_arg_v<T1> && is_valid_app_arg_v<T2>>>
-    [[nodiscard]] auto operator<<(T1&& lhs, T2&& rhs) {
-      return object_ptr{
-        new Apply{std::forward<T1>(lhs), std::forward<T2>(rhs)}};
+    template <class T1,
+              class T2,
+              class = std::enable_if_t<is_valid_app_arg_v<T1> &&
+                                       is_valid_app_arg_v<T2>>>
+    [[nodiscard]] auto operator<<(T1&& lhs, T2&& rhs)
+    {
+      return object_ptr {
+        new Apply {std::forward<T1>(lhs), std::forward<T2>(rhs)}};
     }
   } // namespace interface
 

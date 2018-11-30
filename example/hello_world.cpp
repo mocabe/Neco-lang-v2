@@ -7,14 +7,16 @@ using namespace tori;
 
 // String -> Unit
 struct Print : Function<Print, String, Unit> {
-  ReturnType code() const {
+  ReturnType code() const
+  {
     std::cout << eval_arg<0>()->c_str() << std::endl;
     // return type is checked in compile time
     return new Unit();
   }
 };
 
-int main() {
+int main()
+{
   // create closure
   auto print = make_object<Print>();
   // apply

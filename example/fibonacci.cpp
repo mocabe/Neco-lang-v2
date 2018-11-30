@@ -6,24 +6,28 @@ using namespace tori;
 
 struct fib : Function<fib, Int, Int> {
   struct impl : Function<impl, closure<Int, Int>, Int, Int> {
-    ReturnType code() const {
+    ReturnType code() const
+    {
       auto fib = arg<0>();
       auto n = eval_arg<1>();
 
-      if (*n < 2) return n;
+      if (*n < 2)
+        return n;
 
       auto l = eval(fib << new Int(*n - 1));
       auto r = eval(fib << new Int(*n - 2));
       return new Int(*value_cast<Int>(l) + *value_cast<Int>(r));
     }
   };
-  ReturnType code() const {
+  ReturnType code() const
+  {
     static const auto fix = make_object<Fix>();
     return fix << new impl() << arg<0>();
   }
 };
 
-int main() {
+int main()
+{
   auto app = make_object<fib>() << new Int(10);
   try {
     check_type<Int>(app);

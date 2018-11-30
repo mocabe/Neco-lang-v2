@@ -101,34 +101,41 @@ namespace TORI_NS::detail {
 
   // for unused variable
   template <class... Args>
-  constexpr void ignore(Args&&...) noexcept {}
+  constexpr void ignore(Args&&...) noexcept
+  {}
 
   // for std::variant
   template <class T>
   struct monostate_base {};
 
   template <class T>
-  constexpr bool operator<(monostate_base<T>, monostate_base<T>) noexcept {
+  constexpr bool operator<(monostate_base<T>, monostate_base<T>) noexcept
+  {
     return false;
   }
   template <class T>
-  constexpr bool operator>(monostate_base<T>, monostate_base<T>) noexcept {
+  constexpr bool operator>(monostate_base<T>, monostate_base<T>) noexcept
+  {
     return false;
   }
   template <class T>
-  constexpr bool operator<=(monostate_base<T>, monostate_base<T>) noexcept {
+  constexpr bool operator<=(monostate_base<T>, monostate_base<T>) noexcept
+  {
     return true;
   }
   template <class T>
-  constexpr bool operator>=(monostate_base<T>, monostate_base<T>) noexcept {
+  constexpr bool operator>=(monostate_base<T>, monostate_base<T>) noexcept
+  {
     return true;
   }
   template <class T>
-  constexpr bool operator==(monostate_base<T>, monostate_base<T>) noexcept {
+  constexpr bool operator==(monostate_base<T>, monostate_base<T>) noexcept
+  {
     return true;
   }
   template <class T>
-  constexpr bool operator!=(monostate_base<T>, monostate_base<T>) noexcept {
+  constexpr bool operator!=(monostate_base<T>, monostate_base<T>) noexcept
+  {
     return false;
   }
 
@@ -139,16 +146,18 @@ namespace TORI_NS::detail {
   template <typename T1, typename T2>
   struct offset_of_member_impl {
     union U {
-      U() : c{} {}
+      U() : c {} {}
       ~U() {}
       char c[sizeof(T2)];
       T2 o;
     };
     static U u;
-    static constexpr size_t get(T1 T2::*member) {
+    static constexpr size_t get(T1 T2::*member)
+    {
       size_t i = 0;
       for (; i < sizeof(T2); ++i)
-        if (((void*)&(u.c[i])) == &(u.o.*member)) break;
+        if (((void*)&(u.c[i])) == &(u.o.*member))
+          break;
 
       // g++ bug 67371 workaround
       if (i >= sizeof(T2))
@@ -158,11 +167,12 @@ namespace TORI_NS::detail {
     }
   };
   template <class T1, class T2>
-  typename offset_of_member_impl<T1, T2>::U offset_of_member_impl<T1, T2>::u{};
+  typename offset_of_member_impl<T1, T2>::U offset_of_member_impl<T1, T2>::u {};
 
   /// get offset of member
   template <class T1, class T2>
-  constexpr size_t offset_of_member(T1 T2::*member) {
+  constexpr size_t offset_of_member(T1 T2::*member)
+  {
     return offset_of_member_impl<T1, T2>::get(member);
   }
 
@@ -198,12 +208,12 @@ namespace TORI_NS::detail {
     static_assert(sizeof(bool) == 1, "bool should be 8bit");
     using bool_t = bool;
 
-    static_assert(
-      std::numeric_limits<float>::is_iec559, "Size of float should be 32bit");
+    static_assert(std::numeric_limits<float>::is_iec559,
+                  "Size of float should be 32bit");
     using float_t = float;
 
-    static_assert(
-      std::numeric_limits<double>::is_iec559, "Size of double should be 64bit");
+    static_assert(std::numeric_limits<double>::is_iec559,
+                  "Size of double should be 64bit");
     using double_t = double;
   } // namespace interface
 } // namespace TORI_NS::detail

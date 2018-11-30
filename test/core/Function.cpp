@@ -5,11 +5,13 @@
 using namespace tori;
 
 // simple function test
-void simple() {
+void simple()
+{
   {
     // Int -> Int
     struct F1 : Function<F1, Int, Int> {
-      ReturnType code() const {
+      ReturnType code() const
+      {
         return arg<0>();
         return eval_arg<0>();
         return eval(arg<0>());
@@ -20,11 +22,13 @@ void simple() {
   }
 }
 // higher order function test
-void higher_order() {
+void higher_order()
+{
   {
     // (Int->Int) -> (Int->Int)
     struct F2 : Function<F2, closure<Int, Int>, closure<Int, Int>> {
-      ReturnType code() const {
+      ReturnType code() const
+      {
         return arg<0>();
         return eval_arg<0>();
         return eval(arg<0>());
@@ -36,10 +40,12 @@ void higher_order() {
 }
 
 // static apply test
-void apply() {
+void apply()
+{
   {
     struct F3 : Function<F3, closure<Int, Int>, Int, Int> {
-      ReturnType code() const {
+      ReturnType code() const
+      {
         // (Int->Int)Int
         return arg<0>() << arg<1>();
         return eval_arg<0>() << arg<1>();
@@ -61,14 +67,14 @@ void apply() {
 }
 
 // polymorphic function test
-void polymorphic() {
+void polymorphic()
+{
   {
     class X;
     // polymorphic closure declaration
-    struct F4
-      : Function<
-          F4, Int, closure<Int, forall<X>>, forall<X>> {
-      ReturnType code() const {
+    struct F4 : Function<F4, Int, closure<Int, forall<X>>, forall<X>> {
+      ReturnType code() const
+      {
         return arg<1>() << arg<0>();
       }
     };
@@ -77,10 +83,9 @@ void polymorphic() {
   {
     class X;
     // polymorphic return type
-    struct F5If
-      : Function<
-          F5If, Bool, forall<X>, forall<X>, forall<X>> {
-      ReturnType code() const {
+    struct F5If : Function<F5If, Bool, forall<X>, forall<X>, forall<X>> {
+      ReturnType code() const
+      {
         if (*eval_arg<0>())
           return arg<1>();
         else
@@ -91,7 +96,8 @@ void polymorphic() {
 
     // static polymorhic apply
     struct F5_0 : Function<F5_0, Unit, Int> {
-      ReturnType code() const {
+      ReturnType code() const
+      {
         auto _if = make_object<F5If>();
         auto b = make_object<Bool>();
         auto i = make_object<Int>();
@@ -102,12 +108,14 @@ void polymorphic() {
 
     // static polymorphic apply
     struct F5_1 : Function<F5_1, closure<Double, Int, Int>, Int> {
-      ReturnType code() const {
+      ReturnType code() const
+      {
         auto _if = make_object<F5If>();
         auto b = make_object<Bool>();
         auto i = make_object<Int>();
         auto d = make_object<Double>();
-        // (Double->Int->Int) ((Bool->X->X->X) Bool Double Double) ((Bool->X->X->X) Bool Int Int)
+        // (Double->Int->Int) ((Bool->X->X->X) Bool Double Double)
+        // ((Bool->X->X->X) Bool Int Int)
         return arg<0>() << (_if << b << d << d) << (_if << b << i << i);
       }
     };
@@ -115,7 +123,8 @@ void polymorphic() {
   }
 }
 
-int main() {
+int main()
+{
   simple();
   higher_order();
   apply();

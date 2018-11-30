@@ -103,7 +103,8 @@ namespace TORI_NS::detail {
   template <class T>
   struct object_type_h<T, std::enable_if_t<is_tm_value_v<T>>> {
     static constexpr const Type* type = &value_type<T>::type;
-    static object_ptr<const Type> get() {
+    static object_ptr<const Type> get()
+    {
       return type;
     }
   };
@@ -111,7 +112,8 @@ namespace TORI_NS::detail {
   template <class T>
   struct object_type_h<T, std::enable_if_t<is_tm_closure_v<T>>> {
     static constexpr const Type* type = arrow_type<T>::type;
-    static object_ptr<const Type> get() {
+    static object_ptr<const Type> get()
+    {
       return type;
     }
   };
@@ -119,7 +121,8 @@ namespace TORI_NS::detail {
   template <class T>
   struct object_type_h<T, std::enable_if_t<is_tm_var_v<T>>> {
     static constexpr const Type* type = &vartype<T>::type;
-    static object_ptr<const Type> get() {
+    static object_ptr<const Type> get()
+    {
       return type;
     }
   };
@@ -127,7 +130,8 @@ namespace TORI_NS::detail {
   template <class T>
   struct object_type_h<T, std::enable_if_t<is_tm_varvalue_v<T>>> {
     static constexpr const Type* type = &vartype<T>::type;
-    static object_ptr<const Type> get() {
+    static object_ptr<const Type> get()
+    {
       return type;
     }
   };
@@ -135,7 +139,8 @@ namespace TORI_NS::detail {
   template <class T>
   struct object_type_h<T, std::enable_if_t<is_tm_fix_v<T>>> {
     static constexpr const Type* type = &value_type<T>::type;
-    static object_ptr<const Type> get() {
+    static object_ptr<const Type> get()
+    {
       return type;
     }
   };
@@ -143,15 +148,17 @@ namespace TORI_NS::detail {
   namespace interface {
     /// object type generator
     template <class T>
-    [[nodiscard]] object_ptr<const Type> object_type() {
+    [[nodiscard]] object_ptr<const Type> object_type()
+    {
       return object_type_h<typename T::term>::type;
     }
   } // namespace interface
 
   /// convert constexpr char array to buffer type for value type
   template <size_t N>
-  constexpr ValueType::buffer_type name_to_buffer(char const (&name)[N]) {
-    ValueType::buffer_type tmp{};
+  constexpr ValueType::buffer_type name_to_buffer(char const (&name)[N])
+  {
+    ValueType::buffer_type tmp {};
     // if you want to expand maximum length of type name,
     // change ValueType::max_name_size and re-compile everything.
     static_assert(N <= tmp.size(), "Name of value type is too long.");
@@ -168,21 +175,21 @@ namespace TORI_NS::detail {
     auto vt_name = name_to_buffer(object_type_traits<tag_of_t<T>>::name);
 
   template <class T>
-  const Type value_type<T>::type{static_construct, ValueType{&vt_name<T>}};
+  const Type value_type<T>::type {static_construct, ValueType {&vt_name<T>}};
 
   template <class T>
-  const Type vartype<T>::type{static_construct,
-                              VarType{uint64_t{std::uintptr_t(id)}}};
+  const Type vartype<T>::type {static_construct,
+                               VarType {uint64_t {std::uintptr_t(id)}}};
 
   template <class T, class... Ts>
-  const Type arrow_type_impl<T, Ts...>::type{
-    static_construct_t{},
-    ArrowType{object_type_h<T>::type, &arrow_type_impl<Ts...>::type}};
+  const Type arrow_type_impl<T, Ts...>::type {
+    static_construct_t {},
+    ArrowType {object_type_h<T>::type, &arrow_type_impl<Ts...>::type}};
 
   template <class T1, class T2>
-  const Type arrow_type_impl<T1, T2>::type{
-    static_construct_t{},
-    ArrowType{object_type_h<T1>::type, object_type_h<T2>::type}};
+  const Type arrow_type_impl<T1, T2>::type {
+    static_construct_t {},
+    ArrowType {object_type_h<T1>::type, object_type_h<T2>::type}};
 
   // ------------------------------------------
   // Assume memory lauout fron type

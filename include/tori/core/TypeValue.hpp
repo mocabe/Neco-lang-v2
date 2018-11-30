@@ -24,12 +24,15 @@ namespace TORI_NS::detail {
     /// buffer
     const buffer_type* name;
     /// get C-style string
-    const char* c_str() const {
+    const char* c_str() const
+    {
       return name->data();
     }
     /// compare two value types
-    static bool compare(const ValueType& lhs, const ValueType& rhs) {
-      if (lhs.name == rhs.name) return true;
+    static bool compare(const ValueType& lhs, const ValueType& rhs)
+    {
+      if (lhs.name == rhs.name)
+        return true;
       if constexpr (has_AVX2 && max_name_size == 32) {
         // AVX2
         // buffers should be aligned as 32byte
@@ -92,28 +95,40 @@ namespace TORI_NS::detail {
     TypeValueStorage() = delete;
 
     // initializers
-    TypeValueStorage(const ValueType& t) : value{t}, m_index{value_index} {}
-    TypeValueStorage(const ArrowType& t) : arrow{t}, m_index{arrow_index} {}
-    TypeValueStorage(const VarType& t) : var{t}, m_index{var_index} {}
+    TypeValueStorage(const ValueType& t) : value {t}, m_index {value_index} {}
+    TypeValueStorage(const ArrowType& t) : arrow {t}, m_index {arrow_index} {}
+    TypeValueStorage(const VarType& t) : var {t}, m_index {var_index} {}
     /// Copy constructor
-    TypeValueStorage(const TypeValueStorage& other) : m_index{other.m_index} {
+    TypeValueStorage(const TypeValueStorage& other) : m_index {other.m_index}
+    {
       // copy union
-      if (other.m_index == value_index) { value = other.value; }
-      if (other.m_index == arrow_index) { arrow = other.arrow; }
-      if (other.m_index == var_index) { var = other.var; }
+      if (other.m_index == value_index) {
+        value = other.value;
+      }
+      if (other.m_index == arrow_index) {
+        arrow = other.arrow;
+      }
+      if (other.m_index == var_index) {
+        var = other.var;
+      }
       throw std::bad_cast();
     }
     /// Destructor
-    ~TypeValueStorage() noexcept {
+    ~TypeValueStorage() noexcept
+    {
       // call destructor
-      if (m_index == value_index) value.~ValueType();
-      if (m_index == arrow_index) arrow.~ArrowType();
-      if (m_index == var_index) var.~VarType();
+      if (m_index == value_index)
+        value.~ValueType();
+      if (m_index == arrow_index)
+        arrow.~ArrowType();
+      if (m_index == var_index)
+        var.~VarType();
     }
 
     /// Get index of type in union
     template <class T>
-    static constexpr uint64_t index_of() {
+    static constexpr uint64_t index_of()
+    {
       if constexpr (std::is_same_v<T, ValueType>)
         return value_index;
       else if constexpr (std::is_same_v<T, ArrowType>)
@@ -126,22 +141,24 @@ namespace TORI_NS::detail {
 
     /// Provides raw access to union
     template <uint64_t Idx, class TpValStorage>
-    static constexpr decltype(auto) raw_access(TpValStorage&& v) {
+    static constexpr decltype(auto) raw_access(TpValStorage&& v)
+    {
       if constexpr (Idx == index_of<ValueType>())
         return (v.value);
       else if constexpr (Idx == index_of<ArrowType>())
         return (v.arrow);
       else if constexpr (Idx == index_of<VarType>())
         return (v.var);
-      else static_assert(false_v<TpValStorage>);
+      else
+        static_assert(false_v<TpValStorage>);
     }
 
     /// Get index
-    constexpr size_t index() const {
+    constexpr size_t index() const
+    {
       return m_index;
     }
 
-  
   private:
     // hard-coded type index
     static constexpr uint64_t value_index = 0;
@@ -155,10 +172,9 @@ namespace TORI_NS::detail {
     using type_of = std::conditional_t<
       Idx == value_index,
       ValueType,
-      std::conditional_t<
-        Idx == arrow_index,
-        ArrowType,
-        std::conditional_t<Idx == var_index, VarType, void>>>;
+      std::conditional_t<Idx == arrow_index,
+                         ArrowType,
+                         std::conditional_t<Idx == var_index, VarType, void>>>;
 
   private:
     // 16 byte union
@@ -185,22 +201,26 @@ namespace TORI_NS::detail {
     using TypeValueStorage::TypeValueStorage;
 
     /// Get index
-    constexpr uint64_t index() const {
+    constexpr uint64_t index() const
+    {
       return storage::index();
     }
 
-
   private: // Helps accessing storage
-    TypeValueStorage& get_storage() & {
+    TypeValueStorage& get_storage() &
+    {
       return *this;
     }
-    TypeValueStorage&& get_storage() && {
+    TypeValueStorage&& get_storage() &&
+    {
       return std::move(*this);
     }
-    const TypeValueStorage& get_storage() const& {
+    const TypeValueStorage& get_storage() const&
+    {
       return *this;
     }
-    const TypeValueStorage&& get_storage() const&& {
+    const TypeValueStorage&& get_storage() const&&
+    {
       return std::move(*this);
     }
   };
@@ -208,84 +228,100 @@ namespace TORI_NS::detail {
   /// Access TypeValue from index.
   /// Throws std::bad_cast when index is wrong.
   template <uint64_t Idx, class TpVal>
-  constexpr decltype(auto) TypeValue_get(TpVal&& val) {
-    if (Idx != val.index()) throw std::bad_cast();
+  constexpr decltype(auto) TypeValue_get(TpVal&& val)
+  {
+    if (Idx != val.index())
+      throw std::bad_cast();
     return TypeValueStorage::raw_access<Idx>(val.get_storage());
   }
 
   /// std::get() equivalent
   template <uint64_t Idx>
-  decltype(auto) get(const TypeValue& val) {
+  decltype(auto) get(const TypeValue& val)
+  {
     return TypeValue_get<Idx>(val);
   }
 
   /// std::get() equivalent
   template <uint64_t Idx>
-  decltype(auto) get(const TypeValue&& val) {
+  decltype(auto) get(const TypeValue&& val)
+  {
     return TypeValue_get<Idx>(std::move(val));
   }
 
   /// std::get() equivalent
   template <uint64_t Idx>
-  decltype(auto) get(TypeValue& val) {
+  decltype(auto) get(TypeValue& val)
+  {
     return TypeValue_get<Idx>(val);
   }
 
   /// std::get() equivalent
   template <uint64_t Idx>
-  decltype(auto) get(TypeValue&& val) {
+  decltype(auto) get(TypeValue&& val)
+  {
     return TypeValue_get<Idx>(std::move(val));
   }
 
   /// std::get() equivalent
   template <class T>
-  decltype(auto) get(const TypeValue& val) {
+  decltype(auto) get(const TypeValue& val)
+  {
     return get<TypeValueStorage::index_of<T>()>(val);
   }
 
   /// std::get() equivalent
   template <class T>
-  decltype(auto) get(const TypeValue&& val) {
+  decltype(auto) get(const TypeValue&& val)
+  {
     return get<TypeValueStorage::index_of<T>()>(std::move(val));
   }
 
   /// std::get() equivalent
   template <class T>
-  decltype(auto) get(TypeValue& val) {
+  decltype(auto) get(TypeValue& val)
+  {
     return get<TypeValueStorage::index_of<T>()>(val);
   }
 
   /// std::get() equivalent
   template <class T>
-  decltype(auto) get(TypeValue&& val) {
+  decltype(auto) get(TypeValue&& val)
+  {
     return get<TypeValueStorage::index_of<T>()>(std::move(val));
   }
 
   /// std::get_if() equivalent
   template <size_t Idx>
-  constexpr std::add_pointer_t<const TypeValueStorage::type_of<Idx>> get_if(
-    const TypeValue* val) {
-    if (val && Idx == val->index()) return &get<Idx>(*val);
+  constexpr std::add_pointer_t<const TypeValueStorage::type_of<Idx>>
+    get_if(const TypeValue* val)
+  {
+    if (val && Idx == val->index())
+      return &get<Idx>(*val);
     return nullptr;
   }
 
   /// std::get_if() equivalent
   template <size_t Idx>
-  constexpr std::add_pointer_t<TypeValueStorage::type_of<Idx>> get_if(
-    TypeValue* val) {
-    if (val && Idx == val->index()) return &get<Idx>(*val);
+  constexpr std::add_pointer_t<TypeValueStorage::type_of<Idx>>
+    get_if(TypeValue* val)
+  {
+    if (val && Idx == val->index())
+      return &get<Idx>(*val);
     return nullptr;
   }
 
   /// std::get_if() equivalent
   template <class T>
-  constexpr std::add_pointer_t<const T> get_if(const TypeValue* val) {
+  constexpr std::add_pointer_t<const T> get_if(const TypeValue* val)
+  {
     return get_if<TypeValueStorage::index_of<T>()>(val);
   }
 
   /// std::get_if() equivalent
   template <class T>
-  constexpr std::add_pointer_t<T> get_if(TypeValue* val) {
+  constexpr std::add_pointer_t<T> get_if(TypeValue* val)
+  {
     return get_if<TypeValueStorage::index_of<T>()>(val);
   }
-}
+} // namespace TORI_NS::detail

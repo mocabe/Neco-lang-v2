@@ -13,15 +13,21 @@ namespace TORI_NS::detail {
   /// bad_closure_cast exception
   class bad_closure_cast : public std::logic_error {
   public:
-    explicit bad_closure_cast(
-      object_ptr<const Type> from, object_ptr<const Type> to)
+    explicit bad_closure_cast(object_ptr<const Type> from,
+                              object_ptr<const Type> to)
       : std::logic_error("bad_closure_cast")
-      , m_from{std::move(from)}
-      , m_to{std::move(to)} {}
-    object_ptr<const Type> from() const {
+      , m_from {std::move(from)}
+      , m_to {std::move(to)}
+    {}
+
+    /// from
+    object_ptr<const Type> from() const
+    {
       return m_from;
     }
-    object_ptr<const Type> to() const {
+    /// to
+    object_ptr<const Type> to() const
+    {
       return m_to;
     }
 
@@ -49,16 +55,18 @@ namespace TORI_NS::detail {
     /// dynamically cast object to specified closure type.
     /// \throws bad_value_cast when fail.
     template <class T, class U>
-    [[nodiscard]] object_ptr<T> closure_cast(const object_ptr<U>& obj) {
+    [[nodiscard]] object_ptr<T> closure_cast(const object_ptr<U>& obj)
+    {
       static_assert(has_tm_closure_v<T>, "T is not closure type");
       assert(obj);
       auto o = object_ptr<>(obj);
       if (likely(has_type<T>(o))) {
         // +1
-        if (o.get()) o.head()->refcount.fetch_add();
+        if (o.get())
+          o.head()->refcount.fetch_add();
         return static_cast<T*>(o.get());
       }
-      throw bad_closure_cast{get_type(o), object_type<T>()};
+      throw bad_closure_cast {get_type(o), object_type<T>()};
     }
 
     /// closure_cast
@@ -66,7 +74,8 @@ namespace TORI_NS::detail {
     /// dynamically cast object to specified closure type.
     /// \throws bad_value_cast when fail.
     template <class T, class U>
-    [[nodiscard]] object_ptr<T> closure_cast(object_ptr<U>&& obj) {
+    [[nodiscard]] object_ptr<T> closure_cast(object_ptr<U>&& obj)
+    {
       static_assert(has_tm_closure_v<T>, "T is not closure type");
       assert(obj);
       auto o = object_ptr<>(std::move(obj));
@@ -76,7 +85,7 @@ namespace TORI_NS::detail {
         o.m_ptr = nullptr;
         return r;
       }
-      throw bad_closure_cast{get_type(o), object_type<T>()};
+      throw bad_closure_cast {get_type(o), object_type<T>()};
     }
 
     /// closure_cast_if
@@ -84,14 +93,16 @@ namespace TORI_NS::detail {
     /// dynamically cast object to specified closure type.
     /// \returns nullptr when fail.
     template <class T, class U>
-    [[nodiscard]] object_ptr<T> closure_cast_if(
-      const object_ptr<U>& obj) noexcept {
+    [[nodiscard]] object_ptr<T>
+      closure_cast_if(const object_ptr<U>& obj) noexcept
+    {
       static_assert(has_tm_closure_v<T>, "T is not closure type");
       assert(obj);
       auto o = object_ptr<>(obj);
       if (has_type<T>(o)) {
         // +1
-        if (o.get()) o.head()->refcount.fetch_add();
+        if (o.get())
+          o.head()->refcount.fetch_add();
         return static_cast<T*>(o.get());
       }
       return nullptr;
@@ -102,7 +113,8 @@ namespace TORI_NS::detail {
     /// dynamically cast object to specified closure type.
     /// \returns nullptr when fail.
     template <class T, class U>
-    [[nodiscard]] object_ptr<T> closure_cast_if(object_ptr<U>&& obj) noexcept {
+    [[nodiscard]] object_ptr<T> closure_cast_if(object_ptr<U>&& obj) noexcept
+    {
       static_assert(has_tm_closure_v<T>, "T is not closure type");
       assert(obj);
       auto o = object_ptr<>(std::move(obj));

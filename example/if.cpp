@@ -8,7 +8,8 @@ using namespace tori;
 // Bool -> X -> X -> X
 struct If
   : Function<::If, Bool, forall<class X>, forall<class X>, forall<class X>> {
-  ReturnType code() const {
+  ReturnType code() const
+  {
     if (*eval_arg<0>())
       return arg<1>();
     else
@@ -16,7 +17,8 @@ struct If
   }
 };
 
-int main() {
+int main()
+{
   auto if_ = make_object<::If>();
   auto b = make_object<Bool>(true);
   auto i1 = make_object<Int>(42);

@@ -9,7 +9,6 @@
 #include <type_traits>
 
 namespace TORI_NS::detail {
-
   struct FixValue;
 
   namespace interface {

@@ -176,9 +176,8 @@ namespace TORI_NS::detail {
   struct subst_impl {};
   template <class TyT1, class TyT2, class T1, class T2>
   struct subst_impl<tyarrow<TyT1, TyT2>, arrow<T1, T2>> {
-    using type = arrow<
-      typename subst_impl<tyarrow<TyT1, TyT2>, T1>::type,
-      typename subst_impl<tyarrow<TyT1, TyT2>, T2>::type>;
+    using type = arrow<typename subst_impl<tyarrow<TyT1, TyT2>, T1>::type,
+                       typename subst_impl<tyarrow<TyT1, TyT2>, T2>::type>;
   };
   template <class TyT1, class TyT2, class Tag>
   struct subst_impl<tyarrow<TyT1, TyT2>, value<Tag>> {
@@ -228,9 +227,8 @@ namespace TORI_NS::detail {
   struct subst_constr_impl {};
   template <class TyT1, class TyT2, class T1, class T2>
   struct subst_constr_impl<tyarrow<TyT1, TyT2>, constr<T1, T2>> {
-    using type = constr<
-      subst_t<tyarrow<TyT1, TyT2>, T1>,
-      subst_t<tyarrow<TyT1, TyT2>, T2>>;
+    using type = constr<subst_t<tyarrow<TyT1, TyT2>, T1>,
+                        subst_t<tyarrow<TyT1, TyT2>, T2>>;
   };
   /// Apply TyArrow to Constr
   template <class TyArrow, class Constr>
@@ -281,9 +279,9 @@ namespace TORI_NS::detail {
   template <class ConstrList>
   struct unify_impl {
     // error
-    using type = error_type<
-      error_tags::
-        unsolvable_constraints<error_tags::none, error_tags::none, ConstrList>>;
+    using type = error_type<error_tags::unsolvable_constraints<error_tags::none,
+                                                               error_tags::none,
+                                                               ConstrList>>;
   };
 
   template <class T1, class T2, class... Ts>
@@ -299,22 +297,20 @@ namespace TORI_NS::detail {
     using type = error_type<error_tags::circular_constraints<Var, Tail>>;
   };
   // helper2
-  template <
-    class Tag1,
-    class Tag2,
-    class Tail,
-    bool B = std::is_same_v<Tag1, Tag2>>
+  template <class Tag1,
+            class Tag2,
+            class Tail,
+            bool B = std::is_same_v<Tag1, Tag2>>
   struct unify_h2 {
     // error
     using type =
       error_type<error_tags::type_missmatch<value<Tag1>, value<Tag2>, Tail>>;
   };
   // helper3
-  template <
-    class Tag1,
-    class Tag2,
-    class Tail,
-    bool B = std::is_same_v<Tag1, Tag2>>
+  template <class Tag1,
+            class Tag2,
+            class Tail,
+            bool B = std::is_same_v<Tag1, Tag2>>
   struct unify_h3 {
     // error
     using type = error_type<
@@ -326,10 +322,9 @@ namespace TORI_NS::detail {
   struct unify_h<Var, T, Tail, true> {
     using _t =
       typename unify_impl<subst_constr_all_t<tyarrow<Var, T>, Tail>>::type;
-    using type = std::conditional_t<
-      is_error_type_v<_t>,
-      _t,
-      append_tuple_t<_t, tyarrow<Var, T>>>;
+    using type = std::conditional_t<is_error_type_v<_t>,
+                                    _t,
+                                    append_tuple_t<_t, tyarrow<Var, T>>>;
   };
   // helper2
   template <class Tag1, class Tag2, class Tail>
@@ -400,8 +395,8 @@ namespace TORI_NS::detail {
     error_tags::
       unsolvable_constraints<error_tags::none, error_tags::none, Constrs>>> {
     using info = typename Constrs::_error_constraints;
-    static_assert(
-      false_v<Constrs>, "Unification error: Unsolvable constraints");
+    static_assert(false_v<Constrs>,
+                  "Unification error: Unsolvable constraints");
   };
 
   template <class T1, class T2, class Other>
@@ -504,9 +499,8 @@ namespace TORI_NS::detail {
     using type = std::conditional_t<
       std::is_same_v<From, tm_apply<T1, T2>>,
       To,
-      tm_apply<
-        typename subst_term_impl<From, To, T1>::type,
-        typename subst_term_impl<From, To, T2>::type>>;
+      tm_apply<typename subst_term_impl<From, To, T1>::type,
+               typename subst_term_impl<From, To, T2>::type>>;
   };
 
   template <class From, class To, class T>
@@ -523,10 +517,9 @@ namespace TORI_NS::detail {
 
   template <class From, class To, class Tag>
   struct subst_term_impl<From, To, tm_varvalue<Tag>> {
-    using type = std::conditional_t<
-      std::is_same_v<From, tm_varvalue<Tag>>,
-      To,
-      tm_varvalue<Tag>>;
+    using type = std::conditional_t<std::is_same_v<From, tm_varvalue<Tag>>,
+                                    To,
+                                    tm_varvalue<Tag>>;
   };
 
   template <class From, class To, class Tag>
@@ -550,10 +543,9 @@ namespace TORI_NS::detail {
   template <class Tag, class... Ts, class Gen, class Target>
   struct genpoly_impl2<std::tuple<tm_var<Tag>, Ts...>, Gen, Target> {
     using _var = tm_var<Gen>;
-    using t = genpoly_impl2<
-      std::tuple<Ts...>,
-      nextgen_t<Gen>,
-      subst_term_t<tm_var<Tag>, _var, Target>>;
+    using t = genpoly_impl2<std::tuple<Ts...>,
+                            nextgen_t<Gen>,
+                            subst_term_t<tm_var<Tag>, _var, Target>>;
 
     using term = typename t::term;
     using gen = typename t::gen;
@@ -647,10 +639,9 @@ namespace TORI_NS::detail {
   };
   template <class... Ts, class Gen, bool Assert>
   struct type_of_impl<tm_closure<Ts...>, Gen, Assert> {
-    using rcn = type_of_h<
-      genpoly_term<tm_closure<Ts...>, Gen>,
-      genpoly_gen<tm_closure<Ts...>, Gen>,
-      Assert>;
+    using rcn = type_of_h<genpoly_term<tm_closure<Ts...>, Gen>,
+                          genpoly_gen<tm_closure<Ts...>, Gen>,
+                          Assert>;
     using type = typename rcn::type;
     using gen = typename rcn::gen;
   };
@@ -669,10 +660,9 @@ namespace TORI_NS::detail {
   };
 
   // When Assert==true Error is always false
-  template <
-    class T1,
-    bool Assert,
-    bool Error = is_error_type_v<typename T1::type>>
+  template <class T1,
+            bool Assert,
+            bool Error = is_error_type_v<typename T1::type>>
   struct type_of_impl_applyfix {
     using _t1_type = typename T1::type;
     using _t1_gen = typename T1::gen;
@@ -711,12 +701,11 @@ namespace TORI_NS::detail {
     using gen = void;
   };
 
-  template <
-    class T2,
-    class T1T,
-    class Gen,
-    bool Assert,
-    bool Error = is_error_type_v<typename T2::type>>
+  template <class T2,
+            class T1T,
+            class Gen,
+            bool Assert,
+            bool Error = is_error_type_v<typename T2::type>>
   struct type_of_impl_apply_t2 {
     using _t2_type = typename T2::type;
     using _t2_gen = typename T2::gen;
@@ -739,11 +728,10 @@ namespace TORI_NS::detail {
     using gen = Gen;
   };
 
-  template <
-    class T1,
-    class T2,
-    bool Assert,
-    bool Error = is_error_type_v<typename T1::type>>
+  template <class T1,
+            class T2,
+            bool Assert,
+            bool Error = is_error_type_v<typename T1::type>>
   struct type_of_impl_apply_t1 {
     using _t1_type = typename T1::type;
     using _t1_gen = typename T1::gen;
