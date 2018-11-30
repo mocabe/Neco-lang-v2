@@ -13,10 +13,12 @@
 namespace TORI_NS::detail {
 
   /// get string represents type
-  [[nodiscard]] TORI_INLINE std::string to_string_impl(
-    const object_ptr<const Type>& type,
-    std::vector<object_ptr<const Type>>& stack) {
-    if (is_value_type(type)) return get<ValueType>(*type).c_str();
+  [[nodiscard]] TORI_INLINE std::string
+    to_string_impl(const object_ptr<const Type>& type,
+                   std::vector<object_ptr<const Type>>& stack)
+  {
+    if (is_value_type(type))
+      return get<ValueType>(*type).c_str();
     if (is_arrow_type(type))
       return "(" +                                                   //
              to_string_impl(get<ArrowType>(*type).captured, stack) + //
@@ -35,8 +37,9 @@ namespace TORI_NS::detail {
 
   namespace interface {
     /// convert type to string
-    [[nodiscard]] TORI_INLINE std::string to_string(
-      const object_ptr<const Type>& type) {
+    [[nodiscard]] TORI_INLINE std::string
+      to_string(const object_ptr<const Type>& type)
+    {
       std::vector<object_ptr<const Type>> stack;
       return to_string_impl(type, stack);
     }
