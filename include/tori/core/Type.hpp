@@ -95,7 +95,8 @@ namespace TORI_NS::detail {
   namespace interface {
     namespace type_error {
       /// bad type check
-      struct bad_type_check : type_error {
+      class bad_type_check : public type_error {
+      public:
         bad_type_check(
           const object_ptr<const Type>& expected,
           const object_ptr<const Type>& result,
@@ -104,6 +105,16 @@ namespace TORI_NS::detail {
               "type_error: check_type failed. Result type is invalid", obj)
           , m_expected{expected}
           , m_result{result} {}
+
+        /// expected
+        const object_ptr<const Type>&  expected() const {
+          return m_expected;
+        }
+
+        /// result
+        const object_ptr<const Type>& result() const {
+          return m_result;
+        }
 
       private:
         object_ptr<const Type> m_expected;

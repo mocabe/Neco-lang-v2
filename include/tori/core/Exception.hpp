@@ -132,6 +132,7 @@ namespace TORI_NS::detail {
           : runtime_error("result_error: Exception detected while evaluation")
           , m_result{std::move(result)} {}
 
+        /// result
         object_ptr<Exception> result() const {
           return m_result;
         }

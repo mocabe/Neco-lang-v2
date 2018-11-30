@@ -18,28 +18,35 @@ namespace TORI_NS::detail {
 
     namespace type_error {
       /// unification error(circular constraint)
-      struct circular_constraint : type_error {
+      class circular_constraint : public type_error {
+      public:
         circular_constraint(
           const object_ptr<>& src, const object_ptr<const Type>& var)
-          : type_error("type_error: Circular constraints", src), m_var{var} {}
+          : type_error("Circular constraints", src), m_var{var} {}
 
+        /// var
         object_ptr<const Type> var() const {
           return m_var;
         }
+
+      private:
         object_ptr<const Type> m_var;
       };
 
       /// unification error(missmatch)
-      struct type_missmatch : type_error {
+      class type_missmatch : public type_error {
+      public:
         type_missmatch(
           const object_ptr<>& src,
           const object_ptr<const Type>& t1,
           const object_ptr<const Type>& t2)
-          : type_error("type_error: Type missmatch", src), m_t1{t1}, m_t2{t2} {}
+          : type_error("Type missmatch", src), m_t1{t1}, m_t2{t2} {}
 
+        /// t1
         object_ptr<const Type> t1() const {
           return m_t1;
         }
+        /// t2
         object_ptr<const Type> t2() const {
           return m_t2;
         }
