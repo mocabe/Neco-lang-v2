@@ -6,7 +6,7 @@ using namespace tori;
 
 struct fib : Function<fib, Int, Int> {
   struct impl : Function<impl, closure<Int, Int>, Int, Int> {
-    ReturnType code() const
+    return_type code() const
     {
       auto fib = arg<0>();
       auto n = eval_arg<1>();
@@ -19,7 +19,7 @@ struct fib : Function<fib, Int, Int> {
       return new Int(*value_cast<Int>(l) + *value_cast<Int>(r));
     }
   };
-  ReturnType code() const
+  return_type code() const
   {
     static const auto fix = make_object<Fix>();
     return fix << new impl() << arg<0>();

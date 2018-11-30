@@ -7,7 +7,7 @@ using namespace tori;
 
 // Apply second argument twice to first argument
 struct ApplyTwice : Function<ApplyTwice, closure<Int, Int>, Int, Int> {
-  ReturnType code() const
+  return_type code() const
   {
     // arg<1> (arg<0> arg<1>)
     return arg<0>() << (arg<0>() << arg<1>());
@@ -16,7 +16,7 @@ struct ApplyTwice : Function<ApplyTwice, closure<Int, Int>, Int, Int> {
 
 // dummy
 struct Func : Function<Func, Int, Int> {
-  ReturnType code() const
+  return_type code() const
   {
     std::cout << "Func called" << std::endl;
     return new Int(*eval_arg<0>() * 2);

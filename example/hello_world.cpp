@@ -7,7 +7,7 @@ using namespace tori;
 
 // String -> Unit
 struct Print : Function<Print, String, Unit> {
-  ReturnType code() const
+  return_type code() const
   {
     std::cout << eval_arg<0>()->c_str() << std::endl;
     // return type is checked in compile time

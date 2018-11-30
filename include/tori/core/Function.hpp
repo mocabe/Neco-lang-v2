@@ -125,7 +125,7 @@ namespace TORI_NS::detail {
     static object_ptr<> code(Closure<>* _this) noexcept
     {
       try {
-        return (static_cast<const T*>(_this)->code()).value;
+        return (static_cast<const T*>(_this)->code()).value();
       } catch (const bad_value_cast& e) {
         return new Exception(new BadValueCast(e.from(), e.to()));
       } catch (const bad_closure_cast& e) {
@@ -199,6 +199,10 @@ namespace TORI_NS::detail {
   template <class Term>
   using remove_varvalue_t = typename remove_varvalue_impl<Term, Term>::type;
 
+  // ------------------------------------------
+  // return type checking
+  // ------------------------------------------
+
   template <class T1, class T2, bool B = std::is_same_v<T1, T2>>
   struct check_return_type {};
 
@@ -207,6 +211,50 @@ namespace TORI_NS::detail {
     using t1 = typename T1::_expected;
     using t2 = typename T2::_provided;
     static_assert(false_v<T1>, "return type does not match");
+  };
+
+  /// Return type checker
+  template <class Term>
+  class return_type_checker {
+  public:
+    using return_type = type_of_t<Term>;
+
+    /// object_ptr<U>
+    template <class U>
+    return_type_checker(const object_ptr<U>& obj) : m_value {object_ptr<>(obj)}
+    {
+      // check return type
+      ignore(check_return_type<return_type, type_of_t<typename U::term>> {});
+    }
+
+    /// object_ptr<U>&&
+    template <class U>
+    return_type_checker(object_ptr<U>&& obj)
+      : m_value {object_ptr<>(std::move(obj))}
+    {
+      // check return type
+      ignore(check_return_type<return_type, type_of_t<typename U::term>> {});
+    }
+
+    /// U*
+    template <class U>
+    return_type_checker(U* ptr) : return_type_checker(object_ptr(ptr))
+    {}
+
+    /// deleted
+    return_type_checker() = delete;
+    /// deleted
+    return_type_checker(const return_type& other) = delete;
+    /// deleted
+    return_type_checker(return_type&& other) = delete;
+
+    object_ptr<> value() &&
+    {
+      return std::move(m_value);
+    }
+
+  private:
+    object_ptr<> m_value;
   };
 
   // ------------------------------------------
@@ -256,38 +304,10 @@ namespace TORI_NS::detail {
       {}
 
     protected:
-      /// Return type checker
-      struct ReturnType {
-        using return_term =
-          typename std::tuple_element_t<sizeof...(Ts) - 1,
-                                        std::tuple<Ts...>>::term;
-        using return_type = type_of_t<return_term>;
-        template <class U>
-        ReturnType(const object_ptr<U>& obj) : value {object_ptr<>(obj)}
-        {
-          // check return type
-          ignore(
-            check_return_type<return_type, type_of_t<typename U::term>> {});
-        }
-
-        template <class U>
-        ReturnType(object_ptr<U>&& obj) : value {object_ptr<>(std::move(obj))}
-        {
-          // check return type
-          ignore(
-            check_return_type<return_type, type_of_t<typename U::term>> {});
-        }
-
-        template <class U>
-        ReturnType(U* ptr) : ReturnType(object_ptr(ptr))
-        {}
-
-        ReturnType() = delete;
-        ReturnType(const ReturnType& other) : value {other.value} {}
-        ReturnType(ReturnType&& other) : value {std::move(other.value)} {}
-
-        const object_ptr<> value;
-      };
+      // return type for code()
+      using return_type = return_type_checker<
+        typename std::tuple_element_t<sizeof...(Ts) - 1,
+                                      std::tuple<Ts...>>::term>;
 
     private:
       using ClosureN<sizeof...(Ts) - 1>::nth_arg;
@@ -299,8 +319,8 @@ namespace TORI_NS::detail {
       void check_code()
       {
         static_assert(
-          std::is_same_v<ReturnType, decltype(std::declval<const T>().code())>,
-          " `ReturnType code() const` was not found.");
+          std::is_same_v<return_type, decltype(std::declval<const T>().code())>,
+          " `return_type code() const` was not found.");
       }
       using concept_check_code = concept_checker<&Function::check_code>;
     };

@@ -8,7 +8,7 @@ using namespace tori;
 // Bool -> X -> X -> X
 struct If
   : Function<::If, Bool, forall<class X>, forall<class X>, forall<class X>> {
-  ReturnType code() const
+  return_type code() const
   {
     if (*eval_arg<0>())
       return arg<1>();
