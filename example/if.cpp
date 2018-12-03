@@ -19,13 +19,17 @@ struct If
 
 int main()
 {
+  // create objects
   auto if_ = make_object<::If>();
   auto b = make_object<Bool>(true);
   auto i1 = make_object<Int>(42);
   auto i2 = make_object<Int>(24);
 
+  // apply
   auto app = if_ << b << i1 << i2;
+  // check type
   check_type<Int>(app);
+  // result
   auto result = eval(app);
   assert(*value_cast<Int>(result) == 42);
 }

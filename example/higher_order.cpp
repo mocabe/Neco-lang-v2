@@ -14,23 +14,26 @@ struct ApplyTwice : Function<ApplyTwice, closure<Int, Int>, Int, Int> {
   }
 };
 
-// dummy
-struct Func : Function<Func, Int, Int> {
+struct X2 : Function<X2, Int, Int> {
   return_type code() const
   {
-    std::cout << "Func called" << std::endl;
+    // use eval_arg<0>() instead of arg<0>()
+    // to evaluate argument.
     return new Int(*eval_arg<0>() * 2);
   }
 };
 
 int main()
 {
+  // create objects
   auto applyTwice = make_object<ApplyTwice>();
-  auto func = make_object<Func>();
+  auto func = make_object<X2>();
+  // apply
   auto apply = applyTwice << func << new Int(42);
+  // type check
   check_type<Int>(apply);
+  // evaluate
   auto result = eval(apply);
-  // Func called
-  // Func called
-  std::cout << *value_cast<Int>(result) << std::endl; // 168
+
+  assert(*value_cast<Int>(result) == 168);
 }
