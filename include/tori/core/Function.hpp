@@ -156,8 +156,9 @@ namespace TORI_NS::detail {
   };
   template <class T, class... Ts>
   struct remove_last<std::tuple<T, Ts...>> {
-    using type = concat_tuple_t<std::tuple<T>,
-                                typename remove_last<std::tuple<Ts...>>::type>;
+    using type = concat_tuple_t<
+      std::tuple<T>,
+      typename remove_last<std::tuple<Ts...>>::type>;
   };
   template <class T>
   using remove_last_t = typename remove_last<T>::type;
@@ -265,8 +266,9 @@ namespace TORI_NS::detail {
     /// CRTP utility to create closure type.
     template <class T, class... Ts>
     struct Function : ClosureN<sizeof...(Ts) - 1> {
-      static_assert(sizeof...(Ts) > 1,
-                    "Closure should have argument and return type");
+      static_assert(
+        sizeof...(Ts) > 1,
+        "Closure should have argument and return type");
 
       /// export term
       using term = remove_varvalue_t<tm_closure<typename Ts::term...>>;
@@ -305,9 +307,9 @@ namespace TORI_NS::detail {
 
     protected:
       // return type for code()
-      using return_type = return_type_checker<
-        typename std::tuple_element_t<sizeof...(Ts) - 1,
-                                      std::tuple<Ts...>>::term>;
+      using return_type = return_type_checker<typename std::tuple_element_t<
+        sizeof...(Ts) - 1,
+        std::tuple<Ts...>>::term>;
 
     private:
       using ClosureN<sizeof...(Ts) - 1>::nth_arg;

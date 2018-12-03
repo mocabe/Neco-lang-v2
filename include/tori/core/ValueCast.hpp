@@ -13,8 +13,9 @@ namespace TORI_NS::detail {
   /// bad_value_cast exception
   class bad_value_cast : public std::logic_error {
   public:
-    explicit bad_value_cast(object_ptr<const Type> from,
-                            object_ptr<const Type> to)
+    explicit bad_value_cast(
+      object_ptr<const Type> from,
+      object_ptr<const Type> to)
       : std::logic_error("bad_value_cast")
       , m_from {std::move(from)}
       , m_to {std::move(to)}

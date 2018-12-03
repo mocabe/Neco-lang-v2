@@ -78,8 +78,8 @@ namespace TORI_NS::detail {
         }
         // check arg
         if (unlikely(has_value_type(f))) {
-          throw eval_error::bad_fix("eval_error: Expected closure after Fix",
-                                    obj);
+          throw eval_error::bad_fix(
+            "eval_error: Expected closure after Fix", obj);
         }
         // cast to closure
         auto c = static_cast<Closure<>*>(f.get());
@@ -108,8 +108,8 @@ namespace TORI_NS::detail {
       // too many arguments
       auto c = static_cast<Closure<>*>(app.get());
       if (unlikely(c->arity.load() == 0)) {
-        throw eval_error::too_many_arguments("eval_error: Too many arguments",
-                                             obj);
+        throw eval_error::too_many_arguments(
+          "eval_error: Too many arguments", obj);
       }
       // create pap
       auto pap = app.clone();

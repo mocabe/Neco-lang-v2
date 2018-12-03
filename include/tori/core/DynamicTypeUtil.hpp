@@ -20,8 +20,9 @@ namespace TORI_NS::detail {
       /// unification error(circular constraint)
       class circular_constraint : public type_error {
       public:
-        circular_constraint(const object_ptr<>& src,
-                            const object_ptr<const Type>& var)
+        circular_constraint(
+          const object_ptr<>& src,
+          const object_ptr<const Type>& var)
           : type_error("Circular constraints", src), m_var {var}
         {}
 
@@ -38,9 +39,10 @@ namespace TORI_NS::detail {
       /// unification error(missmatch)
       class type_missmatch : public type_error {
       public:
-        type_missmatch(const object_ptr<>& src,
-                       const object_ptr<const Type>& t1,
-                       const object_ptr<const Type>& t2)
+        type_missmatch(
+          const object_ptr<>& src,
+          const object_ptr<const Type>& t1,
+          const object_ptr<const Type>& t2)
           : type_error("Type missmatch", src), m_t1 {t1}, m_t2 {t2}
         {}
 
@@ -149,9 +151,9 @@ namespace TORI_NS::detail {
     };
   } // namespace interface
 
-  [[nodiscard]] TORI_INLINE bool
-    same_type_impl(const object_ptr<const Type>& lhs,
-                   const object_ptr<const Type>& rhs)
+  [[nodiscard]] TORI_INLINE bool same_type_impl(
+    const object_ptr<const Type>& lhs,
+    const object_ptr<const Type>& rhs)
   {
     if (lhs.get() == rhs.get())
       return true;
@@ -185,8 +187,9 @@ namespace TORI_NS::detail {
 
   namespace interface {
     /// check type equality
-    [[nodiscard]] TORI_INLINE bool same_type(const object_ptr<const Type>& lhs,
-                                             const object_ptr<const Type>& rhs)
+    [[nodiscard]] TORI_INLINE bool same_type(
+      const object_ptr<const Type>& lhs,
+      const object_ptr<const Type>& rhs)
     {
       return same_type_impl(lhs, rhs);
     }
@@ -239,9 +242,9 @@ namespace TORI_NS::detail {
     return subst_type_impl(ta, in);
   };
 
-  [[nodiscard]] TORI_INLINE object_ptr<const Type>
-    subst_type_all(const std::vector<TyArrow>& tas,
-                   const object_ptr<const Type>& ty)
+  [[nodiscard]] TORI_INLINE object_ptr<const Type> subst_type_all(
+    const std::vector<TyArrow>& tas,
+    const object_ptr<const Type>& ty)
   {
     auto t = ty;
     for (auto tyArrow : tas) {
@@ -261,8 +264,8 @@ namespace TORI_NS::detail {
   };
 
   /// subst_constr
-  [[nodiscard]] TORI_INLINE Constr subst_constr(const TyArrow& ta,
-                                                const Constr& constr)
+  [[nodiscard]] TORI_INLINE Constr
+    subst_constr(const TyArrow& ta, const Constr& constr)
   {
     return {subst_type(ta, constr.t1), subst_type(ta, constr.t2)};
   };
@@ -282,8 +285,8 @@ namespace TORI_NS::detail {
   // ------------------------------------------
 
   /// occurs
-  [[nodiscard]] TORI_INLINE bool occurs(const object_ptr<const Type>& x,
-                                        const object_ptr<const Type>& t)
+  [[nodiscard]] TORI_INLINE bool
+    occurs(const object_ptr<const Type>& x, const object_ptr<const Type>& t)
   {
     if (get_if<ValueType>(t.value()))
       return false;
@@ -296,9 +299,10 @@ namespace TORI_NS::detail {
     unreachable();
   };
 
-  TORI_INLINE void unify_func_impl(std::vector<Constr>& cs,
-                                   std::vector<TyArrow>& ta,
-                                   const object_ptr<>& src)
+  TORI_INLINE void unify_func_impl(
+    std::vector<Constr>& cs,
+    std::vector<TyArrow>& ta,
+    const object_ptr<>& src)
   {
     while (!cs.empty()) {
       auto c = cs.back();

@@ -34,8 +34,9 @@ namespace TORI_NS::detail {
   template <class T>
   void vtbl_destroy_func(HeapObject *obj) noexcept
   {
-    static_assert(std::is_nothrow_destructible_v<T>,
-                  "Boxed object should have nothrow destructor");
+    static_assert(
+      std::is_nothrow_destructible_v<T>,
+      "Boxed object should have nothrow destructor");
     auto *p = static_cast<T *>(obj);
     delete p;
   }
@@ -95,11 +96,12 @@ namespace TORI_NS::detail {
       };
 
       /// Ctor
-      template <class U,
-                class... Args,
-                class = std::enable_if_t<
-                  !std::is_same_v<std::decay_t<U>, BoxedHeapObject> &&
-                  !std::is_same_v<std::decay_t<U>, static_construct_t>>>
+      template <
+        class U,
+        class... Args,
+        class = std::enable_if_t<
+          !std::is_same_v<std::decay_t<U>, BoxedHeapObject> &&
+          !std::is_same_v<std::decay_t<U>, static_construct_t>>>
       constexpr BoxedHeapObject(U &&u, Args &&... args)
         : HeapObject {1u, &info_table_initializer::info_table}
         , value {std::forward<U>(u), std::forward<Args>(args)...}

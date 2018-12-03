@@ -12,8 +12,9 @@
 
 namespace TORI_NS::detail {
 
-  TORI_INLINE void vars_impl(const object_ptr<const Type>& tp,
-                             std::vector<object_ptr<const Type>>& vars)
+  TORI_INLINE void vars_impl(
+    const object_ptr<const Type>& tp,
+    std::vector<object_ptr<const Type>>& vars)
   {
     if (is_value_type(tp))
       return;
@@ -109,11 +110,13 @@ namespace TORI_NS::detail {
       /// bad type check
       class bad_type_check : public type_error {
       public:
-        bad_type_check(const object_ptr<const Type>& expected,
-                       const object_ptr<const Type>& result,
-                       const object_ptr<>& obj)
-          : type_error("type_error: check_type failed. Result type is invalid",
-                       obj)
+        bad_type_check(
+          const object_ptr<const Type>& expected,
+          const object_ptr<const Type>& result,
+          const object_ptr<>& obj)
+          : type_error(
+              "type_error: check_type failed. Result type is invalid",
+              obj)
           , m_expected {expected}
           , m_result {result}
         {}

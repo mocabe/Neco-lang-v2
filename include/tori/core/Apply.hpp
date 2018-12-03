@@ -99,10 +99,11 @@ namespace TORI_NS::detail {
 
   namespace interface {
     /// apply operator
-    template <class T1,
-              class T2,
-              class = std::enable_if_t<is_valid_app_arg_v<T1> &&
-                                       is_valid_app_arg_v<T2>>>
+    template <
+      class T1,
+      class T2,
+      class =
+        std::enable_if_t<is_valid_app_arg_v<T1> && is_valid_app_arg_v<T2>>>
     [[nodiscard]] auto operator<<(T1&& lhs, T2&& rhs)
     {
       return object_ptr {

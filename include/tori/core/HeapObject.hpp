@@ -89,8 +89,9 @@ namespace TORI_NS::detail {
     };
 
     // heap-allocated object of type T
-    template <class T,
-              template <class> class AllocatorTemplate = std::allocator>
+    template <
+      class T,
+      template <class> class AllocatorTemplate = std::allocator>
     struct BoxedHeapObject;
 
     // handler for heap-allocated object

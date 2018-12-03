@@ -13,8 +13,9 @@ namespace TORI_NS::detail {
   /// bad_closure_cast exception
   class bad_closure_cast : public std::logic_error {
   public:
-    explicit bad_closure_cast(object_ptr<const Type> from,
-                              object_ptr<const Type> to)
+    explicit bad_closure_cast(
+      object_ptr<const Type> from,
+      object_ptr<const Type> to)
       : std::logic_error("bad_closure_cast")
       , m_from {std::move(from)}
       , m_to {std::move(to)}
