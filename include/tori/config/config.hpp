@@ -75,14 +75,6 @@ namespace TORI_NS::detail {
 // inline
 #define TORI_INLINE inline
 
-  // for std::visit
-  template <class... Ts>
-  struct overloaded : Ts... {
-    using Ts::operator()...;
-  };
-  template <class... Ts>
-  overloaded(Ts...)->overloaded<Ts...>;
-
   // for void_t
   template <class...>
   struct make_void {
@@ -96,6 +88,7 @@ namespace TORI_NS::detail {
   struct make_false {
     static constexpr bool value = false;
   };
+  /// false_v
   template <class... Ts>
   static constexpr bool false_v = make_false<Ts...>::value;
 
@@ -103,41 +96,6 @@ namespace TORI_NS::detail {
   template <class... Args>
   constexpr void ignore(Args&&...) noexcept
   {}
-
-  // for std::variant
-  template <class T>
-  struct monostate_base {};
-
-  template <class T>
-  constexpr bool operator<(monostate_base<T>, monostate_base<T>) noexcept
-  {
-    return false;
-  }
-  template <class T>
-  constexpr bool operator>(monostate_base<T>, monostate_base<T>) noexcept
-  {
-    return false;
-  }
-  template <class T>
-  constexpr bool operator<=(monostate_base<T>, monostate_base<T>) noexcept
-  {
-    return true;
-  }
-  template <class T>
-  constexpr bool operator>=(monostate_base<T>, monostate_base<T>) noexcept
-  {
-    return true;
-  }
-  template <class T>
-  constexpr bool operator==(monostate_base<T>, monostate_base<T>) noexcept
-  {
-    return true;
-  }
-  template <class T>
-  constexpr bool operator!=(monostate_base<T>, monostate_base<T>) noexcept
-  {
-    return false;
-  }
 
   // ------------------------------------------
   // Offset of member
@@ -182,7 +140,6 @@ namespace TORI_NS::detail {
   static_assert(sizeof(char) == sizeof(unsigned char));
   static_assert(sizeof(char) == 1);
   static_assert(sizeof(void*) == 8);
-  static_assert(sizeof(overloaded<>) == 1);
 
   namespace interface {
     using int8_t = std::int8_t;
