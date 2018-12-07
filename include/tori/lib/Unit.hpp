@@ -8,12 +8,19 @@
 #include "../core.hpp"
 
 namespace TORI_NS::detail {
+
   /// UnitValue
-  struct UnitValue {};
+  struct UnitValue
+  {
+  };
+
   namespace interface {
+
     /// Unit
     using Unit = BoxedHeapObject<UnitValue>;
+
   } // namespace interface
+
 } // namespace TORI_NS::detail
 
 namespace TORI_NS {

@@ -30,7 +30,6 @@ namespace TORI_NS::detail {
 
   // ------------------------------------------
   // Closure
-  // ------------------------------------------
 
   // forward decl
   template <std::size_t N>
@@ -40,7 +39,8 @@ namespace TORI_NS::detail {
   struct Closure;
 
   /// Info table for closure
-  struct closure_info_table : object_info_table {
+  struct closure_info_table : object_info_table
+  {
     /// Number of arguments
     size_t n_args;
     /// Size of extended header
@@ -50,7 +50,8 @@ namespace TORI_NS::detail {
   };
 
   template <class Closure1>
-  struct Closure : HeapObject {
+  struct Closure : HeapObject
+  {
 
     /// Arity of this closure
     atomic_refcount<uint64_t> arity;
@@ -97,8 +98,8 @@ namespace TORI_NS::detail {
    * execute code.
    */
   template <std::size_t N>
-  struct ClosureN : Closure<> {
-    object_ptr<> args[N] = {};
+  struct ClosureN : Closure<>
+  {
     /// get raw arg
     template <size_t Arg>
     object_ptr<>& nth_arg() noexcept
@@ -106,6 +107,7 @@ namespace TORI_NS::detail {
       static_assert(Arg < N, "Invalid index of argument");
       return args[N - Arg - 1];
     }
+
     /// get raw arg
     template <size_t Arg>
     const object_ptr<>& nth_arg() const noexcept
@@ -113,15 +115,18 @@ namespace TORI_NS::detail {
       static_assert(Arg < N, "Invalid index of argument");
       return args[N - Arg - 1];
     }
+
+    /// arg
+    object_ptr<> args[N] = {};
   };
 
   // ------------------------------------------
   // Eval wrapper
-  // ------------------------------------------
 
   /// wrapper for main code of closure
   template <class T>
-  struct vtbl_eval_wrapper {
+  struct vtbl_eval_wrapper
+  {
     static object_ptr<> code(Closure<>* _this) noexcept
     {
       try {
@@ -147,68 +152,83 @@ namespace TORI_NS::detail {
 
   // ------------------------------------------
   // remove_last
-  // ------------------------------------------
+
   template <class T>
-  struct remove_last {};
+  struct remove_last
+  {
+  };
+
   template <class T>
-  struct remove_last<std::tuple<T>> {
+  struct remove_last<std::tuple<T>>
+  {
     using type = std::tuple<>;
   };
+
   template <class T, class... Ts>
-  struct remove_last<std::tuple<T, Ts...>> {
+  struct remove_last<std::tuple<T, Ts...>>
+  {
     using type = concat_tuple_t<
       std::tuple<T>,
       typename remove_last<std::tuple<Ts...>>::type>;
   };
+
+  /// remove last element from tuple
   template <class T>
   using remove_last_t = typename remove_last<T>::type;
 
   // ------------------------------------------
   // remove varvalue
-  // ------------------------------------------
 
   template <class T, class Target>
-  struct remove_varvalue_impl {
+  struct remove_varvalue_impl
+  {
     using type = Target;
   };
 
-  // replace tm_varvalue<Tag> to tm_var<Tag>
   template <class Tag, class Target>
-  struct remove_varvalue_impl<tm_varvalue<Tag>, Target> {
+  struct remove_varvalue_impl<tm_varvalue<Tag>, Target>
+  {
     using _var = tm_var<Tag>;
     using type = subst_term_t<tm_varvalue<Tag>, _var, Target>;
   };
 
   template <class T, class... Ts, class Target>
-  struct remove_varvalue_impl<tm_closure<T, Ts...>, Target> {
+  struct remove_varvalue_impl<tm_closure<T, Ts...>, Target>
+  {
     using t = remove_varvalue_impl<T, Target>;
     using type =
       typename remove_varvalue_impl<tm_closure<Ts...>, typename t::type>::type;
   };
 
   template <class T, class Target>
-  struct remove_varvalue_impl<tm_closure<T>, Target> {
-    using type = typename remove_varvalue_impl<T, Target>::type;
+  struct remove_varvalue_impl<tm_closure<T>, Target>
+  {
+    using type = typename remove_varvalue_impl<T, Target>::type; //
   };
+
   template <class T1, class T2, class Target>
-  struct remove_varvalue_impl<tm_apply<T1, T2>, Target> {
+  struct remove_varvalue_impl<tm_apply<T1, T2>, Target>
+  {
     using t1 = remove_varvalue_impl<T1, Target>;
     using t2 = remove_varvalue_impl<T2, typename t1::type>;
     using type = typename t2::type;
   };
 
+  /// replace tm_varvalue<Tag> to tm_var<Tag>
   template <class Term>
   using remove_varvalue_t = typename remove_varvalue_impl<Term, Term>::type;
 
   // ------------------------------------------
   // return type checking
-  // ------------------------------------------
 
   template <class T1, class T2, bool B = std::is_same_v<T1, T2>>
-  struct check_return_type {};
+  struct check_return_type
+  {
+  };
 
   template <class T1, class T2>
-  struct check_return_type<T1, T2, false> {
+  struct check_return_type<T1, T2, false>
+  {
     using t1 = typename T1::_expected;
     using t2 = typename T2::_provided;
     static_assert(false_v<T1>, "return type does not match");
@@ -216,13 +236,15 @@ namespace TORI_NS::detail {
 
   /// Return type checker
   template <class Term>
-  class return_type_checker {
+  class return_type_checker
+  {
   public:
     using return_type = type_of_t<Term>;
 
     /// object_ptr<U>
     template <class U>
-    return_type_checker(const object_ptr<U>& obj) : m_value {object_ptr<>(obj)}
+    return_type_checker(const object_ptr<U>& obj)
+      : m_value {object_ptr<>(obj)}
     {
       // check return type
       ignore(check_return_type<return_type, type_of_t<typename U::term>> {});
@@ -239,8 +261,10 @@ namespace TORI_NS::detail {
 
     /// U*
     template <class U>
-    return_type_checker(U* ptr) : return_type_checker(object_ptr(ptr))
-    {}
+    return_type_checker(U* ptr)
+      : return_type_checker(object_ptr(ptr))
+    {
+    }
 
     /// deleted
     return_type_checker() = delete;
@@ -249,6 +273,7 @@ namespace TORI_NS::detail {
     /// deleted
     return_type_checker(return_type&& other) = delete;
 
+    /// value
     object_ptr<> value() &&
     {
       return std::move(m_value);
@@ -260,12 +285,13 @@ namespace TORI_NS::detail {
 
   // ------------------------------------------
   // Function
-  // ------------------------------------------
+
   namespace interface {
 
     /// CRTP utility to create closure type.
     template <class T, class... Ts>
-    struct Function : ClosureN<sizeof...(Ts) - 1> {
+    struct Function : ClosureN<sizeof...(Ts) - 1>
+    {
       static_assert(
         sizeof...(Ts) > 1,
         "Closure should have argument and return type");
@@ -274,7 +300,8 @@ namespace TORI_NS::detail {
       using term = remove_varvalue_t<tm_closure<typename Ts::term...>>;
 
       /// Closure info table initializer
-      struct info_table_initializer {
+      struct info_table_initializer
+      {
         /// static closure infor
         static const closure_info_table info_table;
       };
@@ -303,7 +330,8 @@ namespace TORI_NS::detail {
               static_cast<const object_info_table*>(
                 &info_table_initializer::info_table)},
              sizeof...(Ts) - 1}}
-      {}
+      {
+      }
 
     protected:
       // return type for code()
@@ -315,9 +343,12 @@ namespace TORI_NS::detail {
       using ClosureN<sizeof...(Ts) - 1>::nth_arg;
       using ClosureN<sizeof...(Ts) - 1>::args;
 
-      template <auto P>
-      struct concept_checker {};
+      template <auto FP>
+      struct concept_checker
+      {
+      };
 
+      /// check signature of code()
       void check_code()
       {
         static_assert(
@@ -326,6 +357,7 @@ namespace TORI_NS::detail {
       }
       using concept_check_code = concept_checker<&Function::check_code>;
     };
+
     // Initialize closure infotable
     template <class T, class... Ts>
     const closure_info_table

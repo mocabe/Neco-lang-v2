@@ -12,12 +12,14 @@ namespace TORI_NS::detail {
   class Identity_X;
 
   namespace interface {
-    struct Identity
-      : Function<Identity, forall<Identity_X>, forall<Identity_X>> {
+
+    struct Identity : Function<Identity, forall<Identity_X>, forall<Identity_X>>
+    {
       return_type code() const
       {
         return arg<0>();
       }
     };
+
   } // namespace interface
 } // namespace TORI_NS::detail

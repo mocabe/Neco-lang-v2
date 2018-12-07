@@ -11,7 +11,8 @@ namespace TORI_NS::detail {
   class If_X;
 
   namespace interface {
-    struct If : Function<If, Bool, forall<If_X>, forall<If_X>, forall<If_X>> {
+    struct If : Function<If, Bool, forall<If_X>, forall<If_X>, forall<If_X>>
+    {
       return_type code() const
       {
         if (*eval_arg<0>())
@@ -20,5 +21,6 @@ namespace TORI_NS::detail {
           return arg<2>();
       }
     };
+
   } // namespace interface
 } // namespace TORI_NS::detail

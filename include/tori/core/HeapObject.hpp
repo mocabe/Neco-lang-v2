@@ -40,13 +40,23 @@ namespace TORI_NS::detail {
 
     /// reference count
     template <class T>
-    class atomic_refcount {
+    class atomic_refcount
+    {
     public:
-      constexpr atomic_refcount() noexcept : atomic {0} {}
-      constexpr atomic_refcount(T v) noexcept : atomic {v} {}
+      constexpr atomic_refcount() noexcept
+        : atomic {0}
+      {
+      }
+
+      constexpr atomic_refcount(T v) noexcept
+        : atomic {v}
+      {
+      }
+
       constexpr atomic_refcount(const atomic_refcount& refcnt) noexcept
         : atomic {refcnt.raw}
-      {}
+      {
+      }
 
       atomic_refcount& operator=(const atomic_refcount& other) noexcept
       {
@@ -70,11 +80,13 @@ namespace TORI_NS::detail {
         atomic.store(v);
       }
 
+      /// use memory_order_relaxed
       T fetch_add() noexcept
       {
         return atomic.fetch_add(1u, std::memory_order_relaxed);
       }
 
+      /// use memory_order_release
       T fetch_sub() noexcept
       {
         return atomic.fetch_sub(1u, std::memory_order_release);
@@ -82,7 +94,8 @@ namespace TORI_NS::detail {
 
     private:
       static_assert(sizeof(T) == sizeof(std::atomic<T>));
-      union {
+      union
+      {
         std::atomic<T> atomic;
         T raw;
       };
@@ -105,7 +118,8 @@ namespace TORI_NS::detail {
     using Type = BoxedHeapObject<TypeValue>;
 
     /// Base class of heap-allocated objects
-    struct HeapObject {
+    struct HeapObject
+    {
       /// term
       using term = tm_value<HeapObject>;
 
@@ -123,20 +137,19 @@ namespace TORI_NS::detail {
 
     /// Smart pointer to manage heap-allocated objects
     template <class T = HeapObject>
-    class object_ptr {
-      // friend
+    class object_ptr
+    {
       friend class object_ptr<HeapObject>;
-
-      /// move cast function
+      // move cast function
       template <class U, class S>
       friend object_ptr<U> value_cast(object_ptr<S>&&);
-      /// move cast function
+      // move cast function
       template <class U, class S>
       friend object_ptr<U> value_cast_if(object_ptr<S>&&) noexcept;
-      /// move cast function
+      // move cast function
       template <class U, class S>
       friend object_ptr<U> closure_cast(object_ptr<S>&&);
-      /// move cast function
+      // move cast function
       template <class U, class S>
       friend object_ptr<U> closure_cast_if(object_ptr<S>&&) noexcept;
 
@@ -145,15 +158,27 @@ namespace TORI_NS::detail {
       using value_type = T;
 
       /// Constructor
-      constexpr object_ptr() noexcept : m_ptr {nullptr} {}
+      constexpr object_ptr() noexcept
+        : m_ptr {nullptr}
+      {
+      }
+
       /// Constructor
-      constexpr object_ptr(nullptr_t) noexcept : m_ptr {nullptr} {}
+      constexpr object_ptr(nullptr_t) noexcept
+        : m_ptr {nullptr}
+      {
+      }
+
       /// Pointer constructor
-      constexpr object_ptr(value_type* p) noexcept : m_ptr {p} {}
+      constexpr object_ptr(value_type* p) noexcept
+        : m_ptr {p}
+      {
+      }
 
       /// Copy constructor
       /// \effects increases reference count.
-      object_ptr(const object_ptr<value_type>& obj) noexcept : m_ptr {obj.m_ptr}
+      object_ptr(const object_ptr<value_type>& obj) noexcept
+        : m_ptr {obj.m_ptr}
       {
         // when not static object
         if (m_ptr && head()->refcount.load() != 0)
@@ -161,7 +186,8 @@ namespace TORI_NS::detail {
       }
 
       /// Move constructor
-      object_ptr(object_ptr<value_type>&& obj) noexcept : m_ptr {obj.m_ptr}
+      object_ptr(object_ptr<value_type>&& obj) noexcept
+        : m_ptr {obj.m_ptr}
       {
         obj.m_ptr = nullptr;
       }
@@ -169,7 +195,8 @@ namespace TORI_NS::detail {
       /// Copy convert constructor
       /// \effects increases reference count.
       template <class U>
-      object_ptr(const object_ptr<U>& obj) noexcept : m_ptr {obj.get()}
+      object_ptr(const object_ptr<U>& obj) noexcept
+        : m_ptr {obj.get()}
       {
         // when not static object
         if (m_ptr && head()->refcount.load() != 0)
@@ -178,7 +205,8 @@ namespace TORI_NS::detail {
 
       /// Move convert constructor
       template <class U>
-      object_ptr(object_ptr<U>&& obj) noexcept : m_ptr {obj.get()}
+      object_ptr(object_ptr<U>&& obj) noexcept
+        : m_ptr {obj.get()}
       {
         obj.m_ptr = nullptr;
       }
@@ -278,6 +306,7 @@ namespace TORI_NS::detail {
       {
         return *value();
       }
+
       /// operator->
       auto operator-> () const noexcept
       {
@@ -286,7 +315,8 @@ namespace TORI_NS::detail {
     };
 
     /// Object info table
-    struct object_info_table {
+    struct object_info_table
+    {
       /// pointer to type object
       object_ptr<const Type> obj_type;
       /// total size of object

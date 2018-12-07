@@ -12,24 +12,28 @@
 
 namespace TORI_NS::detail {
 
-  class StringValue {
+  class StringValue
+  {
   public:
     StringValue(const std::string& str)
     {
       m_ptr = new uint8_t[str.size() + 1];
       std::copy(str.c_str(), str.c_str() + str.size() + 1, m_ptr);
     }
+
     StringValue(const StringValue& other)
     {
       auto len = std::strlen(other.c_str());
       m_ptr = new uint8_t[len + 1];
       std::copy(other.m_ptr, other.m_ptr + len + 1, m_ptr);
     }
+
     StringValue(StringValue&& other)
     {
       m_ptr = other.m_ptr;
       other.m_ptr = nullptr;
     }
+
     ~StringValue() noexcept
     {
       delete[] m_ptr;
@@ -46,8 +50,10 @@ namespace TORI_NS::detail {
   };
 
   namespace interface {
+
     /// String
     using String = BoxedHeapObject<StringValue>;
+
   } // namespace interface
 
 } // namespace TORI_NS::detail

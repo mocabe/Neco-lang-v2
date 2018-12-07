@@ -97,6 +97,7 @@ namespace TORI_NS::detail {
   };
 
   namespace interface {
+
     // type_of
     [[nodiscard]] TORI_INLINE object_ptr<const Type>
       type_of(const object_ptr<>& obj)
@@ -106,9 +107,12 @@ namespace TORI_NS::detail {
   } // namespace interface
 
   namespace interface {
+
     namespace type_error {
+
       /// bad type check
-      class bad_type_check : public type_error {
+      class bad_type_check : public type_error
+      {
       public:
         bad_type_check(
           const object_ptr<const Type>& expected,
@@ -119,7 +123,8 @@ namespace TORI_NS::detail {
               obj)
           , m_expected {expected}
           , m_result {result}
-        {}
+        {
+        }
 
         /// expected
         const object_ptr<const Type>& expected() const
@@ -134,7 +139,9 @@ namespace TORI_NS::detail {
         }
 
       private:
+        /// expected type
         object_ptr<const Type> m_expected;
+        /// result type
         object_ptr<const Type> m_result;
       };
     } // namespace type_error

@@ -11,7 +11,8 @@
 namespace TORI_NS::detail {
 
   /// bad_value_cast exception
-  class bad_value_cast : public std::logic_error {
+  class bad_value_cast : public std::logic_error
+  {
   public:
     explicit bad_value_cast(
       object_ptr<const Type> from,
@@ -19,12 +20,15 @@ namespace TORI_NS::detail {
       : std::logic_error("bad_value_cast")
       , m_from {std::move(from)}
       , m_to {std::move(to)}
-    {}
+    {
+    }
+
     /// get from
     object_ptr<const Type> from() const
     {
       return m_from;
     }
+
     /// get to
     object_ptr<const Type> to() const
     {
@@ -38,17 +42,21 @@ namespace TORI_NS::detail {
     object_ptr<const Type> m_to;
   };
 
-  struct BadValueCastValue {
+  struct BadValueCastValue
+  {
     object_ptr<const Type> from;
     object_ptr<const Type> to;
   };
 
   namespace interface {
+
     /// Exception object for bad_value_cast exception
     using BadValueCast = BoxedHeapObject<detail::BadValueCastValue>;
+
   } // namespace interface
 
   namespace interface {
+
     /// value_cast
     ///
     /// dynamically cast object to specified value type.
@@ -128,7 +136,9 @@ namespace TORI_NS::detail {
         return nullptr;
       }
     }
+
   } // namespace interface
+
 } // namespace TORI_NS::detail
 
 namespace TORI_NS {

@@ -18,33 +18,41 @@
 // decl system types
 #define TORI_DECL_TYPE(TYPE)                  \
   template <>                                 \
-  struct object_type_traits<TYPE> {           \
+  struct object_type_traits<TYPE>             \
+  {                                           \
     static constexpr char name[] = "_" #TYPE; \
   };
 
 namespace TORI_NS {
+
   /// object type traits
   template <class T>
   struct object_type_traits;
+
   /// type
   TORI_DECL_TYPE(Type)
+
   /// HeapObject
   TORI_DECL_TYPE(HeapObject)
+
 } // namespace TORI_NS
 
 namespace TORI_NS::detail {
 
   namespace interface {
+
     /// proxy type of closure
     template <class... Ts>
-    struct closure : HeapObject {
+    struct closure : HeapObject
+    {
       /// term
       using term = tm_closure<typename Ts::term...>;
     };
 
     /// Type variable value
     template <class Tag>
-    struct forall : HeapObject {
+    struct forall : HeapObject
+    {
       // term
       using term = tm_varvalue<Tag>;
     };
@@ -52,28 +60,34 @@ namespace TORI_NS::detail {
 
   // expected
   template <class T>
-  struct expected : HeapObject {
+  struct expected : HeapObject
+  {
     // term
     using term = typename T::term;
   };
 
   // ------------------------------------------
-  // Object type
-  // ------------------------------------------
+  // value type
 
   /// value type
   template <class T>
-  struct value_type {
+  struct value_type
+  {
     static const Type type;
   };
 
+  // ------------------------------------------
+  // arrow type
+
   template <class T, class... Ts>
-  struct arrow_type_impl {
+  struct arrow_type_impl
+  {
     static const Type type;
   };
 
   template <class T1, class T2>
-  struct arrow_type_impl<T1, T2> {
+  struct arrow_type_impl<T1, T2>
+  {
     static const Type type;
   };
 
@@ -82,13 +96,18 @@ namespace TORI_NS::detail {
   struct arrow_type;
 
   template <class... Ts>
-  struct arrow_type<tm_closure<Ts...>> {
+  struct arrow_type<tm_closure<Ts...>>
+  {
     static constexpr const Type* type = &arrow_type_impl<Ts...>::type;
   };
 
+  // ------------------------------------------
+  // var type
+
   /// var type
   template <class T>
-  struct vartype {
+  struct vartype
+  {
     static const Type type;
     // to make distinct address for each tag
     static constexpr const int _id_gen = 42;
@@ -96,48 +115,62 @@ namespace TORI_NS::detail {
     static constexpr const void* const id = &_id_gen;
   };
 
+  // ------------------------------------------
+  // object_type type
+
   template <class T, class = void>
-  struct object_type_h {};
+  struct object_type_impl
+  {
+  };
 
   // value
   template <class T>
-  struct object_type_h<T, std::enable_if_t<is_tm_value_v<T>>> {
+  struct object_type_impl<T, std::enable_if_t<is_tm_value_v<T>>>
+  {
     static constexpr const Type* type = &value_type<T>::type;
     static object_ptr<const Type> get()
     {
       return type;
     }
   };
+
   // closure
   template <class T>
-  struct object_type_h<T, std::enable_if_t<is_tm_closure_v<T>>> {
+  struct object_type_impl<T, std::enable_if_t<is_tm_closure_v<T>>>
+  {
     static constexpr const Type* type = arrow_type<T>::type;
     static object_ptr<const Type> get()
     {
       return type;
     }
   };
+
   // var
   template <class T>
-  struct object_type_h<T, std::enable_if_t<is_tm_var_v<T>>> {
+  struct object_type_impl<T, std::enable_if_t<is_tm_var_v<T>>>
+  {
     static constexpr const Type* type = &vartype<T>::type;
     static object_ptr<const Type> get()
     {
       return type;
     }
   };
+
   // var value
   template <class T>
-  struct object_type_h<T, std::enable_if_t<is_tm_varvalue_v<T>>> {
+  struct object_type_impl<T, std::enable_if_t<is_tm_varvalue_v<T>>>
+  {
     static constexpr const Type* type = &vartype<T>::type;
     static object_ptr<const Type> get()
     {
       return type;
     }
   };
+
   // fix
   template <class T>
-  struct object_type_h<T, std::enable_if_t<is_tm_fix_v<T>>> {
+  struct object_type_impl<T, std::enable_if_t<is_tm_fix_v<T>>>
+  {
     static constexpr const Type* type = &value_type<T>::type;
     static object_ptr<const Type> get()
     {
@@ -146,12 +179,14 @@ namespace TORI_NS::detail {
   };
 
   namespace interface {
+
     /// object type generator
     template <class T>
     [[nodiscard]] object_ptr<const Type> object_type()
     {
-      return object_type_h<typename T::term>::type;
+      return object_type_impl<typename T::term>::type;
     }
+
   } // namespace interface
 
   /// convert constexpr char array to buffer type for value type
@@ -184,55 +219,66 @@ namespace TORI_NS::detail {
   template <class T, class... Ts>
   const Type arrow_type_impl<T, Ts...>::type {
     static_construct_t {},
-    ArrowType {object_type_h<T>::type, &arrow_type_impl<Ts...>::type}};
+    ArrowType {object_type_impl<T>::type, &arrow_type_impl<Ts...>::type}};
 
   template <class T1, class T2>
   const Type arrow_type_impl<T1, T2>::type {
     static_construct_t {},
-    ArrowType {object_type_h<T1>::type, object_type_h<T2>::type}};
+    ArrowType {object_type_impl<T1>::type, object_type_impl<T2>::type}};
 
   // ------------------------------------------
-  // Assume memory lauout fron type
-  // ------------------------------------------
+  // assume_object_type
 
   template <class Arrow, class Closure>
-  struct assume_object_type_h {};
+  struct assume_object_type_h
+  {
+  };
 
   template <class Ty>
-  struct assume_object_type {};
+  struct assume_object_type
+  {
+  };
 
   template <class T1, class T2, class... Ts>
-  struct assume_object_type_h<arrow<T1, T2>, closure<Ts...>> {
+  struct assume_object_type_h<arrow<T1, T2>, closure<Ts...>>
+  {
     using type = typename assume_object_type_h<
       T2,
       closure<Ts..., typename assume_object_type<T1>::type>>::type;
   };
 
   template <class T, class... Ts>
-  struct assume_object_type_h<T, closure<Ts...>> {
+  struct assume_object_type_h<T, closure<Ts...>>
+  {
     using type = closure<Ts..., typename assume_object_type<T>::type>;
   };
 
   template <class Tag>
-  struct assume_object_type<value<Tag>> {
+  struct assume_object_type<value<Tag>>
+  {
     using type = Tag;
   };
 
   template <class Tag>
-  struct assume_object_type<var<Tag>> {
+  struct assume_object_type<var<Tag>>
+  {
     using type = HeapObject;
   };
 
   template <class Tag>
-  struct assume_object_type<varvalue<Tag>> {
+  struct assume_object_type<varvalue<Tag>>
+  {
     using type = forall<Tag>;
   };
 
   template <class T1, class T2>
-  struct assume_object_type<arrow<T1, T2>> {
+  struct assume_object_type<arrow<T1, T2>>
+  {
     using type = typename assume_object_type_h<arrow<T1, T2>, closure<>>::type;
   };
 
+  /// assume memory lauout fron type
   template <class T>
   using assume_object_type_t = typename assume_object_type<T>::type;
+
 } // namespace TORI_NS::detail

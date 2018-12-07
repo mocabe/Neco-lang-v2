@@ -1,6 +1,7 @@
 #include <tori/core.hpp>
 
-void comp() {
+void comp()
+{
   using namespace tori;
   using namespace tori::detail;
 
@@ -60,4 +61,8 @@ void comp() {
   static_assert(sizeof(ApplyR) == sizeof(HeapObject) + sizeof(ApplyRValue));
   static_assert(sizeof(ApplyR) == sizeof(Apply<Fix, Fix>));
 }
-int main() {}
+
+int main()
+{
+  comp();
+}

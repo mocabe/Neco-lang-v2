@@ -9,7 +9,8 @@ void simple()
 {
   {
     // Int -> Int
-    struct F1 : Function<F1, Int, Int> {
+    struct F1 : Function<F1, Int, Int>
+    {
       return_type code() const
       {
         return arg<0>();
@@ -26,7 +27,8 @@ void higher_order()
 {
   {
     // (Int->Int) -> (Int->Int)
-    struct F2 : Function<F2, closure<Int, Int>, closure<Int, Int>> {
+    struct F2 : Function<F2, closure<Int, Int>, closure<Int, Int>>
+    {
       return_type code() const
       {
         return arg<0>();
@@ -43,7 +45,8 @@ void higher_order()
 void apply()
 {
   {
-    struct F3 : Function<F3, closure<Int, Int>, Int, Int> {
+    struct F3 : Function<F3, closure<Int, Int>, Int, Int>
+    {
       return_type code() const
       {
         // (Int->Int)Int
@@ -72,7 +75,8 @@ void polymorphic()
   {
     class X;
     // polymorphic closure declaration
-    struct F4 : Function<F4, Int, closure<Int, forall<X>>, forall<X>> {
+    struct F4 : Function<F4, Int, closure<Int, forall<X>>, forall<X>>
+    {
       return_type code() const
       {
         return arg<1>() << arg<0>();
@@ -83,7 +87,8 @@ void polymorphic()
   {
     class X;
     // polymorphic return type
-    struct F5If : Function<F5If, Bool, forall<X>, forall<X>, forall<X>> {
+    struct F5If : Function<F5If, Bool, forall<X>, forall<X>, forall<X>>
+    {
       return_type code() const
       {
         if (*eval_arg<0>())
@@ -95,7 +100,8 @@ void polymorphic()
     auto f5if = make_object<F5If>();
 
     // static polymorhic apply
-    struct F5_0 : Function<F5_0, Unit, Int> {
+    struct F5_0 : Function<F5_0, Unit, Int>
+    {
       return_type code() const
       {
         auto _if = make_object<F5If>();
@@ -107,7 +113,8 @@ void polymorphic()
     auto f5_0 = make_object<F5_0>();
 
     // static polymorphic apply
-    struct F5_1 : Function<F5_1, closure<Double, Int, Int>, Int> {
+    struct F5_1 : Function<F5_1, closure<Double, Int, Int>, Int>
+    {
       return_type code() const
       {
         auto _if = make_object<F5If>();

@@ -11,20 +11,24 @@
 namespace TORI_NS::detail {
 
   /// value of ApplyR
-  struct ApplyRValue {
+  struct ApplyRValue
+  {
     template <
       class App,
       class Arg,
       class = std::enable_if_t<!std::is_same_v<std::decay_t<App>, ApplyRValue>>>
     ApplyRValue(App&& app, Arg&& arg)
-      : m_app {std::forward<App>(app)}, m_arg {std::forward<Arg>(arg)}
-    {}
+      : m_app {std::forward<App>(app)}
+      , m_arg {std::forward<Arg>(arg)}
+    {
+    }
 
     const object_ptr<>& app() const
     {
       assert(m_app != nullptr);
       return m_app;
     }
+
     const object_ptr<>& arg() const
     {
       assert(m_app != nullptr);
@@ -59,14 +63,18 @@ namespace TORI_NS::detail {
   };
 
   namespace interface {
+
     /// runtime apply object
     using ApplyR = BoxedHeapObject<ApplyRValue>;
+
   } // namespace interface
 
   namespace interface {
+
     /// compile time apply object
     template <class App, class Arg>
-    struct Apply : ApplyR {
+    struct Apply : ApplyR
+    {
       /// base
       using base = ApplyR;
       /// term
@@ -86,18 +94,28 @@ namespace TORI_NS::detail {
   } // namespace interface
 
   template <class T>
-  struct is_valid_app_arg : std::false_type {};
+  struct is_valid_app_arg : std::false_type
+  {
+  };
+
   template <class T>
-  struct is_valid_app_arg<T*> {
+  struct is_valid_app_arg<T*>
+  {
     static constexpr bool value = std::is_base_of_v<HeapObject, T>;
   };
+
   template <class T>
-  struct is_valid_app_arg<object_ptr<T>> : std::true_type {};
+  struct is_valid_app_arg<object_ptr<T>> : std::true_type
+  {
+  };
+
+  /// validate argument types for operator<<
   template <class T>
   static constexpr bool is_valid_app_arg_v =
     is_valid_app_arg<std::decay_t<T>>::value;
 
   namespace interface {
+
     /// apply operator
     template <
       class T1,
@@ -109,6 +127,7 @@ namespace TORI_NS::detail {
       return object_ptr {
         new Apply {std::forward<T1>(lhs), std::forward<T2>(rhs)}};
     }
+
   } // namespace interface
 
 } // namespace TORI_NS::detail

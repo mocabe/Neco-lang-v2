@@ -14,17 +14,20 @@ namespace TORI_NS::detail {
 
     // ------------------------------------------
     // Exceptions
-    // ------------------------------------------
 
     namespace type_error {
+
       /// unification error(circular constraint)
-      class circular_constraint : public type_error {
+      class circular_constraint : public type_error
+      {
       public:
         circular_constraint(
           const object_ptr<>& src,
           const object_ptr<const Type>& var)
-          : type_error("Circular constraints", src), m_var {var}
-        {}
+          : type_error("Circular constraints", src)
+          , m_var {var}
+        {
+        }
 
         /// var
         object_ptr<const Type> var() const
@@ -37,20 +40,25 @@ namespace TORI_NS::detail {
       };
 
       /// unification error(missmatch)
-      class type_missmatch : public type_error {
+      class type_missmatch : public type_error
+      {
       public:
         type_missmatch(
           const object_ptr<>& src,
           const object_ptr<const Type>& t1,
           const object_ptr<const Type>& t2)
-          : type_error("Type missmatch", src), m_t1 {t1}, m_t2 {t2}
-        {}
+          : type_error("Type missmatch", src)
+          , m_t1 {t1}
+          , m_t2 {t2}
+        {
+        }
 
         /// t1
         object_ptr<const Type> t1() const
         {
           return m_t1;
         }
+
         /// t2
         object_ptr<const Type> t2() const
         {
@@ -58,14 +66,15 @@ namespace TORI_NS::detail {
         }
 
       private:
+        /// t1
         object_ptr<const Type> m_t1;
+        /// t2
         object_ptr<const Type> m_t2;
       };
     } // namespace type_error
 
     // ------------------------------------------
     // Utils
-    // ------------------------------------------
 
     /// \brief get **RAW** type of the object
     /// \notes NO null check.
@@ -143,6 +152,7 @@ namespace TORI_NS::detail {
   };
 
   namespace interface {
+
     /// Deep copy type object
     [[nodiscard]] TORI_INLINE object_ptr<const Type>
       copy_type(const object_ptr<const Type>& tp)
@@ -186,6 +196,7 @@ namespace TORI_NS::detail {
   };
 
   namespace interface {
+
     /// check type equality
     [[nodiscard]] TORI_INLINE bool same_type(
       const object_ptr<const Type>& lhs,
@@ -204,7 +215,8 @@ namespace TORI_NS::detail {
     };
   } // namespace interface
 
-  struct TyArrow {
+  struct TyArrow
+  {
     object_ptr<const Type> from;
     object_ptr<const Type> to;
   };
@@ -255,10 +267,10 @@ namespace TORI_NS::detail {
 
   // ------------------------------------------
   // Constr
-  // ------------------------------------------
 
   /// Type constraint
-  struct Constr {
+  struct Constr
+  {
     object_ptr<const Type> t1;
     object_ptr<const Type> t2;
   };
@@ -282,7 +294,6 @@ namespace TORI_NS::detail {
 
   // ------------------------------------------
   // Occurs
-  // ------------------------------------------
 
   /// occurs
   [[nodiscard]] TORI_INLINE bool
@@ -352,7 +363,6 @@ namespace TORI_NS::detail {
 
   // ------------------------------------------
   // Recon
-  // ------------------------------------------
 
   [[nodiscard]] TORI_INLINE object_ptr<const Type> genvar()
   {

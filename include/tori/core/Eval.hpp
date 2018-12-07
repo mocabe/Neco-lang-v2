@@ -13,27 +13,39 @@
 namespace TORI_NS::detail {
 
   namespace interface {
+
     namespace eval_error {
+
       /// bad appli for fix
-      class bad_fix : public eval_error {
+      class bad_fix : public eval_error
+      {
       public:
-        bad_fix(const char* msg, const object_ptr<>& obj) : eval_error(msg, obj)
-        {}
+        bad_fix(const char* msg, const object_ptr<>& obj)
+          : eval_error(msg, obj)
+        {
+        }
       };
+
       /// bad apply (apply for value)
-      class bad_apply : public eval_error {
+      class bad_apply : public eval_error
+      {
       public:
         bad_apply(const char* msg, const object_ptr<>& obj)
           : eval_error(msg, obj)
-        {}
+        {
+        }
       };
+
       /// too many arguments
-      class too_many_arguments : public eval_error {
+      class too_many_arguments : public eval_error
+      {
       public:
         too_many_arguments(const char* msg, const object_ptr<>& obj)
           : eval_error(msg, obj)
-        {}
+        {
+        }
       };
+
     } // namespace eval_error
 
     /// copy apply graph
@@ -51,6 +63,7 @@ namespace TORI_NS::detail {
       }
       return obj;
     }
+
   } // namespace interface
 
   /// eval implementation

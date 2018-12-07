@@ -12,7 +12,8 @@ namespace TORI_NS::detail {
 
   /// Binary operator function
   template <class T, class R, template <class> class E>
-  struct BinaryOperator : Function<BinaryOperator<T, R, E>, T, T, R> {
+  struct BinaryOperator : Function<BinaryOperator<T, R, E>, T, T, R>
+  {
     typename BinaryOperator::return_type code() const
     {
       // assume BoxedHeapObject
@@ -33,7 +34,9 @@ namespace TORI_NS::detail {
   using ArithOp = BinaryOperator<T, T, E>;
 
   namespace interface {
+
     // Arithmetic operators
+
     template <class T>
     using Plus = ArithOp<T, std::plus>;
     template <class T>
@@ -48,6 +51,7 @@ namespace TORI_NS::detail {
     using Negate = ArithOp<T, std::negate>;
 
     // Comparison operators
+
     template <class T>
     using EqualTo = CompOp<T, std::equal_to>;
     template <class T>
@@ -62,6 +66,7 @@ namespace TORI_NS::detail {
     using LessEqual = CompOp<T, std::less_equal>;
 
     // Logical operators
+
     template <class T>
     using LogicalAnd = CompOp<T, std::logical_and>;
     template <class T>
@@ -70,12 +75,14 @@ namespace TORI_NS::detail {
     using LogicalNot = CompOp<T, std::logical_not>;
 
     // Bitwise operators
+
     template <class T>
     using BitAnd = ArithOp<T, std::bit_and>;
     template <class T>
     using BitOr = ArithOp<T, std::bit_or>;
     template <class T>
     using BitXor = ArithOp<T, std::bit_xor>;
+
   } // namespace interface
 
 // define primitive operators
@@ -100,6 +107,7 @@ namespace TORI_NS::detail {
   using BitXor##TYPE = BitXor<TYPE>;
 
   namespace interface {
+
     TORI_DECL_BINARY_OP(Int8)
     TORI_DECL_BINARY_OP(Int16)
     TORI_DECL_BINARY_OP(Int32)
@@ -124,6 +132,7 @@ namespace TORI_NS::detail {
     TORI_DECL_BINARY_OP(Double)
 
     TORI_DECL_BINARY_OP(Bool)
+
   } // namespace interface
 
 #undef TORI_DECL_BINARY_OP
