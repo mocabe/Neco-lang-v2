@@ -74,7 +74,7 @@ namespace TORI_NS::detail {
           o.head()->refcount.fetch_add();
         return static_cast<T*>(o.get());
       }
-      throw bad_closure_cast {get_type(o), object_type<T>()};
+      throw bad_closure_cast(get_type(o), object_type<T>());
     }
 
     /// closure_cast
@@ -93,7 +93,7 @@ namespace TORI_NS::detail {
         o.m_ptr = nullptr;
         return r;
       }
-      throw bad_closure_cast {get_type(o), object_type<T>()};
+      throw bad_closure_cast(get_type(o), object_type<T>());
     }
 
     /// closure_cast_if

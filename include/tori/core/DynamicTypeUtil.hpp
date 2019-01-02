@@ -142,8 +142,8 @@ namespace TORI_NS::detail {
     if (get_if<VarType>(ptp.value()))
       return ptp;
     if (auto arrow = get_if<ArrowType>(ptp.value())) {
-      auto ret = new Type {ArrowType {copy_type_impl(arrow->captured),
-                                      copy_type_impl(arrow->returns)}};
+      auto ret = new Type(ArrowType {copy_type_impl(arrow->captured),
+                                     copy_type_impl(arrow->returns)});
       return ret;
     }
 
@@ -239,8 +239,8 @@ namespace TORI_NS::detail {
     if (auto arrow = get_if<ArrowType>(in.value())) {
       if (same_type(in, from))
         return to;
-      return new Type {ArrowType {subst_type_impl(ta, arrow->captured),
-                                  subst_type_impl(ta, arrow->returns)}};
+      return new Type(ArrowType {subst_type_impl(ta, arrow->captured),
+                                 subst_type_impl(ta, arrow->returns)});
     }
 
     assert(false);
@@ -286,7 +286,7 @@ namespace TORI_NS::detail {
   [[nodiscard]] TORI_INLINE std::vector<Constr>
     subst_constr_all(const TyArrow& ta, const std::vector<Constr>& cs)
   {
-    std::vector<Constr> ret;
+    auto ret = std::vector<Constr> {};
     ret.reserve(cs.size());
     for (auto&& c : cs) ret.push_back(subst_constr(ta, c));
     return ret;
@@ -356,7 +356,7 @@ namespace TORI_NS::detail {
     unify(const std::vector<Constr>& cs, const object_ptr<>& src)
   {
     auto _cs = cs;
-    std::vector<TyArrow> as;
+    auto as = std::vector<TyArrow> {};
     unify_func_impl(_cs, as, src);
     return as;
   };
@@ -366,7 +366,7 @@ namespace TORI_NS::detail {
 
   [[nodiscard]] TORI_INLINE object_ptr<const Type> genvar()
   {
-    auto var = make_object<Type>(VarType {0});
+    auto var = make_object<Type>(VarType {});
     get_if<VarType>(var.value())->id = uintptr_t(var.get());
     return object_ptr<const Type>(var);
   };

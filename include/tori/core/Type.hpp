@@ -41,7 +41,7 @@ namespace TORI_NS::detail {
   [[nodiscard]] TORI_INLINE std::vector<object_ptr<const Type>>
     vars(const object_ptr<const Type>& tp)
   {
-    std::vector<object_ptr<const Type>> vars;
+    auto vars = std::vector<object_ptr<const Type>> {};
     vars_impl(tp, vars);
     return vars;
   };
@@ -55,7 +55,7 @@ namespace TORI_NS::detail {
     auto vs = vars(tp);
     auto t = tp;
     for (auto v : vs) {
-      TyArrow a {v, genvar()};
+      auto a = TyArrow {v, genvar()};
       t = subst_type(a, tp);
     }
     return t;

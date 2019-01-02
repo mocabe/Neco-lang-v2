@@ -193,7 +193,7 @@ namespace TORI_NS::detail {
   template <size_t N>
   constexpr ValueType::buffer_type name_to_buffer(char const (&name)[N])
   {
-    ValueType::buffer_type tmp {};
+    auto tmp = ValueType::buffer_type {};
     // if you want to expand maximum length of type name,
     // change ValueType::max_name_size and re-compile everything.
     static_assert(N <= tmp.size(), "Name of value type is too long.");

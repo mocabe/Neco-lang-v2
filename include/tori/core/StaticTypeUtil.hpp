@@ -153,6 +153,7 @@ namespace TORI_NS::detail {
   {
   };
 
+  /// error tag types
   namespace error_tags {
     
     /// type_missmatch
@@ -177,6 +178,7 @@ namespace TORI_NS::detail {
     struct none
     {
     };
+
   } // namespace error_tags
 
   // ------------------------------------------

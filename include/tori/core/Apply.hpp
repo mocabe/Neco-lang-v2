@@ -82,13 +82,13 @@ namespace TORI_NS::detail {
 
       // clang-format off
       Apply(object_ptr<App> ap, object_ptr<Arg> ar) 
-        : base{std::move(ap), std::move(ar)} {}
+        : base(std::move(ap), std::move(ar)) {}
       Apply(App* ap, Arg* ar) 
-        : base{object_ptr<>{ap}, object_ptr<>{ar}} {}
+        : base(object_ptr<>(ap), object_ptr<>(ar)) {}
       Apply(App* ap, object_ptr<Arg> ar) 
-        : base{ap, std::move(ar)} {}
+        : base(ap, std::move(ar)) {}
       Apply(object_ptr<App> ap, Arg* ar) 
-        : base{std::move(ap), ar} {}
+        : base(std::move(ap), ar) {}
       // clang-format on
     };
   } // namespace interface
@@ -124,8 +124,9 @@ namespace TORI_NS::detail {
         std::enable_if_t<is_valid_app_arg_v<T1> && is_valid_app_arg_v<T2>>>
     [[nodiscard]] auto operator<<(T1&& lhs, T2&& rhs)
     {
-      return object_ptr {
-        new Apply {std::forward<T1>(lhs), std::forward<T2>(rhs)}};
+      // use {} to workaround gcc bug (81486?)
+      return object_ptr(
+        new Apply {std::forward<T1>(lhs), std::forward<T2>(rhs)});
     }
 
   } // namespace interface

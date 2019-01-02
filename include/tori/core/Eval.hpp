@@ -16,7 +16,7 @@ namespace TORI_NS::detail {
 
     namespace eval_error {
 
-      /// bad appli for fix
+      /// bad apply for fix
       class bad_fix : public eval_error
       {
       public:
@@ -58,8 +58,8 @@ namespace TORI_NS::detail {
           return apply->get_cache();
         }
         // create new apply
-        return new ApplyR {copy_apply_graph(apply->app()),
-                           copy_apply_graph(apply->arg())};
+        return new ApplyR(
+          copy_apply_graph(apply->app()), copy_apply_graph(apply->arg()));
       }
       return obj;
     }
