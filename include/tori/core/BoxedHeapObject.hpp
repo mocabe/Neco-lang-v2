@@ -84,15 +84,12 @@ namespace TORI_NS::detail {
 
     /// \brief Heap-allocated object generator.
     /// \param T value type
-    /// \param AllocatorTemplate allocator
-    template <class T, template <class> class AllocatorTemplate>
+    template <class T>
     struct BoxedHeapObject : HeapObject
     {
 
       /// value type
       using value_type = T;
-      /// allocator type
-      using allocator_type = AllocatorTemplate<BoxedHeapObject>;
       /// term
       using term = value_object_term_t<T>;
 
@@ -134,14 +131,14 @@ namespace TORI_NS::detail {
 
       /// Copy ctor
       constexpr BoxedHeapObject(const BoxedHeapObject &obj)
-        : HeapObject {obj}
+        : HeapObject {1u, &info_table_initializer::info_table}
         , value {obj.value}
       {
       }
 
       /// Move ctor
       constexpr BoxedHeapObject(BoxedHeapObject &&obj)
-        : HeapObject {obj}
+        : HeapObject {1u, &info_table_initializer::info_table}
         , value {std::move(obj.value)}
       {
       }
@@ -149,36 +146,13 @@ namespace TORI_NS::detail {
       /// operator=
       BoxedHeapObject &operator=(const BoxedHeapObject &obj)
       {
-        HeapObject::operator=(obj);
         value = obj.value;
       }
 
       /// operator=
       BoxedHeapObject &operator=(BoxedHeapObject &&obj)
       {
-        HeapObject::operator=(obj);
         value = std::move(obj.value);
-      }
-
-      /// operator new
-      void *operator new(std::size_t n)
-      {
-        AllocatorTemplate<BoxedHeapObject> allocator;
-        return allocator.allocate(n);
-      }
-
-      /// operator delete
-      void operator delete(void *p) noexcept
-      {
-        AllocatorTemplate<BoxedHeapObject> allocator;
-        allocator.deallocate(static_cast<BoxedHeapObject *>(p), 1);
-      }
-
-      /// operator delete
-      void operator delete(void *p, std::size_t n) noexcept
-      {
-        AllocatorTemplate<BoxedHeapObject> allocator;
-        allocator.deallocate(static_cast<BoxedHeapObject *>(p), n);
       }
 
       /// value
@@ -186,14 +160,14 @@ namespace TORI_NS::detail {
     };
 
     // Initialize object header
-    template <class T, template <class> class AllocatorTemplate>
-    const object_info_table BoxedHeapObject<T, AllocatorTemplate>::
-      info_table_initializer::info_table = { //
-        object_type<BoxedHeapObject>(),      //
-        sizeof(BoxedHeapObject),             //
-        object_header_extend_bytes,          //
-        vtbl_destroy_func<BoxedHeapObject>,  //
-        vtbl_clone_func<BoxedHeapObject>};   //
+    template <class T>
+    const object_info_table
+      BoxedHeapObject<T>::info_table_initializer::info_table = {
+        object_type<BoxedHeapObject>(),     //
+        sizeof(BoxedHeapObject),            //
+        object_header_extend_bytes,         //
+        vtbl_destroy_func<BoxedHeapObject>, //
+        vtbl_clone_func<BoxedHeapObject>};  //
 
   } // namespace interface
 

@@ -102,9 +102,7 @@ namespace TORI_NS::detail {
     };
 
     // heap-allocated object of type T
-    template <
-      class T,
-      template <class> class AllocatorTemplate = std::allocator>
+    template <class T>
     struct BoxedHeapObject;
 
     // handler for heap-allocated object
@@ -343,7 +341,6 @@ namespace TORI_NS::detail {
       auto r = static_cast<value_type*>(info_table()->clone(m_ptr));
       if (unlikely(!r))
         throw std::bad_alloc();
-      r->refcount = 1u;
       return r;
     }
 
