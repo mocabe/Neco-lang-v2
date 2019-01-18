@@ -32,7 +32,7 @@ matrix:
       env: 
         - MATRIX_EVAL="COMPILER=g++-8"
     
-    # linux clang
+    # linux clang 6.0
     - os: linux
       before_install:
         - sudo apt-get update
@@ -46,6 +46,21 @@ matrix:
           sources:
             - ubuntu-toolchain-r-test
             - llvm-toolchain-trusty-6.0
+
+    # linux clang 7.0
+    - os: linux
+      before_install:
+        - sudo apt-get update
+        - sudo apt-get purge g++
+        - sudo apt-get install g++-8
+        - sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-8 1000
+        - sudo apt-get install clang-7.0
+        - COMPILER=clang++-7.0
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+            - llvm-toolchain-trusty-7.0
 
 before_install:
   - eval "${MATRIX_EVAL}"
