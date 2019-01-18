@@ -53,8 +53,8 @@ namespace TORI_NS::detail {
       {
       }
 
-      constexpr atomic_refcount(const atomic_refcount& refcnt) noexcept
-        : atomic {refcnt.raw}
+      atomic_refcount(const atomic_refcount& other) noexcept
+        : atomic {other.load()}
       {
       }
 
@@ -93,13 +93,9 @@ namespace TORI_NS::detail {
       }
 
     private:
-      static_assert(sizeof(T) == sizeof(std::atomic<T>));
-      union
-      {
         std::atomic<T> atomic;
-        T raw;
+      static_assert(sizeof(T) == sizeof(std::atomic<T>));
       };
-    };
 
     // heap-allocated object of type T
     template <class T>
