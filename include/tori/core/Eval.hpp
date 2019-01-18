@@ -97,15 +97,15 @@ namespace TORI_NS::detail {
         // cast to closure
         auto c = static_cast<Closure<>*>(f.get());
         // check arity
-        if (unlikely(c->arity.load() == 0)) {
+        if (unlikely(c->arity().load() == 0)) {
           throw eval_error::bad_fix(
             "eval_error: Expected appliable closure after Fix", obj);
         }
         // process
         auto pap = f.clone();
         auto cc = static_cast<Closure<>*>(pap.get());
-        auto arity = cc->arity.fetch_sub() - 1;
-        cc->args(arity) = obj;
+        auto arity = cc->arity().fetch_sub() - 1;
+        cc->arg(arity) = obj;
         if (arity == 0) {
           auto eval_result = eval_impl(cc->code());
           apply->set_cache(eval_result);
@@ -120,7 +120,7 @@ namespace TORI_NS::detail {
       }
       // too many arguments
       auto c = static_cast<Closure<>*>(app.get());
-      if (unlikely(c->arity.load() == 0)) {
+      if (unlikely(c->arity().load() == 0)) {
         throw eval_error::too_many_arguments(
           "eval_error: Too many arguments", obj);
       }
@@ -128,8 +128,8 @@ namespace TORI_NS::detail {
       auto pap = app.clone();
       // process
       auto cc = static_cast<Closure<>*>(pap.get());
-      auto arity = cc->arity.fetch_sub() - 1;
-      cc->args(arity) = arg;
+      auto arity = cc->arity().fetch_sub() - 1;
+      cc->arg(arity) = arg;
       if (arity == 0) {
         auto eval_result = eval_impl(cc->code());
         apply->set_cache(eval_result);
@@ -154,6 +154,7 @@ namespace TORI_NS::detail {
     [[nodiscard]] auto eval(const object_ptr<T>& obj)
     {
       auto result = eval_impl(object_ptr<>(obj));
+      // run compile time type check
       if constexpr (!is_error_type_v<type_of_t<typename T::term, false>>) {
         // Currently object_ptr<T> MUST have type T which has compatible memory
         // layout with actual object pointing to.
@@ -165,6 +166,7 @@ namespace TORI_NS::detail {
         result.head()->refcount.fetch_add(); // +1
         return object_ptr<To>(static_cast<To*>(result.get()));
       } else {
+        // fallback to object_ptr<>
         return result;
       }
     }

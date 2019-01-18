@@ -52,29 +52,18 @@ namespace TORI_NS::detail {
   template <class Closure1>
   struct Closure : HeapObject
   {
-
     /// Arity of this closure
-    atomic_refcount<uint64_t> arity;
+    atomic_refcount<uint64_t> _arity;
 
 #if defined(CLOSURE_HEADER_EXTEND_BYTES)
     /// additional buffer storage
     std::byte clsr_ext_buffer[closure_header_extend_bytes] = {};
 #endif
 
-    /// get nth argument
-    object_ptr<>& args(size_t n)
+    /// Get number of args
+    size_t n_args() const noexcept
     {
-      constexpr size_t offset = offset_of_member(&Closure1::args);
-      static_assert(offset % sizeof(object_ptr<>) == 0);
-      return ((object_ptr<>*)this)[offset / sizeof(object_ptr<>) + n];
-    }
-
-    /// get nth argument
-    const object_ptr<>& args(size_t n) const
-    {
-      constexpr size_t offset = offset_of_member(&Closure1::args);
-      static_assert(offset % sizeof(object_ptr<>) == 0);
-      return ((object_ptr<>*)this)[offset / sizeof(object_ptr<>) + n];
+      return static_cast<const closure_info_table*>(info_table)->n_args;
     }
 
     /// Execute core with vtable function
@@ -83,10 +72,18 @@ namespace TORI_NS::detail {
       return static_cast<const closure_info_table*>(info_table)->code(this);
     }
 
-    /// Get number of args
-    size_t n_args() const noexcept
+    /// get nth argument
+    object_ptr<>& arg(size_t n)
     {
-      return static_cast<const closure_info_table*>(info_table)->n_args;
+      constexpr size_t offset = offset_of_member(&Closure1::_args);
+      static_assert(offset % sizeof(object_ptr<>) == 0);
+      return ((object_ptr<>*)this)[offset / sizeof(object_ptr<>) + n];
+    }
+
+    ///  get arity
+    atomic_refcount<uint64_t>& arity()
+    {
+      return _arity;
     }
   };
 
@@ -105,7 +102,7 @@ namespace TORI_NS::detail {
     object_ptr<>& nth_arg() noexcept
     {
       static_assert(Arg < N, "Invalid index of argument");
-      return args[N - Arg - 1];
+      return _args[N - Arg - 1];
     }
 
     /// get raw arg
@@ -113,11 +110,11 @@ namespace TORI_NS::detail {
     const object_ptr<>& nth_arg() const noexcept
     {
       static_assert(Arg < N, "Invalid index of argument");
-      return args[N - Arg - 1];
+      return _args[N - Arg - 1];
     }
 
-    /// arg
-    object_ptr<> args[N] = {};
+    /// args
+    std::array<object_ptr<>, N> _args = {};
   };
 
   // ------------------------------------------
@@ -335,7 +332,7 @@ namespace TORI_NS::detail {
 
     private:
       using ClosureN<sizeof...(Ts) - 1>::nth_arg;
-      using ClosureN<sizeof...(Ts) - 1>::args;
+      using ClosureN<sizeof...(Ts) - 1>::arg;
 
       template <auto FP>
       struct concept_checker

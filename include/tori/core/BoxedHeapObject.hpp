@@ -109,7 +109,7 @@ namespace TORI_NS::detail {
           !std::is_same_v<std::decay_t<U>, static_construct_t>>>
       constexpr BoxedHeapObject(U &&u, Args &&... args)
         : HeapObject {1u, &info_table_initializer::info_table}
-        , value {std::forward<U>(u), std::forward<Args>(args)...}
+        , _value {std::forward<U>(u), std::forward<Args>(args)...}
       {
       }
 
@@ -125,38 +125,38 @@ namespace TORI_NS::detail {
       /// Ctor
       constexpr BoxedHeapObject()
         : HeapObject {1u, &info_table_initializer::info_table}
-        , value {}
+        , _value {}
       {
       }
 
       /// Copy ctor
       constexpr BoxedHeapObject(const BoxedHeapObject &obj)
         : HeapObject {1u, &info_table_initializer::info_table}
-        , value {obj.value}
+        , _value {obj._value}
       {
       }
 
       /// Move ctor
       constexpr BoxedHeapObject(BoxedHeapObject &&obj)
         : HeapObject {1u, &info_table_initializer::info_table}
-        , value {std::move(obj.value)}
+        , _value {std::move(obj._value)}
       {
       }
 
       /// operator=
       BoxedHeapObject &operator=(const BoxedHeapObject &obj)
       {
-        value = obj.value;
+        _value = obj._value;
       }
 
       /// operator=
       BoxedHeapObject &operator=(BoxedHeapObject &&obj)
       {
-        value = std::move(obj.value);
+        _value = std::move(obj._value);
       }
 
       /// value
-      T value;
+      value_type _value;
     };
 
     // Initialize object header
