@@ -320,7 +320,8 @@ namespace TORI_NS::detail {
       template <size_t N>
       auto eval_arg() const
       {
-        return eval(arg<N>());
+        // workaround: gcc 8.1
+        return eval(this->template arg<N>());
       }
 
       /// Ctor
