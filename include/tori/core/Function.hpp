@@ -127,7 +127,9 @@ namespace TORI_NS::detail {
     static object_ptr<> code(Closure<>* _this) noexcept
     {
       try {
-        return (static_cast<const T*>(_this)->code()).value();
+        auto r = (static_cast<const T*>(_this)->code()).value();
+        assert(r);
+        return r;
       } catch (const bad_value_cast& e) {
         return new Exception(new BadValueCast(e.from(), e.to()));
       } catch (const bad_closure_cast& e) {
@@ -253,8 +255,13 @@ namespace TORI_NS::detail {
     /// U*
     template <class U>
     return_type_checker(U* ptr)
-      : return_type_checker(object_ptr(ptr))
+      : m_value(ptr)
     {
+      // check return type
+      [[maybe_unused]] check_return_type<
+        return_type,
+        type_of_t<typename U::term>>
+        check {};
     }
 
     /// deleted
@@ -265,7 +272,7 @@ namespace TORI_NS::detail {
     return_type_checker(return_type&& other) = delete;
 
     /// value
-    object_ptr<> value() &&
+    object_ptr<>&& value() &&
     {
       return std::move(m_value);
     }
@@ -315,9 +322,9 @@ namespace TORI_NS::detail {
       }
 
       /// Ctor
-      constexpr Function() noexcept
+      Function() noexcept
         : ClosureN<sizeof...(Ts) - 1> {
-            {{1,
+            {{1u,
               static_cast<const object_info_table*>(
                 &info_table_initializer::info_table)},
              sizeof...(Ts) - 1}}

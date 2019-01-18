@@ -129,6 +129,22 @@ namespace TORI_NS::detail {
 #endif
     };
 
+    /// stateless allocator for heap objects
+    template <class T>
+    struct object_allocator_traits
+    {
+      /// allocate memory
+      static void* allocate(size_t n)
+      {
+        return std::allocator<T>().allocate(n);
+      }
+      /// deallocate memory
+      static void deallocate(void* ptr, size_t n)
+      {
+        std::allocator<T>().deallocate(static_cast<T*>(ptr), n);
+      }
+    };
+
     /// Smart pointer to manage heap-allocated objects
     template <class T = HeapObject>
     class object_ptr
@@ -175,7 +191,7 @@ namespace TORI_NS::detail {
         : m_ptr {obj.m_ptr}
       {
         // when not static object
-        if (m_ptr && head()->refcount.load() != 0)
+        if (m_ptr && !is_static())
           head()->refcount.fetch_add();
       }
 
@@ -193,7 +209,7 @@ namespace TORI_NS::detail {
         : m_ptr {obj.get()}
       {
         // when not static object
-        if (m_ptr && head()->refcount.load() != 0)
+        if (m_ptr && !is_static())
           head()->refcount.fetch_add();
       }
 
@@ -212,7 +228,7 @@ namespace TORI_NS::detail {
       }
 
       /// get address of header
-      auto head() const noexcept
+      auto* head() const noexcept
       {
         if constexpr (std::is_const_v<value_type>)
           return static_cast<const HeapObject*>(m_ptr);
@@ -221,17 +237,19 @@ namespace TORI_NS::detail {
       }
 
       /// get address of info table
-      /// \requires Object is not null.
+      /// \requires not null.
       const object_info_table* info_table() const noexcept
       {
+        assert(m_ptr);
         return head()->info_table;
       }
 
       /// get address of member `value`
-      /// \requires Object is not null.
+      /// \requires not null.
       auto* value() const noexcept
       {
-        return &m_ptr->value;
+        assert(m_ptr);
+        return &m_ptr->_value;
       }
 
       /// operator bool
@@ -241,10 +259,19 @@ namespace TORI_NS::detail {
       }
 
       /// use_count
-      /// \requires Object is not null.
+      /// \requires not null.
       size_t use_count() const noexcept
       {
-        return head()->refcount.atomic;
+        assert(m_ptr);
+        return head()->refcount.load();
+      }
+
+      /// is_static
+      /// \requires not null.
+      bool is_static() const noexcept
+      {
+        assert(m_ptr);
+        return use_count() == 0;
       }
 
       /// swap data
@@ -329,11 +356,11 @@ namespace TORI_NS::detail {
     /// \throws `std::bad_alloc` when `clone` returned nullptr.
     /// \throws `std::runtime_error` when object is null.
     /// \notes Reference count of new object will be set to 1.
+    /// \requires not null.
     template <class T>
     object_ptr<T> object_ptr<T>::clone() const
     {
-      if (!m_ptr)
-        throw std::runtime_error("clone() to null object");
+      assert(m_ptr);
       auto r = static_cast<value_type*>(info_table()->clone(m_ptr));
       if (unlikely(!r))
         throw std::bad_alloc();
@@ -346,8 +373,7 @@ namespace TORI_NS::detail {
     template <class T>
     object_ptr<T>::~object_ptr() noexcept
     {
-      // when not static object
-      if (m_ptr && head()->refcount.load() != 0) {
+      if (m_ptr && !is_static()) {
         // delete object if needed
         if (head()->refcount.fetch_sub() == 1) {
           std::atomic_thread_fence(std::memory_order_acquire);
@@ -404,5 +430,7 @@ namespace TORI_NS::detail {
     {
       return new T {std::forward<Args>(args)...};
     }
+
   } // namespace interface
+
 } // namespace TORI_NS::detail

@@ -11,8 +11,9 @@
 namespace TORI_NS::detail {
 
   /// value of ApplyR
-  struct ApplyRValue
+  class ApplyRValue
   {
+  public:
     template <
       class App,
       class Arg,
@@ -81,14 +82,19 @@ namespace TORI_NS::detail {
       using term = tm_apply<typename App::term, typename Arg::term>;
 
       // clang-format off
+
       Apply(object_ptr<App> ap, object_ptr<Arg> ar) 
         : base(std::move(ap), std::move(ar)) {}
+
       Apply(App* ap, Arg* ar) 
         : base(object_ptr<>(ap), object_ptr<>(ar)) {}
+
       Apply(App* ap, object_ptr<Arg> ar) 
         : base(ap, std::move(ar)) {}
+
       Apply(object_ptr<App> ap, Arg* ar) 
         : base(std::move(ap), ar) {}
+
       // clang-format on
     };
   } // namespace interface
