@@ -324,6 +324,19 @@ namespace TORI_NS::detail {
       {
       }
 
+      /// Copy ctor
+      Function(const Function& other) noexcept
+        : ClosureN<sizeof...(Ts) - 1> {
+            {
+              {1u,
+               static_cast<const object_info_table*>(
+                 &info_table_initializer::info_table)},
+              other._arity,
+            },
+            other._args}
+      {
+      }
+
     protected:
       // return type for code()
       using return_type = return_type_checker<typename std::tuple_element_t<
