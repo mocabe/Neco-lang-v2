@@ -69,7 +69,7 @@ namespace TORI_NS::detail {
       auto o = object_ptr<>(obj);
       if (likely(has_type<T>(o))) {
         // +1
-        if (o.get())
+        if (o.get() && !o.is_static())
           o.head()->refcount.fetch_add();
         return static_cast<T*>(o.get());
       }
@@ -108,7 +108,7 @@ namespace TORI_NS::detail {
       auto o = object_ptr<>(obj);
       if (has_type<T>(o)) {
         // +1
-        if (o.get())
+        if (o.get() && !o.is_static())
           o.head()->refcount.fetch_add();
         return static_cast<T*>(o.get());
       }

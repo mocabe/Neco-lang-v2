@@ -154,6 +154,7 @@ namespace TORI_NS::detail {
     [[nodiscard]] auto eval(const object_ptr<T>& obj)
     {
       auto result = eval_impl(object_ptr<>(obj));
+      assert(result);
       // run compile time type check
       if constexpr (!is_error_type_v<type_of_t<typename T::term, false>>) {
         // Currently object_ptr<T> MUST have type T which has compatible memory
@@ -163,7 +164,8 @@ namespace TORI_NS::detail {
         // HeapObject. Type variables are also undecidable so we just convert
         // them to HeapObject.
         using To = assume_object_type_t<type_of_t<typename T::term>>;
-        result.head()->refcount.fetch_add(); // +1
+        if (!result.is_static())
+          result.head()->refcount.fetch_add(); // +1
         return object_ptr<To>(static_cast<To*>(result.get()));
       } else {
         // fallback to object_ptr<>
