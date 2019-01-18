@@ -310,6 +310,7 @@ namespace TORI_NS::detail {
       {
         using To = std::tuple_element_t<N, std::tuple<Ts...>>;
         auto obj = ClosureN<sizeof...(Ts) - 1>::template nth_arg<N>();
+        assert(obj);
         if (!obj.is_static())
           obj.head()->refcount.fetch_add(); // +1
         return object_ptr(static_cast<expected<To>*>(obj.get()));

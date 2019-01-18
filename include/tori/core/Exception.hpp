@@ -72,7 +72,7 @@ namespace TORI_NS::detail {
         template <class T>
         explicit type_error(const std::string& what, object_ptr<T> src)
           : std::logic_error(what)
-          , m_src {object_ptr<>(std::move(src))}
+          , m_src {std::move(src)}
         {
         }
 
@@ -80,7 +80,7 @@ namespace TORI_NS::detail {
         /// Ctor const char*
         explicit type_error(const char* what, object_ptr<T> src)
           : std::logic_error(what)
-          , m_src {object_ptr<>(std::move(src))}
+          , m_src {std::move(src)}
         {
         }
 
