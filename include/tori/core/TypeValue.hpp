@@ -99,20 +99,20 @@ namespace TORI_NS::detail {
     TypeValue() = delete;
 
     // initializers
-    TypeValue(const ValueType& t)
-      : value {t}
+    TypeValue(ValueType t)
+      : value {std::move(t)}
       , m_index {value_index}
     {
     }
 
-    TypeValue(const ArrowType& t)
-      : arrow {t}
+    TypeValue(ArrowType t)
+      : arrow {std::move(t)}
       , m_index {arrow_index}
     {
     }
 
-    TypeValue(const VarType& t)
-      : var {t}
+    TypeValue(VarType t)
+      : var {std::move(t)}
       , m_index {var_index}
     {
     }

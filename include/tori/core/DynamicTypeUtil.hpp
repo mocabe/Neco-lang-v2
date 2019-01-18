@@ -21,16 +21,14 @@ namespace TORI_NS::detail {
       class circular_constraint : public type_error
       {
       public:
-        circular_constraint(
-          const object_ptr<>& src,
-          const object_ptr<const Type>& var)
-          : type_error("Circular constraints", src)
-          , m_var {var}
+        circular_constraint(object_ptr<> src, object_ptr<const Type> var)
+          : type_error("Circular constraints", std::move(src))
+          , m_var {std::move(var)}
         {
         }
 
         /// var
-        object_ptr<const Type> var() const
+        const object_ptr<const Type>& var() const
         {
           return m_var;
         }
@@ -44,23 +42,23 @@ namespace TORI_NS::detail {
       {
       public:
         type_missmatch(
-          const object_ptr<>& src,
-          const object_ptr<const Type>& t1,
-          const object_ptr<const Type>& t2)
-          : type_error("Type missmatch", src)
-          , m_t1 {t1}
-          , m_t2 {t2}
+          object_ptr<> src,
+          object_ptr<const Type> t1,
+          object_ptr<const Type> t2)
+          : type_error("Type missmatch", std::move(src))
+          , m_t1 {std::move(t1)}
+          , m_t2 {std::move(t2)}
         {
         }
 
         /// t1
-        object_ptr<const Type> t1() const
+        const object_ptr<const Type>& t1() const
         {
           return m_t1;
         }
 
         /// t2
-        object_ptr<const Type> t2() const
+        const object_ptr<const Type>& t2() const
         {
           return m_t2;
         }
@@ -71,6 +69,7 @@ namespace TORI_NS::detail {
         /// t2
         object_ptr<const Type> m_t2;
       };
+
     } // namespace type_error
 
     // ------------------------------------------

@@ -20,8 +20,8 @@ namespace TORI_NS::detail {
       class bad_fix : public eval_error
       {
       public:
-        bad_fix(const char* msg, const object_ptr<>& obj)
-          : eval_error(msg, obj)
+        bad_fix(const char* msg, object_ptr<> obj)
+          : eval_error(msg, std::move(obj))
         {
         }
       };
@@ -30,8 +30,8 @@ namespace TORI_NS::detail {
       class bad_apply : public eval_error
       {
       public:
-        bad_apply(const char* msg, const object_ptr<>& obj)
-          : eval_error(msg, obj)
+        bad_apply(const char* msg, object_ptr<> obj)
+          : eval_error(msg, std::move(obj))
         {
         }
       };
@@ -40,8 +40,8 @@ namespace TORI_NS::detail {
       class too_many_arguments : public eval_error
       {
       public:
-        too_many_arguments(const char* msg, const object_ptr<>& obj)
-          : eval_error(msg, obj)
+        too_many_arguments(const char* msg, object_ptr<> obj)
+          : eval_error(msg, std::move(obj))
         {
         }
       };

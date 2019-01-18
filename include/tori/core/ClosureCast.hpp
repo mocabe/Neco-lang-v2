@@ -22,15 +22,14 @@ namespace TORI_NS::detail {
       , m_to {std::move(to)}
     {
     }
-
     /// from
-    object_ptr<const Type> from() const
+    const object_ptr<const Type>& from() const
     {
       return m_from;
     }
 
     /// to
-    object_ptr<const Type> to() const
+    const object_ptr<const Type>& to() const
     {
       return m_to;
     }

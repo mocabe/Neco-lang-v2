@@ -115,14 +115,14 @@ namespace TORI_NS::detail {
       {
       public:
         bad_type_check(
-          const object_ptr<const Type>& expected,
-          const object_ptr<const Type>& result,
-          const object_ptr<>& obj)
+          object_ptr<const Type> expected,
+          object_ptr<const Type> result,
+          object_ptr<> obj)
           : type_error(
               "type_error: check_type failed. Result type is invalid",
-              obj)
-          , m_expected {expected}
-          , m_result {result}
+              std::move(obj))
+          , m_expected {std::move(expected)}
+          , m_result {std::move(result)}
         {
         }
 

@@ -19,14 +19,14 @@ namespace TORI_NS::detail {
   struct ExceptionValue
   {
     template <class T>
-    ExceptionValue(const object_ptr<T>& i) noexcept
-      : info {i}
+    ExceptionValue(object_ptr<T> i) noexcept
+      : info {std::move(i)}
     {
     }
 
     template <class T>
     ExceptionValue(T* ptr) noexcept
-      : ExceptionValue {object_ptr(ptr)}
+      : info {ptr}
     {
     }
 
@@ -70,22 +70,22 @@ namespace TORI_NS::detail {
       public:
         /// Ctor string
         template <class T>
-        explicit type_error(const std::string& what, const object_ptr<T>& src)
+        explicit type_error(const std::string& what, object_ptr<T> src)
           : std::logic_error(what)
-          , m_src {object_ptr<>(src)}
+          , m_src {object_ptr<>(std::move(src))}
         {
         }
 
         template <class T>
         /// Ctor const char*
-        explicit type_error(const char* what, const object_ptr<T>& src)
+        explicit type_error(const char* what, object_ptr<T> src)
           : std::logic_error(what)
-          , m_src {object_ptr<>(src)}
+          , m_src {object_ptr<>(std::move(src))}
         {
         }
 
         /// get source node
-        object_ptr<> src() const
+        const object_ptr<>& src() const
         {
           return m_src;
         }
@@ -94,8 +94,10 @@ namespace TORI_NS::detail {
         /// source node
         object_ptr<> m_src;
       };
+
     } // namespace type_error
-  }   // namespace interface
+
+  } // namespace interface
 
   // ------------------------------------------
   // Eval errors
@@ -126,22 +128,22 @@ namespace TORI_NS::detail {
       public:
         /// Ctor string
         template <class T>
-        explicit eval_error(const std::string& what, const object_ptr<T>& src)
+        explicit eval_error(const std::string& what, object_ptr<T> src)
           : std::logic_error(what)
-          , m_src {object_ptr<>(src)}
+          , m_src {std::move(src)}
         {
         }
 
         /// Ctor const char*
         template <class T>
-        explicit eval_error(const char* what, const object_ptr<T>& src)
+        explicit eval_error(const char* what, object_ptr<T> src)
           : std::logic_error(what)
-          , m_src {object_ptr<>(src)}
+          , m_src {std::move(src)}
         {
         }
 
         /// get source node
-        object_ptr<> src() const
+        const object_ptr<>& src() const
         {
           return m_src;
         }
@@ -166,20 +168,14 @@ namespace TORI_NS::detail {
       class result_error : public std::runtime_error
       {
       public:
-        result_error(const object_ptr<Exception>& result)
-          : runtime_error("result_error: Exception detected while evaluation")
-          , m_result {result}
-        {
-        }
-
-        result_error(object_ptr<Exception>&& result)
+        result_error(object_ptr<Exception> result)
           : runtime_error("result_error: Exception detected while evaluation")
           , m_result {std::move(result)}
         {
         }
 
         /// result
-        object_ptr<Exception> result() const
+        const object_ptr<Exception>& result() const
         {
           return m_result;
         }

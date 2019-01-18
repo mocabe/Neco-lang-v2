@@ -241,22 +241,16 @@ namespace TORI_NS::detail {
   public:
     using return_type = type_of_t<Term>;
 
-    /// object_ptr<U>
-    template <class U>
-    return_type_checker(const object_ptr<U>& obj)
-      : m_value {object_ptr<>(obj)}
-    {
-      // check return type
-      ignore(check_return_type<return_type, type_of_t<typename U::term>> {});
-    }
-
     /// object_ptr<U>&&
     template <class U>
-    return_type_checker(object_ptr<U>&& obj)
-      : m_value {object_ptr<>(std::move(obj))}
+    return_type_checker(object_ptr<U> obj)
+      : m_value {std::move(obj)}
     {
       // check return type
-      ignore(check_return_type<return_type, type_of_t<typename U::term>> {});
+      [[maybe_unused]] check_return_type<
+        return_type,
+        type_of_t<typename U::term>>
+        check {};
     }
 
     /// U*
