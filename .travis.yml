@@ -54,13 +54,13 @@ matrix:
         - sudo apt-get purge g++
         - sudo apt-get install g++-8
         - sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-8 1000
-        - sudo apt-get install clang-7.0
-        - COMPILER=clang++-7.0
+        - sudo apt-get install clang-7
+        - COMPILER=clang++-7
       addons:
         apt:
           sources:
             - ubuntu-toolchain-r-test
-            - llvm-toolchain-trusty-7.0
+            - llvm-toolchain-trusty-7
 
 before_install:
   - eval "${MATRIX_EVAL}"
