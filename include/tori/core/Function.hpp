@@ -52,8 +52,8 @@ namespace TORI_NS::detail {
   template <class Closure1>
   struct Closure : HeapObject
   {
-    /// Arity of this closure
-    atomic_refcount<uint64_t> _arity;
+    /// Arity of this closure.
+    uint64_t _arity;
 
 #if defined(CLOSURE_HEADER_EXTEND_BYTES)
     /// additional buffer storage
@@ -81,7 +81,7 @@ namespace TORI_NS::detail {
     }
 
     ///  get arity
-    atomic_refcount<uint64_t>& arity()
+    uint64_t& arity()
     {
       return _arity;
     }

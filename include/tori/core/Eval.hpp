@@ -97,14 +97,14 @@ namespace TORI_NS::detail {
         // cast to closure
         auto c = static_cast<Closure<>*>(f.get());
         // check arity
-        if (unlikely(c->arity().load() == 0)) {
+        if (unlikely(c->arity() == 0)) {
           throw eval_error::bad_fix(
             "eval_error: Expected appliable closure after Fix", obj);
         }
         // process
         auto pap = f.clone();
         auto cc = static_cast<Closure<>*>(pap.get());
-        auto arity = cc->arity().fetch_sub() - 1;
+        auto arity = --cc->arity();
         cc->arg(arity) = obj;
         if (arity == 0) {
           auto eval_result = eval_impl(cc->code());
@@ -120,7 +120,7 @@ namespace TORI_NS::detail {
       }
       // too many arguments
       auto c = static_cast<Closure<>*>(app.get());
-      if (unlikely(c->arity().load() == 0)) {
+      if (unlikely(c->arity() == 0)) {
         throw eval_error::too_many_arguments(
           "eval_error: Too many arguments", obj);
       }
@@ -128,7 +128,7 @@ namespace TORI_NS::detail {
       auto pap = app.clone();
       // process
       auto cc = static_cast<Closure<>*>(pap.get());
-      auto arity = cc->arity().fetch_sub() - 1;
+      auto arity = --cc->arity();
       cc->arg(arity) = arg;
       if (arity == 0) {
         auto eval_result = eval_impl(cc->code());

@@ -60,24 +60,24 @@ namespace TORI_NS::detail {
 
       atomic_refcount& operator=(const atomic_refcount& other) noexcept
       {
-        atomic.store(other.atomic.load());
+        store(other.load());
         return *this;
       }
 
       atomic_refcount& operator=(T v) noexcept
       {
-        atomic.store(v);
+        store(v);
         return *this;
       }
 
       T load() const noexcept
       {
-        return atomic.load();
+        return atomic.load(std::memory_order_acquire);
       }
 
       void store(T v) noexcept
       {
-        atomic.store(v);
+        atomic.store(v, std::memory_order_release);
       }
 
       /// use memory_order_relaxed
