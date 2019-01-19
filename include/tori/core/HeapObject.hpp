@@ -145,6 +145,14 @@ namespace TORI_NS::detail {
       }
     };
 
+  } // namespace interface
+
+  // for MSVC
+  template <class T, class U>
+  object_ptr<T> static_object_cast(object_ptr<U>&&);
+
+  namespace interface {
+
     /// Smart pointer to manage heap-allocated objects
     template <class T = HeapObject>
     class object_ptr
@@ -154,19 +162,7 @@ namespace TORI_NS::detail {
       friend class object_ptr;
       // move cast function
       template <class U, class S>
-      friend object_ptr<U> static_object_cast(object_ptr<S>&&);
-      // move cast function
-      template <class U, class S>
-      friend object_ptr<U> value_cast(object_ptr<S>&&);
-      // move cast function
-      template <class U, class S>
-      friend object_ptr<U> value_cast_if(object_ptr<S>&&) noexcept;
-      // move cast function
-      template <class U, class S>
-      friend object_ptr<U> closure_cast(object_ptr<S>&&);
-      // move cast function
-      template <class U, class S>
-      friend object_ptr<U> closure_cast_if(object_ptr<S>&&) noexcept;
+      friend object_ptr<U> detail::static_object_cast(object_ptr<S>&&);
 
     public:
       // value type
