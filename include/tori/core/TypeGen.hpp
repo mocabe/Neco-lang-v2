@@ -190,14 +190,14 @@ namespace TORI_NS::detail {
   } // namespace interface
 
   /// convert constexpr char array to buffer type for value type
-  template <size_t N>
+  template <uint64_t N>
   constexpr ValueType::buffer_type name_to_buffer(char const (&name)[N])
   {
     auto tmp = ValueType::buffer_type {};
     // if you want to expand maximum length of type name,
     // change ValueType::max_name_size and re-compile everything.
     static_assert(N <= tmp.size(), "Name of value type is too long.");
-    for (size_t i = 0; i < N; ++i) {
+    for (uint64_t i = 0; i < N; ++i) {
       tmp[i] = name[i];
     }
     tmp.back() = 0;

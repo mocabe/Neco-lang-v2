@@ -18,11 +18,11 @@
 /// Size of additional space in closure header
 #if defined(CLOSURE_HEADER_EXTEND_BYTES)
 namespace TORI_NS::detail {
-  constexpr size_t closure_header_extend_bytes = CLOSURE_HEADER_EXTEND_BYTES;
+  constexpr uint64_t closure_header_extend_bytes = CLOSURE_HEADER_EXTEND_BYTES;
 }
 #else
 namespace TORI_NS::detail {
-  constexpr size_t closure_header_extend_bytes = 0;
+  constexpr uint64_t closure_header_extend_bytes = 0;
 }
 #endif
 
@@ -32,7 +32,7 @@ namespace TORI_NS::detail {
   // Closure
 
   // forward decl
-  template <std::size_t N>
+  template <uint64_t N>
   struct ClosureN;
 
   template <class Closure1 = ClosureN<1>>
@@ -42,9 +42,9 @@ namespace TORI_NS::detail {
   struct closure_info_table : object_info_table
   {
     /// Number of arguments
-    size_t n_args;
+    uint64_t n_args;
     /// Size of extended header
-    size_t clsr_ext_bytes;
+    uint64_t clsr_ext_bytes;
     /// vtable for code
     object_ptr<> (*code)(Closure<>*);
   };
@@ -61,7 +61,7 @@ namespace TORI_NS::detail {
 #endif
 
     /// Get number of args
-    size_t n_args() const noexcept
+    uint64_t n_args() const noexcept
     {
       return static_cast<const closure_info_table*>(info_table)->n_args;
     }
@@ -73,9 +73,9 @@ namespace TORI_NS::detail {
     }
 
     /// get nth argument
-    object_ptr<>& arg(size_t n)
+    object_ptr<>& arg(uint64_t n)
     {
-      constexpr size_t offset = offset_of_member(&Closure1::_args);
+      constexpr uint64_t offset = offset_of_member(&Closure1::_args);
       static_assert(offset % sizeof(object_ptr<>) == 0);
       return ((object_ptr<>*)this)[offset / sizeof(object_ptr<>) + n];
     }
@@ -94,11 +94,11 @@ namespace TORI_NS::detail {
    * If all arguments are passed, arity becomes zero and the closure is ready to
    * execute code.
    */
-  template <std::size_t N>
+  template <uint64_t N>
   struct ClosureN : Closure<>
   {
     /// get raw arg
-    template <size_t Arg>
+    template <uint64_t Arg>
     object_ptr<>& nth_arg() noexcept
     {
       static_assert(Arg < N, "Invalid index of argument");
@@ -106,7 +106,7 @@ namespace TORI_NS::detail {
     }
 
     /// get raw arg
-    template <size_t Arg>
+    template <uint64_t Arg>
     const object_ptr<>& nth_arg() const noexcept
     {
       static_assert(Arg < N, "Invalid index of argument");
@@ -305,7 +305,7 @@ namespace TORI_NS::detail {
       };
 
       /// Get N'th argument
-      template <size_t N>
+      template <uint64_t N>
       auto arg() const
       {
         using To = std::tuple_element_t<N, std::tuple<Ts...>>;
@@ -315,7 +315,7 @@ namespace TORI_NS::detail {
       }
 
       /// Evaluate N'th argument and take result
-      template <size_t N>
+      template <uint64_t N>
       auto eval_arg() const
       {
         // workaround: gcc 8.1

@@ -19,10 +19,10 @@
 namespace TORI_NS::detail {
 
 #if defined(OBJECT_HEADER_EXTEND_BYTES)
-  constexpr size_t object_header_extend_bytes = OBJECT_HEADER_EXTEND_BYTES;
+  constexpr uint64_t object_header_extend_bytes = OBJECT_HEADER_EXTEND_BYTES;
 #else
   /// size of additional buffer in heap object header
-  constexpr size_t object_header_extend_bytes = 0;
+  constexpr uint64_t object_header_extend_bytes = 0;
 #endif
 
   // value type
@@ -244,7 +244,7 @@ namespace TORI_NS::detail {
 
       /// use_count
       /// \requires not null.
-      size_t use_count() const noexcept
+      uint64_t use_count() const noexcept
       {
         assert(m_ptr);
         return head()->refcount.load();
@@ -334,9 +334,9 @@ namespace TORI_NS::detail {
       /// pointer to type object
       object_ptr<const Type> obj_type;
       /// total size of object
-      size_t obj_size;
+      uint64_t obj_size;
       /// size of additional storage
-      size_t obj_ext_bytes;
+      uint64_t obj_ext_bytes;
       /// vtable of delete function
       void (*destroy)(HeapObject*);
       /// vtable of clone function

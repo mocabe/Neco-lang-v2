@@ -110,9 +110,9 @@ namespace TORI_NS::detail {
       T2 o;
     };
     static U u;
-    static constexpr size_t get(T1 T2::*member)
+    static constexpr uint64_t get(T1 T2::*member)
     {
-      size_t i = 0;
+      uint64_t i = 0;
       for (; i < sizeof(T2); ++i)
         if (((void*)&(u.c[i])) == &(u.o.*member))
           break;
@@ -129,7 +129,7 @@ namespace TORI_NS::detail {
 
   /// get offset of member
   template <class T1, class T2>
-  constexpr size_t offset_of_member(T1 T2::*member)
+  constexpr uint64_t offset_of_member(T1 T2::*member)
   {
     return offset_of_member_impl<T1, T2>::get(member);
   }

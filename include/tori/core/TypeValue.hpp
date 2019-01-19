@@ -19,7 +19,7 @@ namespace TORI_NS::detail {
   struct ValueType
   {
     /// Max name length
-    static constexpr size_t max_name_size = 32;
+    static constexpr uint64_t max_name_size = 32;
     /// buffer type
     using buffer_type = std::array<char, max_name_size>;
     /// buffer
@@ -147,7 +147,7 @@ namespace TORI_NS::detail {
     }
 
     /// Get index
-    constexpr size_t index() const
+    constexpr uint64_t index() const
     {
       return m_index;
     }
