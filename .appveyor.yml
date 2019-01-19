@@ -3,6 +3,7 @@ clone_folder: c:\projects\tori
 os:
   - Visual Studio 2017
   - Visual Studio 2017 Preview
+  - Visual Studio 2019 Preview
 
 platform: 
   - x64
