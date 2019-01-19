@@ -164,9 +164,8 @@ namespace TORI_NS::detail {
         // HeapObject. Type variables are also undecidable so we just convert
         // them to HeapObject.
         using To = assume_object_type_t<type_of_t<typename T::term>>;
-        if (!result.is_static())
-          result.head()->refcount.fetch_add(); // +1
-        return object_ptr<To>(static_cast<To*>(result.get()));
+        // cast to resutn type
+        return static_object_cast<To>(result);
       } else {
         // fallback to object_ptr<>
         return result;

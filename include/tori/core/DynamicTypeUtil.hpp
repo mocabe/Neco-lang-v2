@@ -78,8 +78,9 @@ namespace TORI_NS::detail {
     /// \brief get **RAW** type of the object
     /// \notes NO null check.
     /// \notes use type_of() to get actual type of terms.
+    template <class T>
     [[nodiscard]] TORI_INLINE object_ptr<const Type>
-      get_type(const object_ptr<>& obj)
+      get_type(const object_ptr<T>& obj)
     {
       return obj.info_table()->obj_type;
     };
@@ -205,8 +206,8 @@ namespace TORI_NS::detail {
     }
 
     /// has_type
-    template <class T>
-    [[nodiscard]] bool has_type(const object_ptr<>& obj)
+    template <class T, class U>
+    [[nodiscard]] bool has_type(const object_ptr<U>& obj)
     {
       if (same_type(get_type(obj), object_type<T>()))
         return true;
@@ -369,5 +370,24 @@ namespace TORI_NS::detail {
     get_if<VarType>(var.value())->id = uintptr_t(var.get());
     return object_ptr<const Type>(var);
   };
+
+  // ------------------------------------------
+  // static_object_cast
+
+  template <class T, class U>
+  [[nodiscard]] object_ptr<T> static_object_cast(const object_ptr<U>& obj)
+  {
+    if (likely(!obj.is_static()))
+      obj.head()->refcount.fetch_add();
+    return object_ptr<T>(static_cast<T*>(obj.get()));
+  }
+
+  template <class T, class U>
+  [[nodiscard]] object_ptr<T> static_object_cast(object_ptr<U>&& obj)
+  {
+    auto ret = object_ptr<T>(static_cast<T*>(obj.get()));
+    obj = nullptr;
+    return ret;
+  }
 
 } // namespace TORI_NS::detail

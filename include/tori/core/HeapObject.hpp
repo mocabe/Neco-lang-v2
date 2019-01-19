@@ -149,7 +149,9 @@ namespace TORI_NS::detail {
     template <class T = HeapObject>
     class object_ptr
     {
-      friend class object_ptr<HeapObject>;
+      // to access m_ptr
+      template <class U>
+      friend class object_ptr;
       // move cast function
       template <class U, class S>
       friend object_ptr<U> value_cast(object_ptr<S>&&);
@@ -187,38 +189,36 @@ namespace TORI_NS::detail {
 
       /// Copy constructor
       /// \effects increases reference count.
-      object_ptr(const object_ptr<value_type>& obj) noexcept
-        : m_ptr {obj.m_ptr}
+      object_ptr(const object_ptr<value_type>& other) noexcept
+        : m_ptr {other.get()}
       {
-        // when not static object
-        if (m_ptr && !is_static())
+        if (likely(m_ptr && !is_static()))
           head()->refcount.fetch_add();
       }
 
       /// Move constructor
-      object_ptr(object_ptr<value_type>&& obj) noexcept
-        : m_ptr {obj.m_ptr}
+      object_ptr(object_ptr<value_type>&& other) noexcept
+        : m_ptr {other.get()}
       {
-        obj.m_ptr = nullptr;
+        other.m_ptr = nullptr;
       }
 
       /// Copy convert constructor
       /// \effects increases reference count.
       template <class U>
-      object_ptr(const object_ptr<U>& obj) noexcept
-        : m_ptr {obj.get()}
+      object_ptr(const object_ptr<U>& other) noexcept
+        : m_ptr {other.get()}
       {
-        // when not static object
-        if (m_ptr && !is_static())
+        if (likely(m_ptr && !is_static()))
           head()->refcount.fetch_add();
       }
 
       /// Move convert constructor
       template <class U>
-      object_ptr(object_ptr<U>&& obj) noexcept
-        : m_ptr {obj.get()}
+      object_ptr(object_ptr<U>&& other) noexcept
+        : m_ptr {other.get()}
       {
-        obj.m_ptr = nullptr;
+        other.m_ptr = nullptr;
       }
 
       /// get address of object
@@ -373,7 +373,7 @@ namespace TORI_NS::detail {
     template <class T>
     object_ptr<T>::~object_ptr() noexcept
     {
-      if (m_ptr && !is_static()) {
+      if (likely(m_ptr && !is_static())) {
         // delete object if needed
         if (head()->refcount.fetch_sub() == 1) {
           std::atomic_thread_fence(std::memory_order_acquire);

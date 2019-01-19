@@ -184,7 +184,7 @@ namespace TORI_NS::detail {
     template <class T>
     [[nodiscard]] object_ptr<const Type> object_type()
     {
-      return object_type_impl<typename T::term>::type;
+      return object_type_impl<typename T::term>::get();
     }
 
   } // namespace interface
@@ -218,12 +218,12 @@ namespace TORI_NS::detail {
 
   template <class T, class... Ts>
   const Type arrow_type_impl<T, Ts...>::type {
-    static_construct_t {},
+    static_construct,
     ArrowType {object_type_impl<T>::type, &arrow_type_impl<Ts...>::type}};
 
   template <class T1, class T2>
   const Type arrow_type_impl<T1, T2>::type {
-    static_construct_t {},
+    static_construct,
     ArrowType {object_type_impl<T1>::type, object_type_impl<T2>::type}};
 
   // ------------------------------------------

@@ -65,16 +65,11 @@ namespace TORI_NS::detail {
     [[nodiscard]] object_ptr<T> value_cast(const object_ptr<U>& obj)
     {
       static_assert(!has_tm_closure_v<T>, "T is not value type");
-      assert(obj);
-      auto o = object_ptr<>(obj);
-      if (likely(has_type<T>(o))) {
-        // +1
-        if (o.get() && !o.is_static())
-          o.head()->refcount.fetch_add();
-        return static_cast<T*>(o.get());
-      } else {
-        throw bad_value_cast(object_type<T>(), get_type(o));
+
+      if (likely(obj && has_type<T>(obj))) {
+        return static_object_cast<T>(obj);
       }
+      throw bad_value_cast(obj ? get_type(obj) : nullptr, object_type<T>());
     }
 
     /// value_cast
@@ -85,16 +80,11 @@ namespace TORI_NS::detail {
     [[nodiscard]] object_ptr<T> value_cast(object_ptr<U>&& obj)
     {
       static_assert(!has_tm_closure_v<T>, "T is not value type");
-      assert(obj);
-      auto o = object_ptr<>(std::move(obj));
-      if (likely(has_type<T>(o))) {
-        // move
-        auto r = static_cast<T*>(o.m_ptr);
-        o.m_ptr = nullptr;
-        return r;
-      } else {
-        throw bad_value_cast(object_type<T>(), get_type(o));
+
+      if (likely(obj && has_type<T>(obj))) {
+        return static_object_cast<T>(std::move(obj));
       }
+      throw bad_value_cast(obj ? get_type(obj) : nullptr, object_type<T>());
     }
 
     /// value_cast_if
@@ -105,16 +95,11 @@ namespace TORI_NS::detail {
     [[nodiscard]] object_ptr<T> value_cast_if(const object_ptr<U>& obj) noexcept
     {
       static_assert(!has_tm_closure_v<T>, "T is not value type");
-      assert(obj);
-      auto o = object_ptr<>(obj);
-      if (has_type<T>(o)) {
-        // +1
-        if (o.get() && !obj.is_static())
-          o.head()->refcount.fetch_add();
-        return static_cast<T*>(o.get());
-      } else {
-        return nullptr;
+
+      if (likely(obj && has_type<T>(obj))) {
+        return static_object_cast<T>(obj);
       }
+      return nullptr;
     }
 
     /// value_cast_if
@@ -125,16 +110,11 @@ namespace TORI_NS::detail {
     [[nodiscard]] object_ptr<T> value_cast_if(object_ptr<U>&& obj) noexcept
     {
       static_assert(!has_tm_closure_v<T>, "T is not value type");
-      assert(obj);
-      auto o = object_ptr<>(std::move(obj));
-      if (has_type<T>(o)) {
-        // move
-        auto r = static_cast<T*>(o.m_ptr);
-        o.m_ptr = nullptr;
-        return r;
-      } else {
-        return nullptr;
+
+      if (likely(obj && has_type<T>(obj))) {
+        return static_object_cast<T>(std::move(obj));
       }
+      return nullptr;
     }
 
   } // namespace interface
