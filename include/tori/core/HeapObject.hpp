@@ -145,28 +145,15 @@ namespace TORI_NS::detail {
       }
     };
 
-  } // namespace interface
-
-  // for MSVC
-  template <class T, class U>
-  object_ptr<T> static_object_cast(object_ptr<U>&&);
-
-  namespace interface {
-
     /// Smart pointer to manage heap-allocated objects
     template <class T = HeapObject>
     class object_ptr
     {
-      // to access m_ptr
-      template <class U>
-      friend class object_ptr;
-      // move cast function
-      template <class U, class S>
-      friend object_ptr<U> detail::static_object_cast(object_ptr<S>&&);
-
     public:
       // value type
-      using value_type = T;
+      using element_type = T;
+      // pointer
+      using pointer = T*;
 
       /// Constructor
       constexpr object_ptr() noexcept
@@ -181,14 +168,14 @@ namespace TORI_NS::detail {
       }
 
       /// Pointer constructor
-      constexpr object_ptr(value_type* p) noexcept
+      constexpr object_ptr(pointer p) noexcept
         : m_ptr {p}
       {
       }
 
       /// Copy constructor
       /// \effects increases reference count.
-      object_ptr(const object_ptr<value_type>& other) noexcept
+      object_ptr(const object_ptr<element_type>& other) noexcept
         : m_ptr {other.get()}
       {
         if (likely(m_ptr && !is_static()))
@@ -196,10 +183,9 @@ namespace TORI_NS::detail {
       }
 
       /// Move constructor
-      object_ptr(object_ptr<value_type>&& other) noexcept
-        : m_ptr {other.get()}
+      object_ptr(object_ptr<element_type>&& other) noexcept
+        : m_ptr {other.release()}
       {
-        other.m_ptr = nullptr;
       }
 
       /// Copy convert constructor
@@ -215,13 +201,12 @@ namespace TORI_NS::detail {
       /// Move convert constructor
       template <class U>
       object_ptr(object_ptr<U>&& other) noexcept
-        : m_ptr {other.get()}
+        : m_ptr {other.release()}
       {
-        other.m_ptr = nullptr;
       }
 
       /// get address of object
-      value_type* get() const noexcept
+      pointer get() const noexcept
       {
         return m_ptr;
       }
@@ -229,7 +214,7 @@ namespace TORI_NS::detail {
       /// get address of header
       auto* head() const noexcept
       {
-        if constexpr (std::is_const_v<value_type>)
+        if constexpr (std::is_const_v<element_type>)
           return static_cast<const HeapObject*>(m_ptr);
         else
           return static_cast<HeapObject*>(m_ptr);
@@ -273,15 +258,24 @@ namespace TORI_NS::detail {
         return use_count() == 0;
       }
 
+      /// release pointer
+      /// \effects get() return nullptr after call
+      pointer release() noexcept
+      {
+        auto tmp = m_ptr;
+        m_ptr = nullptr;
+        return tmp;
+      }
+
       /// swap data
-      void swap(object_ptr<value_type>& obj) noexcept
+      void swap(object_ptr<element_type>& obj) noexcept
       {
         std::swap(obj.m_ptr, m_ptr);
       }
 
       /// operator=
-      object_ptr<value_type>&
-        operator=(const object_ptr<value_type>& obj) noexcept
+      object_ptr<element_type>&
+        operator=(const object_ptr<element_type>& obj) noexcept
       {
         object_ptr(obj).swap(*this);
         return *this;
@@ -289,14 +283,15 @@ namespace TORI_NS::detail {
 
       /// operator=
       template <class U>
-      object_ptr<value_type>& operator=(const object_ptr<U>& obj) noexcept
+      object_ptr<element_type>& operator=(const object_ptr<U>& obj) noexcept
       {
         object_ptr(obj).swap(*this);
         return *this;
       }
 
       /// operator=
-      object_ptr<value_type>& operator=(object_ptr<value_type>&& obj) noexcept
+      object_ptr<element_type>&
+        operator=(object_ptr<element_type>&& obj) noexcept
       {
         object_ptr(std::move(obj)).swap(*this);
         return *this;
@@ -304,23 +299,12 @@ namespace TORI_NS::detail {
 
       /// operator=
       template <class U>
-      object_ptr<value_type>& operator=(object_ptr<U>&& obj) noexcept
+      object_ptr<element_type>& operator=(object_ptr<U>&& obj) noexcept
       {
         object_ptr(std::move(obj)).swap(*this);
         return *this;
       }
 
-      // clone
-      object_ptr<value_type> clone() const;
-
-      // destroy
-      ~object_ptr() noexcept;
-
-    private:
-      /// pointer to object
-      value_type* m_ptr;
-
-    public:
       /// operator*
       auto& operator*() const noexcept
       {
@@ -332,6 +316,16 @@ namespace TORI_NS::detail {
       {
         return value();
       }
+
+      // clone
+      object_ptr<element_type> clone() const;
+
+      // destroy
+      ~object_ptr() noexcept;
+
+    private:
+      /// pointer to object
+      pointer m_ptr;
     };
 
     /// Object info table
@@ -360,7 +354,7 @@ namespace TORI_NS::detail {
     object_ptr<T> object_ptr<T>::clone() const
     {
       assert(m_ptr);
-      auto r = static_cast<value_type*>(info_table()->clone(m_ptr));
+      auto r = static_cast<pointer>(info_table()->clone(m_ptr));
       if (unlikely(!r))
         throw std::bad_alloc();
       return r;

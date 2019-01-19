@@ -379,15 +379,13 @@ namespace TORI_NS::detail {
   {
     if (likely(!obj.is_static()))
       obj.head()->refcount.fetch_add();
-    return object_ptr<T>(static_cast<T*>(obj.get()));
+    return static_cast<T*>(obj.get());
   }
 
   template <class T, class U>
   [[nodiscard]] object_ptr<T> static_object_cast(object_ptr<U>&& obj)
   {
-    auto ret = object_ptr<T>(static_cast<T*>(obj.get()));
-    obj.m_ptr = nullptr;
-    return ret;
+    return static_cast<T*>(obj.release());
   }
 
 } // namespace TORI_NS::detail
