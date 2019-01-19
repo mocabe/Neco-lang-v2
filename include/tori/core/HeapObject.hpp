@@ -154,6 +154,9 @@ namespace TORI_NS::detail {
       friend class object_ptr;
       // move cast function
       template <class U, class S>
+      friend object_ptr<U> static_object_cast(object_ptr<S>&&);
+      // move cast function
+      template <class U, class S>
       friend object_ptr<U> value_cast(object_ptr<S>&&);
       // move cast function
       template <class U, class S>

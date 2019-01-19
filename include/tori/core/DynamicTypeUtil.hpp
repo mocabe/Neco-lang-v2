@@ -386,7 +386,7 @@ namespace TORI_NS::detail {
   [[nodiscard]] object_ptr<T> static_object_cast(object_ptr<U>&& obj)
   {
     auto ret = object_ptr<T>(static_cast<T*>(obj.get()));
-    obj = nullptr;
+    obj.m_ptr = nullptr;
     return ret;
   }
 
