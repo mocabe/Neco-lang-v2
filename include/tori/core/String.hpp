@@ -58,6 +58,5 @@ namespace TORI_NS::detail {
 
 } // namespace TORI_NS::detail
 
-namespace TORI_NS {
-  TORI_DECL_TYPE(String)
-} // namespace TORI_NS
+// String
+TORI_DECL_TYPE(String)

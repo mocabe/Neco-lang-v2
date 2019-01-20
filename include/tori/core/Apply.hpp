@@ -139,6 +139,5 @@ namespace TORI_NS::detail {
 
 } // namespace TORI_NS::detail
 
-namespace TORI_NS {
-  TORI_DECL_TYPE(ApplyR)
-} // namespace TORI_NS
+// ApplyR
+TORI_DECL_TYPE(ApplyR)

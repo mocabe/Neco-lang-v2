@@ -23,6 +23,5 @@ namespace TORI_NS::detail {
 
 } // namespace TORI_NS::detail
 
-namespace TORI_NS {
-  TORI_DECL_TYPE(Unit)
-} // namespace TORI_NS
+// Unit
+TORI_DECL_TYPE(Unit)

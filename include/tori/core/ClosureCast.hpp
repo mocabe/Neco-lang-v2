@@ -122,6 +122,5 @@ namespace TORI_NS::detail {
 
 } // namespace TORI_NS::detail
 
-namespace TORI_NS {
-  TORI_DECL_TYPE(BadClosureCast)
-} // namespace TORI_NS
+// BadClosureCast
+TORI_DECL_TYPE(BadClosureCast)

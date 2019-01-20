@@ -190,8 +190,9 @@ namespace TORI_NS::detail {
 
 } // namespace TORI_NS::detail
 
-namespace TORI_NS {
-  TORI_DECL_TYPE(Exception)
-  TORI_DECL_TYPE(TypeError)
-  TORI_DECL_TYPE(EvalError)
-} // namespace TORI_NS
+// Exception
+TORI_DECL_TYPE(Exception)
+// TypeError
+TORI_DECL_TYPE(TypeError)
+// EvalError
+TORI_DECL_TYPE(EvalError)

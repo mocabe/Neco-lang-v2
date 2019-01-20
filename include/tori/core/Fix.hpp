@@ -26,6 +26,5 @@ namespace TORI_NS::detail {
 
 } // namespace TORI_NS::detail
 
-namespace TORI_NS {
-  TORI_DECL_TYPE(Fix)
-}
+// Fix
+TORI_DECL_TYPE(Fix)
