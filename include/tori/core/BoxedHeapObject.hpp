@@ -9,7 +9,6 @@
 #include <utility>
 #include <cassert>
 #include <type_traits>
-#include <new>
 
 /// \file BoxedHeapObject.hpp
 

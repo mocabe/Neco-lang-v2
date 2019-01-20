@@ -67,9 +67,9 @@ namespace TORI_NS::detail {
 #endif
 
 #if defined(__GNUC__)
-#  define unreachable() __builtin_unreachable()
+#  define unreachable() assert(false);__builtin_unreachable()
 #else
-#  define unreachable() __assume(0)
+#  define unreachable() assert(false);__assume(0)
 #endif
 
 // inline

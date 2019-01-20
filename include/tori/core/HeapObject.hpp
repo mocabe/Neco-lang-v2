@@ -10,6 +10,7 @@
 #include <atomic>
 #include <cassert>
 #include <stdexcept>
+#include <new>
 
 // config
 #include "../config/config.hpp"
@@ -93,9 +94,9 @@ namespace TORI_NS::detail {
       }
 
     private:
-        std::atomic<T> atomic;
+      std::atomic<T> atomic;
       static_assert(sizeof(T) == sizeof(std::atomic<T>));
-      };
+    };
 
     // heap-allocated object of type T
     template <class T>

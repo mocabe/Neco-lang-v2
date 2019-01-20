@@ -147,7 +147,6 @@ namespace TORI_NS::detail {
       return ret;
     }
 
-    assert(false);
     unreachable();
   };
 
@@ -191,7 +190,6 @@ namespace TORI_NS::detail {
         return false;
     }
 
-    assert(false);
     unreachable();
   };
 
@@ -243,7 +241,6 @@ namespace TORI_NS::detail {
                                  subst_type_impl(ta, arrow->returns)});
     }
 
-    assert(false);
     unreachable();
   };
 
@@ -306,7 +303,6 @@ namespace TORI_NS::detail {
     if (auto arrow = get_if<ArrowType>(t.value()))
       return occurs(x, arrow->captured) || occurs(x, arrow->returns);
 
-    assert(false);
     unreachable();
   };
 
