@@ -317,9 +317,6 @@ namespace TORI_NS::detail {
         return value();
       }
 
-      // clone
-      object_ptr<element_type> clone() const;
-
       // destroy
       ~object_ptr() noexcept;
 
@@ -343,22 +340,6 @@ namespace TORI_NS::detail {
       HeapObject* (*clone)(const HeapObject*);
     };
 
-    /// Clone
-    /// \effects Call copy constructor of the object from vtable.
-    /// \returns `object_ptr<T>` pointing new object.
-    /// \throws `std::bad_alloc` when `clone` returned nullptr.
-    /// \throws `std::runtime_error` when object is null.
-    /// \notes Reference count of new object will be set to 1.
-    /// \requires not null.
-    template <class T>
-    object_ptr<T> object_ptr<T>::clone() const
-    {
-      assert(m_ptr);
-      auto r = static_cast<pointer>(info_table()->clone(m_ptr));
-      if (unlikely(!r))
-        throw std::bad_alloc();
-      return r;
-    }
 
     /// Destructor
     /// \effects Destroy object with vtable function when reference count become
@@ -415,6 +396,23 @@ namespace TORI_NS::detail {
     bool operator!=(const object_ptr<T>& p, nullptr_t) noexcept
     {
       return static_cast<bool>(p);
+    }
+
+    /// Clone
+    /// \effects Call copy constructor of the object from vtable.
+    /// \returns `object_ptr<T>` pointing new object.
+    /// \throws `std::bad_alloc` when `clone` returned nullptr.
+    /// \throws `std::runtime_error` when object is null.
+    /// \notes Reference count of new object will be set to 1.
+    /// \requires not null.
+    template <class T>
+    object_ptr<T> clone(const object_ptr<T>& obj)
+    {
+      assert(obj);
+      auto r = static_cast<T*>(obj.info_table()->clone(obj.get()));
+      if (unlikely(!r))
+        throw std::bad_alloc();
+      return r;
     }
 
     /// make object

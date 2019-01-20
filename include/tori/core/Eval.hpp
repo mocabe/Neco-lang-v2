@@ -102,7 +102,7 @@ namespace TORI_NS::detail {
             "eval_error: Expected appliable closure after Fix", obj);
         }
         // process
-        auto pap = f.clone();
+        auto pap = clone(f);
         auto cc = static_cast<Closure<>*>(pap.get());
         auto arity = --cc->arity();
         cc->arg(arity) = obj;
@@ -125,7 +125,7 @@ namespace TORI_NS::detail {
           "eval_error: Too many arguments", obj);
       }
       // create pap
-      auto pap = app.clone();
+      auto pap = clone(app);
       // process
       auto cc = static_cast<Closure<>*>(pap.get());
       auto arity = --cc->arity();
