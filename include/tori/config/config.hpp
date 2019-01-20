@@ -72,17 +72,6 @@ namespace TORI_NS::detail {
 #  define unreachable() assert(false);__assume(0)
 #endif
 
-// inline
-#define TORI_INLINE inline
-
-  // for void_t
-  template <class...>
-  struct make_void {
-    using type = void;
-  };
-  template <class... Ts>
-  using void_t = typename make_void<Ts...>::type;
-
   // for false_v
   template <class...>
   struct make_false {

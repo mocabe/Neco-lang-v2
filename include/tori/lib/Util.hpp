@@ -13,7 +13,7 @@
 namespace TORI_NS::detail {
 
   /// get string represents type
-  [[nodiscard]] TORI_INLINE std::string to_string_impl(
+  [[nodiscard]] inline std::string to_string_impl(
     const object_ptr<const Type>& type,
     std::vector<object_ptr<const Type>>& stack)
   {
@@ -38,7 +38,7 @@ namespace TORI_NS::detail {
   namespace interface {
 
     /// convert type to string
-    [[nodiscard]] TORI_INLINE std::string
+    [[nodiscard]] inline std::string
       to_string(const object_ptr<const Type>& type)
     {
       std::vector<object_ptr<const Type>> stack;

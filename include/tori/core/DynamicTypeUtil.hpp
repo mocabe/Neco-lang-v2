@@ -79,15 +79,14 @@ namespace TORI_NS::detail {
     /// \notes NO null check.
     /// \notes use type_of() to get actual type of terms.
     template <class T>
-    [[nodiscard]] TORI_INLINE object_ptr<const Type>
+    [[nodiscard]] inline object_ptr<const Type>
       get_type(const object_ptr<T>& obj)
     {
       return obj.info_table()->obj_type;
     };
 
     /// is_value_type
-    [[nodiscard]] TORI_INLINE bool
-      is_value_type(const object_ptr<const Type>& tp)
+    [[nodiscard]] inline bool is_value_type(const object_ptr<const Type>& tp)
     {
       if (get_if<ValueType>(tp.value()))
         return true;
@@ -96,8 +95,7 @@ namespace TORI_NS::detail {
     };
 
     /// is_arrow_type
-    [[nodiscard]] TORI_INLINE bool
-      is_arrow_type(const object_ptr<const Type>& tp)
+    [[nodiscard]] inline bool is_arrow_type(const object_ptr<const Type>& tp)
     {
       if (get_if<ArrowType>(tp.value()))
         return true;
@@ -106,7 +104,7 @@ namespace TORI_NS::detail {
     };
 
     /// is_vartype
-    [[nodiscard]] TORI_INLINE bool is_vartype(const object_ptr<const Type>& tp)
+    [[nodiscard]] inline bool is_vartype(const object_ptr<const Type>& tp)
     {
       if (get_if<VarType>(tp.value()))
         return true;
@@ -115,26 +113,26 @@ namespace TORI_NS::detail {
     };
 
     /// has_value_type
-    [[nodiscard]] TORI_INLINE bool has_value_type(const object_ptr<>& obj)
+    [[nodiscard]] inline bool has_value_type(const object_ptr<>& obj)
     {
       return is_value_type(get_type(obj));
     };
 
     /// has_arrow_type
-    [[nodiscard]] TORI_INLINE bool has_arrow_type(const object_ptr<>& obj)
+    [[nodiscard]] inline bool has_arrow_type(const object_ptr<>& obj)
     {
       return is_arrow_type(get_type(obj));
     };
 
     /// has_vartype
-    [[nodiscard]] TORI_INLINE bool has_vartype(const object_ptr<>& obj)
+    [[nodiscard]] inline bool has_vartype(const object_ptr<>& obj)
     {
       return is_vartype(get_type(obj));
     };
 
   } // namespace interface
 
-  [[nodiscard]] TORI_INLINE object_ptr<const Type>
+  [[nodiscard]] inline object_ptr<const Type>
     copy_type_impl(const object_ptr<const Type>& ptp)
   {
     if (get_if<ValueType>(ptp.value()))
@@ -153,14 +151,14 @@ namespace TORI_NS::detail {
   namespace interface {
 
     /// Deep copy type object
-    [[nodiscard]] TORI_INLINE object_ptr<const Type>
+    [[nodiscard]] inline object_ptr<const Type>
       copy_type(const object_ptr<const Type>& tp)
     {
       return copy_type_impl(tp);
     };
   } // namespace interface
 
-  [[nodiscard]] TORI_INLINE bool same_type_impl(
+  [[nodiscard]] inline bool same_type_impl(
     const object_ptr<const Type>& lhs,
     const object_ptr<const Type>& rhs)
   {
@@ -196,7 +194,7 @@ namespace TORI_NS::detail {
   namespace interface {
 
     /// check type equality
-    [[nodiscard]] TORI_INLINE bool same_type(
+    [[nodiscard]] inline bool same_type(
       const object_ptr<const Type>& lhs,
       const object_ptr<const Type>& rhs)
     {
@@ -219,7 +217,7 @@ namespace TORI_NS::detail {
     object_ptr<const Type> to;
   };
 
-  [[nodiscard]] TORI_INLINE object_ptr<const Type>
+  [[nodiscard]] inline object_ptr<const Type>
     subst_type_impl(const TyArrow& ta, const object_ptr<const Type>& in)
   {
     auto& from = ta.from;
@@ -245,13 +243,13 @@ namespace TORI_NS::detail {
   };
 
   /// emulate type-substitution
-  [[nodiscard]] TORI_INLINE object_ptr<const Type>
+  [[nodiscard]] inline object_ptr<const Type>
     subst_type(const TyArrow& ta, const object_ptr<const Type>& in)
   {
     return subst_type_impl(ta, in);
   };
 
-  [[nodiscard]] TORI_INLINE object_ptr<const Type> subst_type_all(
+  [[nodiscard]] inline object_ptr<const Type> subst_type_all(
     const std::vector<TyArrow>& tas,
     const object_ptr<const Type>& ty)
   {
@@ -273,14 +271,14 @@ namespace TORI_NS::detail {
   };
 
   /// subst_constr
-  [[nodiscard]] TORI_INLINE Constr
+  [[nodiscard]] inline Constr
     subst_constr(const TyArrow& ta, const Constr& constr)
   {
     return {subst_type(ta, constr.t1), subst_type(ta, constr.t2)};
   };
 
   /// subst_constr_all
-  [[nodiscard]] TORI_INLINE std::vector<Constr>
+  [[nodiscard]] inline std::vector<Constr>
     subst_constr_all(const TyArrow& ta, const std::vector<Constr>& cs)
   {
     auto ret = std::vector<Constr> {};
@@ -293,7 +291,7 @@ namespace TORI_NS::detail {
   // Occurs
 
   /// occurs
-  [[nodiscard]] TORI_INLINE bool
+  [[nodiscard]] inline bool
     occurs(const object_ptr<const Type>& x, const object_ptr<const Type>& t)
   {
     if (get_if<ValueType>(t.value()))
@@ -306,7 +304,7 @@ namespace TORI_NS::detail {
     unreachable();
   };
 
-  TORI_INLINE void unify_func_impl(
+  inline void unify_func_impl(
     std::vector<Constr>& cs,
     std::vector<TyArrow>& ta,
     const object_ptr<>& src)
@@ -348,7 +346,7 @@ namespace TORI_NS::detail {
   /// unify
   /// \param cs Type constraints
   /// \param src Source node (for error handling)
-  [[nodiscard]] TORI_INLINE std::vector<TyArrow>
+  [[nodiscard]] inline std::vector<TyArrow>
     unify(const std::vector<Constr>& cs, const object_ptr<>& src)
   {
     auto _cs = cs;
@@ -360,7 +358,7 @@ namespace TORI_NS::detail {
   // ------------------------------------------
   // Recon
 
-  [[nodiscard]] TORI_INLINE object_ptr<const Type> genvar()
+  [[nodiscard]] inline object_ptr<const Type> genvar()
   {
     auto var = make_object<Type>(VarType {});
     get_if<VarType>(var.value())->id = uintptr_t(var.get());

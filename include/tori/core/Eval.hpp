@@ -49,8 +49,7 @@ namespace TORI_NS::detail {
     } // namespace eval_error
 
     /// copy apply graph
-    [[nodiscard]] TORI_INLINE object_ptr<>
-      copy_apply_graph(const object_ptr<>& obj)
+    [[nodiscard]] inline object_ptr<> copy_apply_graph(const object_ptr<>& obj)
     {
       if (auto apply = value_cast_if<ApplyR>(obj)) {
         // return cached value
@@ -67,7 +66,7 @@ namespace TORI_NS::detail {
   } // namespace interface
 
   /// eval implementation
-  [[nodiscard]] TORI_INLINE object_ptr<> eval_impl(const object_ptr<>& obj)
+  [[nodiscard]] inline object_ptr<> eval_impl(const object_ptr<>& obj)
   {
     // apply
     if (auto apply = value_cast_if<ApplyR>(obj)) {

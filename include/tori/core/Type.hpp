@@ -12,7 +12,7 @@
 
 namespace TORI_NS::detail {
 
-  TORI_INLINE void vars_impl(
+  inline void vars_impl(
     const object_ptr<const Type>& tp,
     std::vector<object_ptr<const Type>>& vars)
   {
@@ -38,7 +38,7 @@ namespace TORI_NS::detail {
   };
 
   // get list of type variables
-  [[nodiscard]] TORI_INLINE std::vector<object_ptr<const Type>>
+  [[nodiscard]] inline std::vector<object_ptr<const Type>>
     vars(const object_ptr<const Type>& tp)
   {
     auto vars = std::vector<object_ptr<const Type>> {};
@@ -47,7 +47,7 @@ namespace TORI_NS::detail {
   };
 
   /// create fresh polymorphic closure type
-  [[nodiscard]] TORI_INLINE object_ptr<const Type>
+  [[nodiscard]] inline object_ptr<const Type>
     genpoly(const object_ptr<const Type>& tp)
   {
     if (!is_arrow_type(tp))
@@ -62,7 +62,7 @@ namespace TORI_NS::detail {
   };
 
   // typing
-  [[nodiscard]] TORI_INLINE const object_ptr<const Type>
+  [[nodiscard]] inline const object_ptr<const Type>
     type_of_func_impl(const object_ptr<>& obj)
   {
     // Apply
@@ -99,8 +99,7 @@ namespace TORI_NS::detail {
   namespace interface {
 
     // type_of
-    [[nodiscard]] TORI_INLINE object_ptr<const Type>
-      type_of(const object_ptr<>& obj)
+    [[nodiscard]] inline object_ptr<const Type> type_of(const object_ptr<>& obj)
     {
       return type_of_func_impl(obj);
     }

@@ -263,7 +263,7 @@ namespace TORI_NS::detail {
   };
 
   template <class T>
-  struct has_term<T, void_t<typename T::term>> : std::true_type
+  struct has_term<T, std::void_t<typename T::term>> : std::true_type
   {
   };
 
