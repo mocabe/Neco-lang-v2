@@ -35,12 +35,12 @@ namespace TORI_NS::detail {
   ///
   /// vtable function to delete heap allocated object.
   template <class T>
-  void vtbl_destroy_func(HeapObject *obj) noexcept
+  void vtbl_destroy_func(const HeapObject *obj) noexcept
   {
     static_assert(
       std::is_nothrow_destructible_v<T>,
       "Boxed object should have nothrow destructor");
-    auto *p = static_cast<T *>(obj);
+    auto *p = static_cast<const T *>(obj);
     delete p;
   }
 

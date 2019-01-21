@@ -336,7 +336,7 @@ namespace TORI_NS::detail {
       /// size of additional storage
       uint64_t obj_ext_bytes;
       /// vtable of delete function
-      void (*destroy)(HeapObject*);
+      void (*destroy)(const HeapObject*);
       /// vtable of clone function
       HeapObject* (*clone)(const HeapObject*);
     };
@@ -352,7 +352,7 @@ namespace TORI_NS::detail {
         // delete object if needed
         if (head()->refcount.fetch_sub() == 1) {
           std::atomic_thread_fence(std::memory_order_acquire);
-          info_table()->destroy(const_cast<std::remove_cv_t<T>*>(m_ptr));
+          info_table()->destroy(m_ptr);
         }
       }
     }
