@@ -245,14 +245,11 @@ namespace TORI_NS::detail {
     (void)enable_assert;
 
     constexpr auto t = unify_impl(cs);
-    if constexpr (is_error_type(t)) {
-      if constexpr (enable_assert)
-        return unify_assert(t);
-      else
-        return t;
-    } else {
+
+    if constexpr (enable_assert && is_error_type(t))
+      return unify_assert(t);
+    else
       return t;
-    }
   }
 
   // ------------------------------------------

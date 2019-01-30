@@ -166,7 +166,7 @@ namespace TORI_NS::detail {
         // we convert it to closure<...> which is essentially equal to to
         // HeapObject. Type variables are also undecidable so we just convert
         // them to HeapObject.
-        using To = typename decltype(guess_object_type(type_of(T::term)))::type;
+        using To = typename decltype(guess_object_type(type))::type;
         // cast to resutn type
         return static_object_cast<To>(result);
       } else {
