@@ -1,4 +1,5 @@
-#include <tori/core/static_typing.hpp>
+#include <tori/core.hpp>
+#include <tori/lib.hpp>
 
 using namespace tori::detail;
 
@@ -265,7 +266,6 @@ void test_type_of()
     static_assert(type_c<arrow<value<int>, value<int>>> == type_of(tm));
   }
   {
-    class Fix;
     // fix ((int -> bool) -> (int -> bool)) = int -> bool
     constexpr auto ff = type_c<tm_apply<
       tm_fix<Fix>,
@@ -280,7 +280,6 @@ void test_type_of()
     static_assert(type_of(type_c<tm_var<class X>>) == type_c<var<class X>>);
   }
   {
-    class Int;
     // (Int->X) X = X
     constexpr auto term = type_c<
       tm_apply<tm_closure<tm_value<Int>, tm_var<class X>>, tm_value<Int>>>;
@@ -288,16 +287,12 @@ void test_type_of()
     static_assert(type_c<var<taggen<0>>> == type_of(term));
   }
   {
-    class Double;
-    class Int;
     // (Int -> Double) Int = Double
     constexpr auto term = type_c<
       tm_apply<tm_closure<tm_value<Int>, tm_value<Double>>, tm_value<Int>>>;
     static_assert(type_c<value<Double>> == type_of(term));
   }
   {
-    class Double;
-    class Int;
     // (X -> Y -> Int) Double -> Z(placeholder)
     constexpr auto term = type_c<tm_apply<
       tm_apply<tm_closure<tm_var<class XX>, tm_var<class YY>>, tm_value<Int>>,
@@ -306,27 +301,24 @@ void test_type_of()
   }
 }
 
-/*
 void test_genpoly()
 {
   {
     // Double -> Var<X> -> Var<X>
-    constexpr auto term = get_value_object_term(
-      type_c<tm_closure<
-        tm_closure<tm_value<double>, tm_varvalue<class X>>,
-        tm_varvalue<class X>>>>);
+    constexpr auto term =
+      remove_varvalue(type_c<tm_closure<
+                        tm_closure<tm_value<double>, tm_varvalue<class X>>,
+                        tm_varvalue<class X>>>);
 
     // Double -> Var[0] -> Var[0]
     constexpr auto gterm = type_c<tm_closure<
       tm_closure<tm_value<double>, tm_var<taggen<0>>>,
       tm_var<taggen<0>>>>;
 
-    static_assert(genpoly(term, type_c<var<taggen<0>>>) == gterm);
+    static_assert(genpoly(term, gen_c<0>).first() == gterm);
   }
 }
-*/
 
-/*
 void test_assume_object_type()
 {
   {
@@ -336,28 +328,30 @@ void test_assume_object_type()
   {
     // var<class T> -> HeapObject
     static_assert(
-      std::is_same_v<assume_object_type_t<var<class Tag>>, HeapObject>);
+      guess_object_type(type_c<var<class Tag>>) == type_c<HeapObject>);
   }
   {
     // arrow<S, T> -> closure<S, T>
-    static_assert(std::is_same_v<
-                  assume_object_type_t<arrow<value<Double>, value<Int>>>,
-                  closure<Double, Int>>);
+    static_assert(
+      guess_object_type(type_c<arrow<value<Double>, value<Int>>>) ==
+      type_c<closure<Double, Int>>);
+
     // arrow<S, arrow<T, U>> -> closure<S, T, U>
-    static_assert(std::is_same_v<
-                  assume_object_type_t<
-                    arrow<value<Int>, arrow<value<Double>, value<Int>>>>,
-                  closure<Int, Double, Int>>);
+    static_assert(
+      guess_object_type(
+        type_c<arrow<value<Int>, arrow<value<Double>, value<Int>>>>) ==
+      type_c<closure<Int, Double, Int>>);
+
     // arrow<arrow<Double, Int>, arrow<Double, Int>> -> closure<closure<Double,
     // Int>, Double, Int>
-    static_assert(std::is_same_v<
-                  assume_object_type_t<arrow<
-                    arrow<value<Double>, value<Int>>,
-                    arrow<value<Double>, value<Int>>>>,
-                  closure<closure<Double, Int>, Double, Int>>);
+    static_assert(
+      guess_object_type(type_c<arrow<
+                          arrow<value<Double>, value<Int>>,
+                          arrow<value<Double>, value<Int>>>>) ==
+      type_c<closure<closure<Double, Int>, Double, Int>>);
   }
 }
-*/
+
 int main()
 {
 }
