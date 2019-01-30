@@ -5,8 +5,9 @@
 
 /// \file Box
 
-#include "HeapObject.hpp"
-#include <utility>
+#include "object_ptr.hpp"
+#include "type_value.hpp" // clang requires definition of TypeValue to compile.
+
 #include <cassert>
 #include <type_traits>
 
@@ -62,22 +63,14 @@ namespace TORI_NS::detail {
     }
   }
 
-  template <class T, bool B = has_term_v<T>>
-  struct value_object_term
-  {
-    using type = tm_value<BoxedHeapObject<T>>;
-  };
-
   template <class T>
-  struct value_object_term<T, true>
+  constexpr auto get_value_object_term()
   {
-    using type = typename T::term;
-  };
-
-  /// \brief Get term of BoxedHeapObject.
-  /// You can customize term of HeapObject from type T
-  template <class T>
-  using value_object_term_t = typename value_object_term<T>::type;
+    if constexpr (has_term<T>())
+      return T::term;
+    else
+      return type_c<tm_value<BoxedHeapObject<T>>>;
+  }
 
   namespace interface {
 
@@ -90,7 +83,7 @@ namespace TORI_NS::detail {
       /// value type
       using value_type = T;
       /// term
-      using term = value_object_term_t<T>;
+      static constexpr auto term = get_value_object_term<T>();
 
       /// info table initializer
       struct info_table_initializer

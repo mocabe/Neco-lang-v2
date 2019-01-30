@@ -5,7 +5,8 @@
 
 /// \file String
 
-#include "DynamicTypeUtil.hpp"
+#include "type_gen.hpp"
+
 #include <string>
 #include <cstring>
 #include <string>

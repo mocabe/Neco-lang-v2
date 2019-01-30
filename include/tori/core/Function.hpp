@@ -5,13 +5,14 @@
 
 /// \file Function
 
-#include "DynamicTypeUtil.hpp"
-#include "ValueCast.hpp"
-#include "ClosureCast.hpp"
-#include "Fix.hpp"
-#include "Exception.hpp"
-#include "Apply.hpp"
-#include "String.hpp"
+#include "fix.hpp"
+#include "exception.hpp"
+#include "apply.hpp"
+#include "string.hpp"
+#include "static_typing.hpp"
+#include "dynamic_typing.hpp"
+#include "value_cast.hpp"
+#include "closure_cast.hpp"
 
 #include <type_traits>
 
@@ -149,96 +150,56 @@ namespace TORI_NS::detail {
     }
   };
 
-  // ------------------------------------------
-  // remove_last
-
-  template <class T>
-  struct remove_last
-  {
-  };
-
-  template <class T>
-  struct remove_last<std::tuple<T>>
-  {
-    using type = std::tuple<>;
-  };
-
-  template <class T, class... Ts>
-  struct remove_last<std::tuple<T, Ts...>>
-  {
-    using type = concat_tuple_t<
-      std::tuple<T>,
-      typename remove_last<std::tuple<Ts...>>::type>;
-  };
-
-  /// remove last element from tuple
-  template <class T>
-  using remove_last_t = typename remove_last<T>::type;
 
   // ------------------------------------------
   // remove varvalue
 
-  template <class T, class Target>
-  struct remove_varvalue_impl
+  template <class Term, class Target>
+  constexpr auto
+    remove_varvalue_impl(meta_type<Term> term, meta_type<Target> target)
   {
-    using type = Target;
-  };
+    if constexpr (is_tm_varvalue(term)) {
+      return subst_term(term, make_tm_var(term.tag()), target);
+    } else if constexpr (is_tm_closure(term)) {
+      if constexpr (term.size() == 1) {
+        return remove_varvalue_impl(head(term), target);
+      } else {
+        return remove_varvalue_impl(
+          tail(term), remove_varvalue_impl(head(term), target));
+      }
+    } else if constexpr (is_tm_apply(term)) {
+      return remove_varvalue_impl(
+        term.t2(), remove_varvalue_impl(term.t1(), target));
+    } else
+      return target;
+  }
 
-  template <class Tag, class Target>
-  struct remove_varvalue_impl<tm_varvalue<Tag>, Target>
-  {
-    using _var = tm_var<Tag>;
-    using type = subst_term_t<tm_varvalue<Tag>, _var, Target>;
-  };
-
-  template <class T, class... Ts, class Target>
-  struct remove_varvalue_impl<tm_closure<T, Ts...>, Target>
-  {
-    using t = remove_varvalue_impl<T, Target>;
-    using type =
-      typename remove_varvalue_impl<tm_closure<Ts...>, typename t::type>::type;
-  };
-
-  template <class T, class Target>
-  struct remove_varvalue_impl<tm_closure<T>, Target>
-  {
-    using type = typename remove_varvalue_impl<T, Target>::type; //
-  };
-
-  template <class T1, class T2, class Target>
-  struct remove_varvalue_impl<tm_apply<T1, T2>, Target>
-  {
-    using t1 = remove_varvalue_impl<T1, Target>;
-    using t2 = remove_varvalue_impl<T2, typename t1::type>;
-    using type = typename t2::type;
-  };
-
-  /// replace tm_varvalue<Tag> to tm_var<Tag>
   template <class Term>
-  using remove_varvalue_t = typename remove_varvalue_impl<Term, Term>::type;
+  constexpr auto remove_varvalue(meta_type<Term> term)
+  {
+    return remove_varvalue_impl(term, term);
+  }
 
   // ------------------------------------------
   // return type checking
 
-  template <class T1, class T2, bool B = std::is_same_v<T1, T2>>
-  struct check_return_type
-  {
-  };
-
   template <class T1, class T2>
-  struct check_return_type<T1, T2, false>
+  constexpr auto check_return_type(meta_type<T1> t1, meta_type<T2> t2)
   {
-    using t1 = typename T1::_expected;
-    using t2 = typename T2::_provided;
-    static_assert(false_v<T1>, "return type does not match");
-  };
+    if constexpr (t1 != t2) {
+      static_assert(false_v<T1>, "return type does not match.");
+      using _t1 = typename T1::_expected;
+      using _t2 = typename T2::_provided;
+      static_assert(false_v<_t1, _t2>, "compile-time type check failed.");
+    }
+  }
 
   /// Return type checker
   template <class Term>
   class return_type_checker
   {
   public:
-    using return_type = type_of_t<Term>;
+    static constexpr auto return_type = type_of(type_c<Term>);
 
     /// object_ptr<U>&&
     template <class U>
@@ -246,10 +207,7 @@ namespace TORI_NS::detail {
       : m_value {std::move(obj)}
     {
       // check return type
-      [[maybe_unused]] check_return_type<
-        return_type,
-        type_of_t<typename U::term>>
-        check {};
+      check_return_type(return_type, type_of(U::term));
     }
 
     /// U*
@@ -258,18 +216,15 @@ namespace TORI_NS::detail {
       : m_value(ptr)
     {
       // check return type
-      [[maybe_unused]] check_return_type<
-        return_type,
-        type_of_t<typename U::term>>
-        check {};
+      check_return_type(return_type, type_of(U::term));
     }
 
     /// deleted
     return_type_checker() = delete;
     /// deleted
-    return_type_checker(const return_type& other) = delete;
+    return_type_checker(const return_type_checker& other) = delete;
     /// deleted
-    return_type_checker(return_type&& other) = delete;
+    return_type_checker(return_type_checker&& other) = delete;
 
     /// value
     object_ptr<>&& value() &&
@@ -295,7 +250,8 @@ namespace TORI_NS::detail {
         "Closure should have argument and return type");
 
       /// export term
-      using term = remove_varvalue_t<tm_closure<typename Ts::term...>>;
+      static constexpr auto term =
+        remove_varvalue(make_tm_closure(Ts::term...));
 
       /// Closure info table initializer
       struct info_table_initializer
@@ -347,9 +303,8 @@ namespace TORI_NS::detail {
 
     protected:
       // return type for code()
-      using return_type = return_type_checker<typename std::tuple_element_t<
-        sizeof...(Ts) - 1,
-        std::tuple<Ts...>>::term>;
+      using return_type = return_type_checker<typename decltype(
+        get_term(get<sizeof...(Ts) - 1>(tuple_c<Ts...>)))::type>;
 
     private:
       using ClosureN<sizeof...(Ts) - 1>::nth_arg;

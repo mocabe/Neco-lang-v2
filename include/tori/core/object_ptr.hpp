@@ -1,150 +1,12 @@
-#pragma once 
+#pragma once
 
-// Copyright (c) 2018 mocabe(https://github.com/mocabe)
-// This code is licensed under MIT license.
-
-/// \file HeapObject
-
-#include <cstdint>
-#include <type_traits>
-#include <atomic>
-#include <cassert>
-#include <stdexcept>
-#include <new>
-
-// config
 #include "../config/config.hpp"
-// type
-#include "StaticTypeUtil.hpp"
+
+#include "object.hpp"
 
 namespace TORI_NS::detail {
 
-#if defined(OBJECT_HEADER_EXTEND_BYTES)
-  constexpr uint64_t object_header_extend_bytes = OBJECT_HEADER_EXTEND_BYTES;
-#else
-  /// size of additional buffer in heap object header
-  constexpr uint64_t object_header_extend_bytes = 0;
-#endif
-
-  // value type
-  struct ValueType;
-  // arrow type
-  struct ArrowType;
-  // type variable
-  struct VarType;
-
-  // TypeValue
-  class TypeValue;
-
-  // interface
   namespace interface {
-
-    /// reference count
-    template <class T>
-    class atomic_refcount
-    {
-    public:
-      constexpr atomic_refcount() noexcept
-        : atomic {0}
-      {
-      }
-
-      constexpr atomic_refcount(T v) noexcept
-        : atomic {v}
-      {
-      }
-
-      atomic_refcount(const atomic_refcount& other) noexcept
-        : atomic {other.load()}
-      {
-      }
-
-      atomic_refcount& operator=(const atomic_refcount& other) noexcept
-      {
-        store(other.load());
-        return *this;
-      }
-
-      atomic_refcount& operator=(T v) noexcept
-      {
-        store(v);
-        return *this;
-      }
-
-      T load() const noexcept
-      {
-        return atomic.load(std::memory_order_acquire);
-      }
-
-      void store(T v) noexcept
-      {
-        atomic.store(v, std::memory_order_release);
-      }
-
-      /// use memory_order_relaxed
-      T fetch_add() noexcept
-      {
-        return atomic.fetch_add(1u, std::memory_order_relaxed);
-      }
-
-      /// use memory_order_release
-      T fetch_sub() noexcept
-      {
-        return atomic.fetch_sub(1u, std::memory_order_release);
-      }
-
-    private:
-      std::atomic<T> atomic;
-      static_assert(sizeof(T) == sizeof(std::atomic<T>));
-    };
-
-    // heap-allocated object of type T
-    template <class T>
-    struct BoxedHeapObject;
-
-    // handler for heap-allocated object
-    template <class>
-    class object_ptr;
-
-    // object info table
-    struct object_info_table;
-
-    // heap-allocated runtime type infomation
-    using Type = BoxedHeapObject<TypeValue>;
-
-    /// Base class of heap-allocated objects
-    struct HeapObject
-    {
-      /// term
-      using term = tm_value<HeapObject>;
-
-      // reference count
-      mutable atomic_refcount<uint64_t> refcount;
-
-      /// pointer to info-table
-      const object_info_table* info_table;
-
-#if defined(OBJECT_HEADER_EXTEND_BYTES)
-      /// additional buffer storage
-      std::byte obj_ext_buffer[object_header_extend_bytes] = {};
-#endif
-    };
-
-    /// stateless allocator for heap objects
-    template <class T>
-    struct object_allocator_traits
-    {
-      /// allocate memory
-      static void* allocate(size_t n)
-      {
-        return std::allocator<T>().allocate(n);
-      }
-      /// deallocate memory
-      static void deallocate(void* ptr, size_t n)
-      {
-        std::allocator<T>().deallocate(static_cast<T*>(ptr), n);
-      }
-    };
 
     /// Smart pointer to manage heap-allocated objects
     template <class T = HeapObject>
@@ -341,7 +203,6 @@ namespace TORI_NS::detail {
       HeapObject* (*clone)(const HeapObject*);
     };
 
-
     /// Destructor
     /// \effects Destroy object with vtable function when reference count become
     /// 0
@@ -397,30 +258,6 @@ namespace TORI_NS::detail {
     bool operator!=(const object_ptr<T>& p, nullptr_t) noexcept
     {
       return static_cast<bool>(p);
-    }
-
-    /// Clone
-    /// \effects Call copy constructor of the object from vtable.
-    /// \returns `object_ptr<T>` pointing new object.
-    /// \throws `std::bad_alloc` when `clone` returned nullptr.
-    /// \throws `std::runtime_error` when object is null.
-    /// \notes Reference count of new object will be set to 1.
-    /// \requires not null.
-    template <class T>
-    object_ptr<T> clone(const object_ptr<T>& obj)
-    {
-      assert(obj);
-      auto r = static_cast<T*>(obj.info_table()->clone(obj.get()));
-      if (unlikely(!r))
-        throw std::bad_alloc();
-      return r;
-    }
-
-    /// make object
-    template <class T, class... Args>
-    object_ptr<T> make_object(Args&&... args)
-    {
-      return new T {std::forward<Args>(args)...};
     }
 
   } // namespace interface

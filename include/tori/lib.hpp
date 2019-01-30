@@ -1,16 +1,15 @@
-#pragma once
-
 // Copyright (c) 2018 mocabe(https://github.com/mocabe)
 // This code is licensed under MIT license.
+
+#pragma once
 
 /// \file Include core and standard library
 
 #include "core.hpp"
 
-#include "lib/Primitive.hpp"
-#include "lib/Unit.hpp"
-#include "lib/Identity.hpp"
-#include "lib/BinaryOperator.hpp"
-#include "lib/If.hpp"
-
-#include "lib/Util.hpp"
+#include "lib/primitive.hpp"
+#include "lib/unit.hpp"
+#include "lib/identity.hpp"
+#include "lib/binary_operator.hpp"
+#include "lib/if.hpp"
+#include "lib/util.hpp"

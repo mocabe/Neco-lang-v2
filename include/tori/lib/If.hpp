@@ -4,7 +4,7 @@
 #pragma once
 
 #include "../core.hpp"
-#include "Primitive.hpp"
+#include "primitive.hpp"
 
 namespace TORI_NS::detail {
 

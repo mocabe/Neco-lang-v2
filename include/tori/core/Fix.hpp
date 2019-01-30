@@ -5,7 +5,11 @@
 
 /// \file Fix
 
-#include "DynamicTypeUtil.hpp"
+#include "../config/config.hpp"
+
+#include "boxed.hpp"
+#include "type_gen.hpp"
+
 #include <type_traits>
 
 namespace TORI_NS::detail {
@@ -21,8 +25,10 @@ namespace TORI_NS::detail {
 
   struct FixValue
   {
-    using term = tm_fix<Fix>;
+    static constexpr auto term = type_c<tm_fix<Fix>>;
   };
+
+  static_assert(has_term<FixValue>());
 
 } // namespace TORI_NS::detail
 

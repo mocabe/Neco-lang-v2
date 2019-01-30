@@ -1,19 +1,19 @@
-#pragma once
-
 // Copyright (c) 2018 mocabe(https://github.com/mocabe)
 // This code is licensed under MIT license.
 
+#pragma once
+
 /// \file TypeValue
 
-#include "HeapObject.hpp"
+#include "object_ptr.hpp"
+
 #include <array>
 #include <cstring>
 
 namespace TORI_NS::detail {
 
   // ------------------------------------------
-  // Type
-  // ------------------------------------------
+  // TypeValue union values
 
   /// Value type
   struct ValueType
@@ -67,11 +67,13 @@ namespace TORI_NS::detail {
         // get mask
         auto mask = _mm_movemask_epi8(cmp);
         return mask == 0xffffU;
-      } else
+      } else {
+        // fallback to memcmp
         return std::memcmp(        //
                  lhs.name->data(), //
                  rhs.name->data(), //
                  max_name_size) == 0;
+      }
     }
   };
 
@@ -90,6 +92,9 @@ namespace TORI_NS::detail {
     /// unique id for VarTpye object
     uint64_t id;
   };
+
+  // ------------------------------------------
+  // TypeValue
 
   /// Base class for TypeValue
   class TypeValue
@@ -178,6 +183,9 @@ namespace TORI_NS::detail {
     // 8 byte index
     uint64_t m_index;
   };
+
+  // ------------------------------------------
+  // TypeValue utility
 
   /// allow access to raw value
   template <uint64_t Idx, class TpVal>

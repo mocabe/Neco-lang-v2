@@ -130,10 +130,29 @@ void polymorphic()
   }
 }
 
+/*
+void selfrec() {
+  
+  // f = λx.f x
+  struct R : Function<R, Int, Int>
+  {
+    return_type code() const
+    {
+      return make_object<R>() << arg<0>();
+    }
+  };
+
+  auto sr = make_object<R>() << new Int(42);
+  check_type<Int>(sr);
+  auto r = eval(sr);
+  std::vector<double> a;
+}
+*/
 int main()
 {
   simple();
   higher_order();
   apply();
   polymorphic();
+ // selfrec();
 }

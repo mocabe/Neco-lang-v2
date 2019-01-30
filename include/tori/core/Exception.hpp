@@ -5,8 +5,9 @@
 
 /// \file General exception classes
 
-#include "BoxedHeapObject.hpp"
-#include "String.hpp"
+#include "boxed.hpp"
+#include "string.hpp"
+
 #include <exception>
 
 namespace TORI_NS::detail {

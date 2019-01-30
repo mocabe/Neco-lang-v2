@@ -5,72 +5,25 @@
 
 /// \file Dynamic typing utility
 
-#include "TypeGen.hpp"
-#include "Exception.hpp"
+#include "../config/config.hpp"
+
+#include "type_gen.hpp"
+#include "apply.hpp"
+#include "exception.hpp"
+#include "type_error.hpp"
+#include "utility.hpp"
+
+#include <vector>
 
 namespace TORI_NS::detail {
 
   namespace interface {
 
-    // ------------------------------------------
-    // Exceptions
-
-    namespace type_error {
-
-      /// unification error(circular constraint)
-      class circular_constraint : public type_error
-      {
-      public:
-        circular_constraint(object_ptr<> src, object_ptr<const Type> var)
-          : type_error("Circular constraints", std::move(src))
-          , m_var {std::move(var)}
-        {
-        }
-
-        /// var
-        const object_ptr<const Type>& var() const
-        {
-          return m_var;
-        }
-
-      private:
-        object_ptr<const Type> m_var;
-      };
-
-      /// unification error(missmatch)
-      class type_missmatch : public type_error
-      {
-      public:
-        type_missmatch(
-          object_ptr<> src,
-          object_ptr<const Type> t1,
-          object_ptr<const Type> t2)
-          : type_error("Type missmatch", std::move(src))
-          , m_t1 {std::move(t1)}
-          , m_t2 {std::move(t2)}
-        {
-        }
-
-        /// t1
-        const object_ptr<const Type>& t1() const
-        {
-          return m_t1;
-        }
-
-        /// t2
-        const object_ptr<const Type>& t2() const
-        {
-          return m_t2;
-        }
-
-      private:
-        /// t1
-        object_ptr<const Type> m_t1;
-        /// t2
-        object_ptr<const Type> m_t2;
-      };
-
-    } // namespace type_error
+    // fwd
+    template <class T, class U>
+    [[nodiscard]] object_ptr<T> value_cast_if(const object_ptr<U>& obj) noexcept;
+    template <class T, class U>
+    [[nodiscard]] object_ptr<T> value_cast_if(object_ptr<U>&& obj) noexcept;
 
     // ------------------------------------------
     // Utils
@@ -83,7 +36,7 @@ namespace TORI_NS::detail {
       get_type(const object_ptr<T>& obj)
     {
       return obj.info_table()->obj_type;
-    };
+    }
 
     /// is_value_type
     [[nodiscard]] inline bool is_value_type(const object_ptr<const Type>& tp)
@@ -92,7 +45,7 @@ namespace TORI_NS::detail {
         return true;
       else
         return false;
-    };
+    }
 
     /// is_arrow_type
     [[nodiscard]] inline bool is_arrow_type(const object_ptr<const Type>& tp)
@@ -101,7 +54,7 @@ namespace TORI_NS::detail {
         return true;
       else
         return false;
-    };
+    }
 
     /// is_vartype
     [[nodiscard]] inline bool is_vartype(const object_ptr<const Type>& tp)
@@ -110,25 +63,25 @@ namespace TORI_NS::detail {
         return true;
       else
         return false;
-    };
+    }
 
     /// has_value_type
     [[nodiscard]] inline bool has_value_type(const object_ptr<>& obj)
     {
       return is_value_type(get_type(obj));
-    };
+    }
 
     /// has_arrow_type
     [[nodiscard]] inline bool has_arrow_type(const object_ptr<>& obj)
     {
       return is_arrow_type(get_type(obj));
-    };
+    }
 
     /// has_vartype
     [[nodiscard]] inline bool has_vartype(const object_ptr<>& obj)
     {
       return is_vartype(get_type(obj));
-    };
+    }
 
   } // namespace interface
 
@@ -146,7 +99,7 @@ namespace TORI_NS::detail {
     }
 
     unreachable();
-  };
+  }
 
   namespace interface {
 
@@ -155,7 +108,8 @@ namespace TORI_NS::detail {
       copy_type(const object_ptr<const Type>& tp)
     {
       return copy_type_impl(tp);
-    };
+    }
+
   } // namespace interface
 
   [[nodiscard]] inline bool same_type_impl(
@@ -189,7 +143,7 @@ namespace TORI_NS::detail {
     }
 
     unreachable();
-  };
+  }
 
   namespace interface {
 
@@ -208,7 +162,8 @@ namespace TORI_NS::detail {
       if (same_type(get_type(obj), object_type<T>()))
         return true;
       return false;
-    };
+    }
+
   } // namespace interface
 
   struct TyArrow
@@ -240,14 +195,14 @@ namespace TORI_NS::detail {
     }
 
     unreachable();
-  };
+  }
 
   /// emulate type-substitution
   [[nodiscard]] inline object_ptr<const Type>
     subst_type(const TyArrow& ta, const object_ptr<const Type>& in)
   {
     return subst_type_impl(ta, in);
-  };
+  }
 
   [[nodiscard]] inline object_ptr<const Type> subst_type_all(
     const std::vector<TyArrow>& tas,
@@ -258,7 +213,7 @@ namespace TORI_NS::detail {
       t = subst_type(tyArrow, t);
     }
     return t;
-  };
+  }
 
   // ------------------------------------------
   // Constr
@@ -275,7 +230,7 @@ namespace TORI_NS::detail {
     subst_constr(const TyArrow& ta, const Constr& constr)
   {
     return {subst_type(ta, constr.t1), subst_type(ta, constr.t2)};
-  };
+  }
 
   /// subst_constr_all
   [[nodiscard]] inline std::vector<Constr>
@@ -285,7 +240,7 @@ namespace TORI_NS::detail {
     ret.reserve(cs.size());
     for (auto&& c : cs) ret.push_back(subst_constr(ta, c));
     return ret;
-  };
+  }
 
   // ------------------------------------------
   // Occurs
@@ -302,7 +257,7 @@ namespace TORI_NS::detail {
       return occurs(x, arrow->captured) || occurs(x, arrow->returns);
 
     unreachable();
-  };
+  }
 
   inline void unify_func_impl(
     std::vector<Constr>& cs,
@@ -353,7 +308,7 @@ namespace TORI_NS::detail {
     auto as = std::vector<TyArrow> {};
     unify_func_impl(_cs, as, src);
     return as;
-  };
+  }
 
   // ------------------------------------------
   // Recon
@@ -363,23 +318,100 @@ namespace TORI_NS::detail {
     auto var = make_object<Type>(VarType {});
     get_if<VarType>(var.value())->id = uintptr_t(var.get());
     return object_ptr<const Type>(var);
-  };
-
-  // ------------------------------------------
-  // static_object_cast
-
-  template <class T, class U>
-  [[nodiscard]] object_ptr<T> static_object_cast(const object_ptr<U>& obj)
-  {
-    if (likely(!obj.is_static()))
-      obj.head()->refcount.fetch_add();
-    return static_cast<T*>(obj.get());
   }
 
-  template <class T, class U>
-  [[nodiscard]] object_ptr<T> static_object_cast(object_ptr<U>&& obj)
+  inline void vars_impl(
+    const object_ptr<const Type>& tp,
+    std::vector<object_ptr<const Type>>& vars)
   {
-    return static_cast<T*>(obj.release());
+    if (is_value_type(tp))
+      return;
+    if (is_vartype(tp)) {
+      return [&]() {
+        for (auto&& v : vars) {
+          if (same_type(v, tp))
+            return;
+        }
+        vars.push_back(tp);
+      }();
+    }
+    if (is_arrow_type(tp)) {
+      vars_impl(get_if<ArrowType>(tp.value())->captured, vars);
+      vars_impl(get_if<ArrowType>(tp.value())->returns, vars);
+      return;
+    }
+
+    assert(false);
+    unreachable();
   }
+
+  // get list of type variables
+  [[nodiscard]] inline std::vector<object_ptr<const Type>>
+    vars(const object_ptr<const Type>& tp)
+  {
+    auto vars = std::vector<object_ptr<const Type>> {};
+    vars_impl(tp, vars);
+    return vars;
+  }
+
+  /// create fresh polymorphic closure type
+  [[nodiscard]] inline object_ptr<const Type>
+    genpoly(const object_ptr<const Type>& tp)
+  {
+    if (!is_arrow_type(tp))
+      return tp;
+    auto vs = vars(tp);
+    auto t = tp;
+    for (auto v : vs) {
+      auto a = TyArrow {v, genvar()};
+      t = subst_type(a, tp);
+    }
+    return t;
+  }
+
+  // typing
+  [[nodiscard]] inline const object_ptr<const Type>
+    type_of_func_impl(const object_ptr<>& obj)
+  {
+    // Apply
+    if (auto apply = value_cast_if<ApplyR>(obj)) {
+      if (auto fix = value_cast_if<Fix>(apply->app())) {
+        auto _t1 = type_of_func_impl(apply->arg());
+        auto _t = genvar();
+        auto c = std::vector {Constr {_t1, new Type(ArrowType {_t, _t})}};
+        auto s = unify(std::move(c), obj);
+        return subst_type_all(s, _t); // FIXME should use genvar() instead of _t?
+      } else {
+        auto _t1 = type_of_func_impl(apply->app());
+        auto _t2 = type_of_func_impl(apply->arg());
+        auto _t = genvar();
+        auto c = std::vector {Constr {_t1, new Type(ArrowType {_t2, _t})}};
+        auto s = unify(std::move(c), obj);
+        return subst_type_all(s, _t);
+      }
+    }
+    // value -> value
+    if (has_value_type(obj))
+      return get_type(obj);
+    // var -> var
+    if (has_vartype(obj))
+      return get_type(obj);
+    // arrow -> genpoly arrow
+    if (has_arrow_type(obj))
+      return genpoly(get_type(obj));
+
+    assert(false);
+    unreachable();
+  }
+
+  namespace interface {
+
+    // type_of
+    [[nodiscard]] inline object_ptr<const Type> type_of(const object_ptr<>& obj)
+    {
+      return type_of_func_impl(obj);
+    }
+
+  } // namespace interface
 
 } // namespace TORI_NS::detail

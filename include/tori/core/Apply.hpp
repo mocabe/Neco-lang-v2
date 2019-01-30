@@ -5,8 +5,10 @@
 
 /// \file Apply
 
-#include "DynamicTypeUtil.hpp"
-#include "Fix.hpp"
+#include "../config/config.hpp"
+#include "boxed.hpp"
+#include "type_gen.hpp"
+#include "fix.hpp"
 
 namespace TORI_NS::detail {
 
@@ -79,7 +81,7 @@ namespace TORI_NS::detail {
       /// base
       using base = ApplyR;
       /// term
-      using term = tm_apply<typename App::term, typename Arg::term>;
+      static constexpr auto term = make_tm_apply(App::term, Arg::term);
 
       // clang-format off
 
@@ -100,25 +102,22 @@ namespace TORI_NS::detail {
   } // namespace interface
 
   template <class T>
-  struct is_valid_app_arg : std::false_type
+  constexpr auto is_valid_app_arg(meta_type<T>)
   {
-  };
+    return std::false_type {};
+  }
 
   template <class T>
-  struct is_valid_app_arg<T*>
+  constexpr auto is_valid_app_arg(meta_type<T*>)
   {
-    static constexpr bool value = std::is_base_of_v<HeapObject, T>;
-  };
+    return std::bool_constant<std::is_base_of_v<HeapObject, T>> {};
+  }
 
   template <class T>
-  struct is_valid_app_arg<object_ptr<T>> : std::true_type
+  constexpr auto is_valid_app_arg(meta_type<object_ptr<T>>)
   {
-  };
-
-  /// validate argument types for operator<<
-  template <class T>
-  static constexpr bool is_valid_app_arg_v =
-    is_valid_app_arg<std::decay_t<T>>::value;
+    return std::true_type {};
+  }
 
   namespace interface {
 
@@ -126,8 +125,9 @@ namespace TORI_NS::detail {
     template <
       class T1,
       class T2,
-      class =
-        std::enable_if_t<is_valid_app_arg_v<T1> && is_valid_app_arg_v<T2>>>
+      class = std::enable_if_t<
+        is_valid_app_arg(type_c<std::decay_t<T1>>) &&
+        is_valid_app_arg(type_c<std::decay_t<T2>>)>>
     [[nodiscard]] auto operator<<(T1&& lhs, T2&& rhs)
     {
       // use {} to workaround gcc bug (81486?)
