@@ -154,8 +154,12 @@ namespace TORI_NS::detail {
     {
       auto result = eval_impl(object_ptr<>(obj));
       assert(result);
+
+      // for gcc 7
+      constexpr auto type = type_of(T::term, false_c);
+
       // run compile time type check
-      if constexpr (!is_error_type(type_of(T::term, false_c))) {
+      if constexpr (!is_error_type(type)) {
         // Currently object_ptr<T> MUST have type T which has compatible memory
         // layout with actual object pointing to.
         // Since it's impossible to decide memory layout of closure types,
