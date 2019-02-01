@@ -11,6 +11,7 @@
 #include "dynamic_typing.hpp"
 #include "value_cast.hpp"
 #include "closure_cast.hpp"
+#include "offset_of_member.hpp"
 
 #include <type_traits>
 

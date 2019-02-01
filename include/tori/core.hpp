@@ -19,3 +19,6 @@
 #include "core/fix.hpp"
 #include "core/apply.hpp"
 #include "core/eval.hpp"
+
+// compatibility check
+#include "config/compatibility.hpp"

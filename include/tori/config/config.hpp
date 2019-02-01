@@ -81,56 +81,8 @@ namespace TORI_NS::detail {
   template <class... Ts>
   static constexpr bool false_v = make_false<Ts...>::value;
 
-  // for unused variable
-  template <class... Args>
-  constexpr void ignore(Args&&...) noexcept
-  {}
-
-  // ------------------------------------------
-  // Offset of member
-  // ------------------------------------------
-
-  template <typename T1, typename T2>
-  struct offset_of_member_impl {
-    union U {
-      U() : c {} {}
-      ~U() {}
-      char c[sizeof(T2)];
-      T2 o;
-    };
-    static U u;
-    static constexpr uint64_t get(T1 T2::*member)
-    {
-      uint64_t i = 0;
-      for (; i < sizeof(T2); ++i)
-        if (((void*)&(u.c[i])) == &(u.o.*member))
-          break;
-
-      // g++ bug 67371 workaround
-      if (i >= sizeof(T2))
-        throw;
-      else
-        return i;
-    }
-  };
-  template <class T1, class T2>
-  typename offset_of_member_impl<T1, T2>::U offset_of_member_impl<T1, T2>::u {};
-
-  /// get offset of member
-  template <class T1, class T2>
-  constexpr uint64_t offset_of_member(T1 T2::*member)
-  {
-    return offset_of_member_impl<T1, T2>::get(member);
-  }
-
-  // ABI requirements
-  static_assert(is_64bit, "64bit only");
-  static_assert(CHAR_BIT == 8, "1byte != 8bit");
-  static_assert(sizeof(char) == sizeof(unsigned char));
-  static_assert(sizeof(char) == 1);
-  static_assert(sizeof(void*) == 8);
-
   namespace interface {
+
     using int8_t = std::int8_t;
     using int16_t = std::int16_t;
     using int32_t = std::int32_t;
@@ -147,19 +99,11 @@ namespace TORI_NS::detail {
     using ulong_t = uint64_t;
 
     using size_t = std::size_t;
-    static_assert(std::is_same_v<size_t, uint64_t>);
 
     using nullptr_t = std::nullptr_t;
-
-    static_assert(sizeof(bool) == 1, "bool should be 8bit");
     using bool_t = bool;
-
-    static_assert(std::numeric_limits<float>::is_iec559,
-                  "Size of float should be 32bit");
     using float_t = float;
-
-    static_assert(std::numeric_limits<double>::is_iec559,
-                  "Size of double should be 64bit");
     using double_t = double;
+
   } // namespace interface
 } // namespace TORI_NS::detail
