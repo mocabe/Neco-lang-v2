@@ -1,12 +1,10 @@
-#pragma once 
-
 // Copyright (c) 2018 mocabe(https://github.com/mocabe)
 // This code is licensed under MIT license.
 
-/// \file Apply
+#pragma once 
 
 #include "../config/config.hpp"
-#include "boxed.hpp"
+#include "box.hpp"
 #include "type_gen.hpp"
 #include "fix.hpp"
 
@@ -68,7 +66,7 @@ namespace TORI_NS::detail {
   namespace interface {
 
     /// runtime apply object
-    using ApplyR = BoxedHeapObject<ApplyRValue>;
+    using ApplyR = Box<ApplyRValue>;
 
   } // namespace interface
 
@@ -110,7 +108,7 @@ namespace TORI_NS::detail {
   template <class T>
   constexpr auto is_valid_app_arg(meta_type<T*>)
   {
-    return std::bool_constant<std::is_base_of_v<HeapObject, T>> {};
+    return std::bool_constant<std::is_base_of_v<Object, T>> {};
   }
 
   template <class T>

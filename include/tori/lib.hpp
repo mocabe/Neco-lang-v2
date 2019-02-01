@@ -3,8 +3,6 @@
 
 #pragma once
 
-/// \file Include core and standard library
-
 #include "core.hpp"
 
 #include "lib/primitive.hpp"

@@ -13,16 +13,16 @@ namespace TORI_NS::detail::interface {
 
   // primitive types
 
-  using Int8   = BoxedHeapObject<int8_t>;
-  using Int16  = BoxedHeapObject<int16_t>;
-  using Int32  = BoxedHeapObject<int32_t>;
-  using Int64  = BoxedHeapObject<int64_t>;
-  using UInt8  = BoxedHeapObject<uint8_t>;
-  using UInt16 = BoxedHeapObject<uint16_t>;
-  using UInt32 = BoxedHeapObject<uint32_t>;
-  using UInt64 = BoxedHeapObject<uint64_t>;
-  using Float  = BoxedHeapObject<float>;
-  using Double = BoxedHeapObject<double>;
+  using Int8   = Box<int8_t>;
+  using Int16  = Box<int16_t>;
+  using Int32  = Box<int32_t>;
+  using Int64  = Box<int64_t>;
+  using UInt8  = Box<uint8_t>;
+  using UInt16 = Box<uint16_t>;
+  using UInt32 = Box<uint32_t>;
+  using UInt64 = Box<uint64_t>;
+  using Float  = Box<float>;
+  using Double = Box<double>;
 
   using Char   = Int8;
   using Short  = Int16;
@@ -34,20 +34,20 @@ namespace TORI_NS::detail::interface {
   using UInt   = UInt32;
   using ULong  = UInt64;
 
-  using Bool   = BoxedHeapObject<bool>;
+  using Bool   = Box<bool>;
 
   // primitive non-const pointer types
 
-  using Int8Ptr   = BoxedHeapObject<int8_t *>;
-  using Int16Ptr  = BoxedHeapObject<int16_t *>;
-  using Int32Ptr  = BoxedHeapObject<int32_t *>;
-  using Int64Ptr  = BoxedHeapObject<int64_t *>;
-  using UInt8Ptr  = BoxedHeapObject<uint8_t *>;
-  using UInt16Ptr = BoxedHeapObject<uint16_t *>;
-  using UInt32Ptr = BoxedHeapObject<uint32_t *>;
-  using UInt64Ptr = BoxedHeapObject<uint64_t *>;
-  using FloatPtr  = BoxedHeapObject<float *>;
-  using DoublePtr = BoxedHeapObject<double *>;
+  using Int8Ptr   = Box<int8_t *>;
+  using Int16Ptr  = Box<int16_t *>;
+  using Int32Ptr  = Box<int32_t *>;
+  using Int64Ptr  = Box<int64_t *>;
+  using UInt8Ptr  = Box<uint8_t *>;
+  using UInt16Ptr = Box<uint16_t *>;
+  using UInt32Ptr = Box<uint32_t *>;
+  using UInt64Ptr = Box<uint64_t *>;
+  using FloatPtr  = Box<float *>;
+  using DoublePtr = Box<double *>;
 
   using CharPtr   = Int8Ptr;
   using ShortPtr  = Int16Ptr;
@@ -59,13 +59,13 @@ namespace TORI_NS::detail::interface {
   using UIntPtr   = UInt32Ptr;
   using ULongPtr  = UInt64Ptr;
 
-  using BoolPtr   = BoxedHeapObject<bool *>;
+  using BoolPtr   = Box<bool *>;
 
   // void*
-  using VoidPtr   = BoxedHeapObject<void *>;
+  using VoidPtr   = Box<void *>;
 
   // const char*
-  using CStr      = BoxedHeapObject<const char *>;
+  using CStr      = Box<const char *>;
 
   // clang-format on
 

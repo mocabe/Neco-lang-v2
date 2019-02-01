@@ -1,9 +1,7 @@
-#pragma once
-
 // Copyright (c) 2018 mocabe(https://github.com/mocabe)
 // This code is licensed under MIT license.
 
-/// \file closure cast
+#pragma once
 
 #include "../config/config.hpp"
 #include "object_ptr.hpp"
@@ -56,7 +54,7 @@ namespace TORI_NS::detail {
   namespace interface {
 
     /// Exception object for bad_closure_cast exception
-    using BadClosureCast = BoxedHeapObject<detail::BadClosureCastValue>;
+    using BadClosureCast = Box<detail::BadClosureCastValue>;
 
   } // namespace interface
 

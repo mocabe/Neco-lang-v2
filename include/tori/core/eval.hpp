@@ -3,8 +3,6 @@
 
 #pragma once
 
-/// \file eval
-
 #include "fix.hpp"
 #include "exception.hpp"
 #include "value_cast.hpp"
@@ -164,8 +162,8 @@ namespace TORI_NS::detail {
         // layout with actual object pointing to.
         // Since it's impossible to decide memory layout of closure types,
         // we convert it to closure<...> which is essentially equal to to
-        // HeapObject. Type variables are also undecidable so we just convert
-        // them to HeapObject.
+        // Object. Type variables are also undecidable so we just convert
+        // them to Object.
         using To = typename decltype(guess_object_type(type))::type;
         // cast to resutn type
         return static_object_cast<To>(result);

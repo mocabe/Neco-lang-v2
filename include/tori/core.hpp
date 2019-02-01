@@ -1,15 +1,13 @@
-#pragma once
-
 // Copyright (c) 2018 mocabe(https://github.com/mocabe)
 // This code is licensed under MIT license.
 
-/// \file Include core library
+#pragma once
 
 // load config
 #include "config/config.hpp"
 
 #include "core/object.hpp"
-#include "core/boxed.hpp"
+#include "core/box.hpp"
 #include "core/type_gen.hpp"
 #include "core/static_typing.hpp"
 #include "core/dynamic_typing.hpp"

@@ -1,12 +1,10 @@
-#pragma once
-
 // Copyright (c) 2018 mocabe(https://github.com/mocabe)
 // This code is licensed under MIT license.
 
-/// \file Compile time type info generator
+#pragma once
 
 #include "../config/config.hpp"
-#include "boxed.hpp"
+#include "box.hpp"
 #include "type_value.hpp"
 
 #include <cstring>
@@ -35,8 +33,8 @@ namespace TORI_NS {
 
 /// type
 TORI_DECL_TYPE(Type)
-/// HeapObject
-TORI_DECL_TYPE(HeapObject)
+/// Object
+TORI_DECL_TYPE(Object)
 
 namespace TORI_NS::detail {
 
@@ -44,7 +42,7 @@ namespace TORI_NS::detail {
 
     /// proxy type of closure
     template <class... Ts>
-    struct closure : HeapObject
+    struct closure : Object
     {
       /// term
       static constexpr auto term = make_tm_closure(Ts::term...);
@@ -52,7 +50,7 @@ namespace TORI_NS::detail {
 
     /// Type variable value
     template <class Tag>
-    struct forall : HeapObject
+    struct forall : Object
     {
       // term
       static constexpr auto term = type_c<tm_varvalue<Tag>>;
@@ -80,7 +78,7 @@ namespace TORI_NS::detail {
 
   /// expected
   template <class T>
-  struct expected : HeapObject
+  struct expected : Object
   {
     // term
     static constexpr auto term = T::term;
@@ -234,7 +232,7 @@ namespace TORI_NS::detail {
   }
 
   /// Guess C++ type of a type.
-  /// Unknown types will be converted into `HeapObject` equivalents.
+  /// Unknown types will be converted into `Object` equivalents.
   template <class T>
   constexpr auto guess_object_type(meta_type<T> type)
   {
@@ -243,7 +241,7 @@ namespace TORI_NS::detail {
     } else if constexpr (is_value_type(type)) {
       return type.tag();
     } else if constexpr (is_var_type(type)) {
-      return type_c<HeapObject>;
+      return type_c<Object>;
     } else if constexpr (is_varvalue_type(type)) {
       return make_forall(type.tag());
     } else

@@ -1,17 +1,13 @@
-#pragma once
-
 // Copyright (c) 2018 mocabe(https://github.com/mocabe)
 // This code is licensed under MIT license.
 
-/// \file Box
+#pragma once
 
 #include "object_ptr.hpp"
 #include "type_value.hpp" // clang requires definition of TypeValue to compile.
 
 #include <cassert>
 #include <type_traits>
-
-/// \file BoxedHeapObject.hpp
 
 namespace TORI_NS::detail {
 
@@ -36,7 +32,7 @@ namespace TORI_NS::detail {
   ///
   /// vtable function to delete heap allocated object.
   template <class T>
-  void vtbl_destroy_func(const HeapObject *obj) noexcept
+  void vtbl_destroy_func(const Object *obj) noexcept
   {
     static_assert(
       std::is_nothrow_destructible_v<T>,
@@ -52,7 +48,7 @@ namespace TORI_NS::detail {
   /// \returns pointer to generated object.
   /// \notes return nullptr when allocation/initialization failed.
   template <class T>
-  HeapObject *vtbl_clone_func(const HeapObject *obj) noexcept
+  Object *vtbl_clone_func(const Object *obj) noexcept
   {
     try {
       auto p = static_cast<const T *>(obj);
@@ -69,7 +65,7 @@ namespace TORI_NS::detail {
     if constexpr (has_term<T>())
       return T::term;
     else
-      return type_c<tm_value<BoxedHeapObject<T>>>;
+      return type_c<tm_value<Box<T>>>;
   }
 
   namespace interface {
@@ -77,7 +73,7 @@ namespace TORI_NS::detail {
     /// \brief Heap-allocated object generator.
     /// \param T value type
     template <class T>
-    struct BoxedHeapObject : HeapObject
+    struct Box : Object
     {
 
       /// value type
@@ -97,52 +93,52 @@ namespace TORI_NS::detail {
         class U,
         class... Args,
         class = std::enable_if_t<
-          !std::is_same_v<std::decay_t<U>, BoxedHeapObject> &&
+          !std::is_same_v<std::decay_t<U>, Box> &&
           !std::is_same_v<std::decay_t<U>, static_construct_t>>>
-      constexpr BoxedHeapObject(U &&u, Args &&... args)
-        : HeapObject {1u, &info_table_initializer::info_table}
+      constexpr Box(U &&u, Args &&... args)
+        : Object {1u, &info_table_initializer::info_table}
         , _value {std::forward<U>(u), std::forward<Args>(args)...}
       {
       }
 
       /// Ctor (static initialization)
       template <class... Args>
-      constexpr BoxedHeapObject(static_construct_t, Args &&... args)
-        : BoxedHeapObject(std::forward<Args>(args)...)
+      constexpr Box(static_construct_t, Args &&... args)
+        : Box(std::forward<Args>(args)...)
       {
         // set refcount ZERO to avoid deletion
         refcount = 0u;
       }
 
       /// Ctor
-      constexpr BoxedHeapObject()
-        : HeapObject {1u, &info_table_initializer::info_table}
+      constexpr Box()
+        : Object {1u, &info_table_initializer::info_table}
         , _value {}
       {
       }
 
       /// Copy ctor
-      constexpr BoxedHeapObject(const BoxedHeapObject &obj)
-        : HeapObject {1u, &info_table_initializer::info_table}
+      constexpr Box(const Box &obj)
+        : Object {1u, &info_table_initializer::info_table}
         , _value {obj._value}
       {
       }
 
       /// Move ctor
-      constexpr BoxedHeapObject(BoxedHeapObject &&obj)
-        : HeapObject {1u, &info_table_initializer::info_table}
+      constexpr Box(Box &&obj)
+        : Object {1u, &info_table_initializer::info_table}
         , _value {std::move(obj._value)}
       {
       }
 
       /// operator=
-      BoxedHeapObject &operator=(const BoxedHeapObject &obj)
+      Box &operator=(const Box &obj)
       {
         _value = obj._value;
       }
 
       /// operator=
-      BoxedHeapObject &operator=(BoxedHeapObject &&obj)
+      Box &operator=(Box &&obj)
       {
         _value = std::move(obj._value);
       }
@@ -153,13 +149,12 @@ namespace TORI_NS::detail {
 
     // Initialize object header
     template <class T>
-    const object_info_table
-      BoxedHeapObject<T>::info_table_initializer::info_table = {
-        object_type<BoxedHeapObject>(),     //
-        sizeof(BoxedHeapObject),            //
-        object_header_extend_bytes,         //
-        vtbl_destroy_func<BoxedHeapObject>, //
-        vtbl_clone_func<BoxedHeapObject>};  //
+    const object_info_table Box<T>::info_table_initializer::info_table = {
+      object_type<Box>(),         //
+      sizeof(Box),                //
+      object_header_extend_bytes, //
+      vtbl_destroy_func<Box>,     //
+      vtbl_clone_func<Box>};      //
 
   } // namespace interface
 

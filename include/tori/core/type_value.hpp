@@ -1,9 +1,7 @@
-// Copyright (c) 2018 mocabe(https://github.com/mocabe)
-// This code is licensed under MIT license.
-
 #pragma once
 
-/// \file TypeValue
+// Copyright (c) 2018 mocabe(https://github.com/mocabe)
+// This code is licensed under MIT license.
 
 #include "object_ptr.hpp"
 

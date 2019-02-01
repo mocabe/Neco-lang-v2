@@ -16,7 +16,6 @@ namespace TORI_NS::detail {
   {
     typename BinaryOperator::return_type code() const
     {
-      // assume BoxedHeapObject
       using Tp = typename T::value_type;
       E<Tp> op;
       auto lhs = this->template eval_arg<0>();

@@ -1,9 +1,7 @@
-#pragma once
-
 // Copyright (c) 2018 mocabe(https://github.com/mocabe)
 // This code is licensed under MIT license.
 
-/// \file value cast function
+#pragma once
 
 #include "object_ptr.hpp"
 #include "object_cast.hpp"
@@ -54,7 +52,7 @@ namespace TORI_NS::detail {
   namespace interface {
 
     /// Exception object for bad_value_cast exception
-    using BadValueCast = BoxedHeapObject<detail::BadValueCastValue>;
+    using BadValueCast = Box<detail::BadValueCastValue>;
 
   } // namespace interface
 

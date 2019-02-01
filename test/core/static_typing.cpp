@@ -326,9 +326,9 @@ void test_assume_object_type()
     static_assert(guess_object_type(type_c<value<int>>) == type_c<int>);
   }
   {
-    // var<class T> -> HeapObject
+    // var<class T> -> Object
     static_assert(
-      guess_object_type(type_c<var<class Tag>>) == type_c<HeapObject>);
+      guess_object_type(type_c<var<class Tag>>) == type_c<Object>);
   }
   {
     // arrow<S, T> -> closure<S, T>

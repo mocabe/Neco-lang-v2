@@ -11,6 +11,9 @@
 #include <cstring>
 #include <string>
 
+// utf8 macro
+#define utf8(Str) ::TORI_NS::detail::to_u8(u8##Str)
+
 namespace TORI_NS::detail {
 
   class StringValue
@@ -52,8 +55,10 @@ namespace TORI_NS::detail {
 
   namespace interface {
 
-    /// String
-    using String = BoxedHeapObject<StringValue>;
+    /// UTF-8 String object.
+    /// Does not guarantee anything about encoding. User must ensure
+    /// input byte sequence is null(`0x00`)-terminated UTF-8 string.
+    using String = Box<StringValue>;
 
   } // namespace interface
 

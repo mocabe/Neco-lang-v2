@@ -17,7 +17,7 @@ namespace TORI_NS::detail {
   namespace interface {
 
     /// Unit
-    using Unit = BoxedHeapObject<UnitValue>;
+    using Unit = Box<UnitValue>;
 
   } // namespace interface
 

@@ -3,9 +3,7 @@
 // Copyright (c) 2018 mocabe(https://github.com/mocabe)
 // This code is licensed under MIT license.
 
-/// \file General exception classes
-
-#include "boxed.hpp"
+#include "box.hpp"
 #include "string.hpp"
 
 #include <exception>
@@ -38,7 +36,7 @@ namespace TORI_NS::detail {
   namespace interface {
 
     /// Exception
-    using Exception = BoxedHeapObject<ExceptionValue>;
+    using Exception = Box<ExceptionValue>;
 
   } // namespace interface
 
@@ -57,7 +55,7 @@ namespace TORI_NS::detail {
   namespace interface {
 
     // TypeError
-    using TypeError = BoxedHeapObject<TypeErrorValue>;
+    using TypeError = Box<TypeErrorValue>;
 
   } // namespace interface
 
@@ -115,7 +113,7 @@ namespace TORI_NS::detail {
   namespace interface {
 
     /// EvalError
-    using EvalError = BoxedHeapObject<EvalErrorValue>;
+    using EvalError = Box<EvalErrorValue>;
 
   } // namespace interface
 

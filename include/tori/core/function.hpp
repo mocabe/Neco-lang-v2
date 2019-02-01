@@ -1,9 +1,7 @@
-#pragma once
-
 // Copyright (c) 2018 mocabe(https://github.com/mocabe)
 // This code is licensed under MIT license.
 
-/// \file Function
+#pragma once
 
 #include "fix.hpp"
 #include "exception.hpp"
@@ -51,7 +49,7 @@ namespace TORI_NS::detail {
   };
 
   template <class Closure1>
-  struct Closure : HeapObject
+  struct Closure : Object
   {
     /// Arity of this closure.
     uint64_t _arity;

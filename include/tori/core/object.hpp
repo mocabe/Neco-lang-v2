@@ -1,9 +1,7 @@
-#pragma once 
-
 // Copyright (c) 2018 mocabe(https://github.com/mocabe)
 // This code is licensed under MIT license.
 
-/// \file HeapObject
+#pragma once 
 
 // config
 #include "../config/config.hpp"
@@ -42,7 +40,7 @@ namespace TORI_NS::detail {
 
     // heap-allocated object of type T
     template <class T>
-    struct BoxedHeapObject;
+    struct Box;
 
     // handler for heap-allocated object
     template <class>
@@ -52,13 +50,13 @@ namespace TORI_NS::detail {
     struct object_info_table;
 
     // heap-allocated runtime type infomation
-    using Type = BoxedHeapObject<TypeValue>;
+    using Type = Box<TypeValue>;
 
     /// Base class of heap-allocated objects
-    struct HeapObject
+    struct Object
     {
       /// term
-      static constexpr auto term = type_c<tm_value<HeapObject>>;
+      static constexpr auto term = type_c<tm_value<Object>>;
 
       // reference count
       mutable atomic_refcount<uint64_t> refcount;

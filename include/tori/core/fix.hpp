@@ -3,11 +3,9 @@
 // Copyright (c) 2018 mocabe(https://github.com/mocabe)
 // This code is licensed under MIT license.
 
-/// \file Fix
-
 #include "../config/config.hpp"
 
-#include "boxed.hpp"
+#include "box.hpp"
 #include "type_gen.hpp"
 
 #include <type_traits>
@@ -19,16 +17,15 @@ namespace TORI_NS::detail {
   namespace interface {
 
     /// Fix object
-    using Fix = BoxedHeapObject<FixValue>;
+    using Fix = Box<FixValue>;
 
   } // namespace interface
 
   struct FixValue
   {
+    // overwrite value term
     static constexpr auto term = type_c<tm_fix<Fix>>;
   };
-
-  static_assert(has_term<FixValue>());
 
 } // namespace TORI_NS::detail
 

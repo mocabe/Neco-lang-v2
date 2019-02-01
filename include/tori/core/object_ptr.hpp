@@ -1,3 +1,6 @@
+// Copyright (c) 2018 mocabe(https://github.com/mocabe)
+// This code is licensed under MIT license.
+
 #pragma once
 
 #include "../config/config.hpp"
@@ -9,7 +12,7 @@ namespace TORI_NS::detail {
   namespace interface {
 
     /// Smart pointer to manage heap-allocated objects
-    template <class T = HeapObject>
+    template <class T = Object>
     class object_ptr
     {
     public:
@@ -78,9 +81,9 @@ namespace TORI_NS::detail {
       auto* head() const noexcept
       {
         if constexpr (std::is_const_v<element_type>)
-          return static_cast<const HeapObject*>(m_ptr);
+          return static_cast<const Object*>(m_ptr);
         else
-          return static_cast<HeapObject*>(m_ptr);
+          return static_cast<Object*>(m_ptr);
       }
 
       /// get address of info table
@@ -198,9 +201,9 @@ namespace TORI_NS::detail {
       /// size of additional storage
       uint64_t obj_ext_bytes;
       /// vtable of delete function
-      void (*destroy)(const HeapObject*);
+      void (*destroy)(const Object*);
       /// vtable of clone function
-      HeapObject* (*clone)(const HeapObject*);
+      Object* (*clone)(const Object*);
     };
 
     /// Destructor
