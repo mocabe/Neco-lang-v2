@@ -76,7 +76,7 @@ using namespace tori;
 struct ApplyTwice : Function<ApplyTwice, closure<Int, Int>, Int, Int> {
   return_type code() const
   {
-    // arg<1> (arg<0> arg<1>)
+    // arg<0> (arg<0> arg<1>)
     return arg<0>() << (arg<0>() << arg<1>());
   }
 };
@@ -156,7 +156,7 @@ struct MyVector {
 };
 
 // define custom data type
-using MyVectorObject = BoxedHeapObject<MyVector>;
+using MyVectorObject = Box<MyVector>;
 
 template <>
 struct tori::object_type_traits<MyVectorObject> {
