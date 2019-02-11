@@ -58,7 +58,7 @@ endif()
 # valgrind
 # ------------------------------------------
 if(TORI_BUILD)
-  add_custom_target(tori_valgrind
+  add_custom_target(tori-valgrind-test
       COMMAND ${CMAKE_CTEST_COMMAND} 
           --force-new-ctest-process --test-action memcheck
   COMMAND cat "${CMAKE_BINARY_DIR}/Testing/Temporary/MemoryChecker.*.log")
