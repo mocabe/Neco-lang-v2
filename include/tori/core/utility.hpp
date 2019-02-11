@@ -32,7 +32,10 @@ namespace TORI_NS::detail {
     template <class T, class... Args>
     object_ptr<T> make_object(Args&&... args)
     {
-      return new T {std::forward<Args>(args)...};
+      if constexpr (is_transfarable_immediate(type_c<T>))
+        return object_ptr(std::forward<Args>(args)...);
+      else
+        return object_ptr(new T {std::forward<Args>(args)...});
     }
 
     /// check type
