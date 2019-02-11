@@ -278,7 +278,7 @@ TEST_CASE("type_of")
 
     SECTION("Apply")
     {
-      object_ptr app = new Apply(new Apply(a, b), i);
+      object_ptr app = new Apply {new Apply {a, b}, i};
       auto type = type_of(app);
       REQUIRE(same_type(type, object_type<Int>()));
     }
