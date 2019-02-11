@@ -88,6 +88,46 @@ namespace TORI_NS::detail {
       throw bad_value_cast(obj ? get_type(obj) : nullptr, object_type<T>());
     }
 
+    template <class T>
+    [[nodiscard]] object_ptr<T> value_cast(const object_ptr_generic& obj)
+    {
+      if constexpr (is_transfarable_immediate(type_c<T>)) {
+        // return immediate type
+        if (obj.m_storage.has_immediate_type<T>())
+          return get<T>(obj.m_storage.immediate_union());
+        else
+          throw bad_value_cast(
+            obj.m_storage.get_immediate_type(), object_type<T>());
+      } else {
+        auto ptr = obj.m_storage.ptr;
+        if (obj.m_storage.has_pointer_type<T>()) {
+          auto tmp = object_ptr(ptr);
+          return static_object_cast<T>(tmp); // add refcount
+        } else
+          throw bad_value_cast(
+            ptr ? get_type(object_ptr(ptr)) : nullptr, object_type<T>());
+      }
+    }
+
+    template <class T>
+    [[nodiscard]] object_ptr<T> value_cast(object_ptr_generic&& obj)
+    {
+      if constexpr (is_transfarable_immediate(type_c<T>)) {
+        if (obj.m_storage.has_immediate_type<T>())
+          return get<T>(obj.m_storage.immediate_union());
+        else
+          throw bad_value_cast(
+            obj.m_storage.get_immediate_type(), object_type<T>());
+      } else {
+        auto ptr = obj.m_storage.ptr;
+        if (obj.m_storage.has_pointer_type<T>())
+          return static_object_cast<T>(object_ptr(ptr));
+        else
+          throw bad_value_cast(
+            ptr ? get_type(object_ptr(ptr)) : nullptr, object_type<T>());
+      }
+    }
+
     /// value_cast_if
     ///
     /// dynamically cast object to specified value type.
