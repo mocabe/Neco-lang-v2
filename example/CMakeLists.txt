@@ -1,8 +1,4 @@
-function (Example NAME)
-  TORI_TEST(${NAME} example)
-endfunction()
-
-Example(hello_world)
-Example(higher_order)
-Example(fibonacci)
-Example(if)
+TORI_EXAMPLE(hello_world)
+TORI_EXAMPLE(higher_order)
+TORI_EXAMPLE(fibonacci)
+TORI_EXAMPLE(if)

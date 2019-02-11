@@ -18,6 +18,13 @@ if(TORI_BUILD_TEST OR TORI_BUILD_BENCHMARK OR TORI_BUILD_EXAMPLE)
 endif()
 
 # ------------------------------------------
+# Add target requirements
+# ------------------------------------------
+if(TORI_BUILD)
+include(external/external.cmake)
+endif()
+
+# ------------------------------------------
 # Add library
 # ------------------------------------------
 add_library(tori INTERFACE)
@@ -59,12 +66,25 @@ if(TORI_BUILD)
   enable_testing()
   # add test
   function (TORI_TEST NAME LABEL)
-    add_executable(${NAME} ${NAME}.cpp)
-    target_link_libraries(${NAME} PRIVATE tori)
-    target_include_directories(${NAME} PRIVATE "${TORI_DIR}/test")
+    add_executable(${NAME} ${NAME}.cpp ${TORI_DIR}/test/Catch2.cpp)
+    target_link_libraries(${NAME} PRIVATE tori ${TORI_LINK_FLAGS})
+    target_link_libraries(${NAME} PRIVATE Catch2::Catch2)
     target_compile_options(${NAME} PRIVATE ${TORI_COMPILE_FLAGS})
     add_test(NAME ${NAME} COMMAND ${NAME})
     set_tests_properties(${NAME} PROPERTIES LABELS ${LABEL})
+  endfunction()
+endif()
+
+# ------------------------------------------
+# Example
+# ------------------------------------------
+if(TORI_BUILD)
+  function (TORI_EXAMPLE NAME)
+    add_executable(${NAME} ${NAME}.cpp)
+    target_link_libraries(${NAME} PRIVATE tori ${TORI_LINK_FLAGS})
+    target_compile_options(${NAME} PRIVATE ${TORI_COMPILE_FLAGS})
+    add_test(NAME ${NAME} COMMAND ${NAME})
+    set_tests_properties(${NAME} PROPERTIES LABELS example)
   endfunction()
 endif()
 

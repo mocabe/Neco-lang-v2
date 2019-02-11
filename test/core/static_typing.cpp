@@ -351,7 +351,3 @@ void test_assume_object_type()
       type_c<closure<closure<Double, Int>, Double, Int>>);
   }
 }
-
-int main()
-{
-}
