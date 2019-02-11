@@ -45,7 +45,13 @@ target_compile_features(tori INTERFACE cxx_std_17)
 if(MSVC)
   set(TORI_COMPILE_FLAGS /W4 /Zi /EHsc /std:c++17 /permissive-)
 else()
-  set(TORI_COMPILE_FLAGS -O0 -Wall -Wextra -g -std=c++17 -save-temps)
+  set(TORI_COMPILE_FLAGS -O0 -Wall -Wextra -Wshadow -g -std=c++17 -pedantic)
+endif()
+
+# use UBsan
+if(UNIX)
+  set(TORI_COMPILE_FLAGS ${TORI_COMPILE_FLAGS} -fsanitize=undefined)
+  set(TORI_LINK_FLAGS ${TORI_LINK_FLAGS} -fsanitize=undefined)
 endif()
 
 # ------------------------------------------
