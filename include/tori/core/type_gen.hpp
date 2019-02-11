@@ -209,7 +209,10 @@ namespace TORI_NS::detail {
     template <class T>
     [[nodiscard]] object_ptr<const Type> object_type()
     {
-      return object_type_impl(T::term);
+      if constexpr (is_transfarable_immediate(type_c<T>))
+        return value_type_address(type_c<tm_value<T>>);
+      else
+        return object_type_impl(T::term);
     }
 
   } // namespace interface
