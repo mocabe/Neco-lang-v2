@@ -1,15 +1,16 @@
-#include <iostream>
 #include <tori/core.hpp>
 #include <tori/lib.hpp>
 
+#include <catch2/catch.hpp>
+#include <iostream>
+
 using namespace tori;
 
-// simple function test
-void simple()
+TEST_CASE("simple function test")
 {
+  SECTION("Int->Int")
   {
-    // Int -> Int
-    struct F1 : Function<F1, Int, Int>
+    struct F : Function<F, Int, Int>
     {
       return_type code() const
       {
@@ -19,33 +20,33 @@ void simple()
         return eval(eval_arg<0>());
       }
     };
-    auto f1 = make_object<F1>();
-  }
-}
-// higher order function test
-void higher_order()
-{
-  {
-    // (Int->Int) -> (Int->Int)
-    struct F2 : Function<F2, closure<Int, Int>, closure<Int, Int>>
-    {
-      return_type code() const
-      {
-        return arg<0>();
-        return eval_arg<0>();
-        return eval(arg<0>());
-        return eval(eval_arg<0>());
-      }
-    };
-    auto f2 = make_object<F2>();
+    auto f = make_object<F>();
   }
 }
 
-// static apply test
-void apply()
+TEST_CASE("higher order function test")
 {
+  SECTION("(Int->Int) -> (Int->Int)")
   {
-    struct F3 : Function<F3, closure<Int, Int>, Int, Int>
+    struct F : Function<F, closure<Int, Int>, closure<Int, Int>>
+    {
+      return_type code() const
+      {
+        return arg<0>();
+        return eval_arg<0>();
+        return eval(arg<0>());
+        return eval(eval_arg<0>());
+      }
+    };
+    auto f = make_object<F>();
+  }
+}
+
+TEST_CASE("static apply test")
+{
+  SECTION("")
+  {
+    struct F : Function<F, closure<Int, Int>, Int, Int>
     {
       return_type code() const
       {
@@ -65,29 +66,29 @@ void apply()
         return eval_arg<0>() << (eval_arg<0>() << arg<1>());
       }
     };
-    auto f3 = make_object<F3>();
+    auto f = make_object<F>();
   }
 }
 
-// polymorphic function test
-void polymorphic()
+TEST_CASE("polymorphic function test")
 {
+  SECTION("polymorphic closure declaration")
   {
     class X;
-    // polymorphic closure declaration
-    struct F4 : Function<F4, Int, closure<Int, forall<X>>, forall<X>>
+    struct F : Function<F, Int, closure<Int, forall<X>>, forall<X>>
     {
       return_type code() const
       {
         return arg<1>() << arg<0>();
       }
     };
-    auto f4 = make_object<F4>();
+    auto f4 = make_object<F>();
   }
+
+  SECTION("polymorphic return type")
   {
     class X;
-    // polymorphic return type
-    struct F5If : Function<F5If, Bool, forall<X>, forall<X>, forall<X>>
+    struct If : Function<If, Bool, forall<X>, forall<X>, forall<X>>
     {
       return_type code() const
       {
@@ -97,42 +98,47 @@ void polymorphic()
           return arg<2>();
       }
     };
-    auto f5if = make_object<F5If>();
+    auto _if = make_object<If>();
 
-    // static polymorhic apply
-    struct F5_0 : Function<F5_0, Unit, Int>
+    SECTION("static polymorphic apply")
     {
-      return_type code() const
+      struct F : Function<F, Unit, Int>
       {
-        auto _if = make_object<F5If>();
-        auto b = make_object<Bool>();
-        auto i = make_object<Int>();
-        return _if << b << i << i; // Bool->X->X->X Bool Int Int
-      }
-    };
-    auto f5_0 = make_object<F5_0>();
+        return_type code() const
+        {
+          auto _if = make_object<If>();
+          auto b = make_object<Bool>();
+          auto i = make_object<Int>();
+          return _if << b << i << i; // Bool->X->X->X Bool Int Int
+        }
+      };
+      auto f = make_object<F>();
+    }
 
-    // static polymorphic apply
-    struct F5_1 : Function<F5_1, closure<Double, Int, Int>, Int>
+    SECTION("static polymorphic apply 2")
     {
-      return_type code() const
+      // static polymorphic apply
+      struct F : Function<F, closure<Double, Int, Int>, Int>
       {
-        auto _if = make_object<F5If>();
-        auto b = make_object<Bool>();
-        auto i = make_object<Int>();
-        auto d = make_object<Double>();
-        // (Double->Int->Int) ((Bool->X->X->X) Bool Double Double)
-        // ((Bool->X->X->X) Bool Int Int)
-        return arg<0>() << (_if << b << d << d) << (_if << b << i << i);
-      }
-    };
-    auto f5_1 = make_object<F5_1>();
+        return_type code() const
+        {
+          auto _if = make_object<If>();
+          auto b = make_object<Bool>();
+          auto i = make_object<Int>();
+          auto d = make_object<Double>();
+          // (Double->Int->Int) ((Bool->X->X->X) Bool Double Double)
+          // ((Bool->X->X->X) Bool Int Int)
+          return arg<0>() << (_if << b << d << d) << (_if << b << i << i);
+        }
+      };
+      auto f = make_object<F>();
+    }
   }
 }
 
-/*
-void selfrec() {
-  
+TEST_CASE("selfrec")
+{
+
   // f = λx.f x
   struct R : Function<R, Int, Int>
   {
@@ -145,14 +151,4 @@ void selfrec() {
   auto sr = make_object<R>() << new Int(42);
   check_type<Int>(sr);
   auto r = eval(sr);
-  std::vector<double> a;
-}
-*/
-int main()
-{
-  simple();
-  higher_order();
-  apply();
-  polymorphic();
- // selfrec();
 }
