@@ -18,6 +18,13 @@ if(TORI_BUILD_TEST OR TORI_BUILD_BENCHMARK OR TORI_BUILD_EXAMPLE)
 endif()
 
 # ------------------------------------------
+# Add target requirements
+# ------------------------------------------
+if(TORI_BUILD)
+include(external/external.cmake)
+endif()
+
+# ------------------------------------------
 # Add library
 # ------------------------------------------
 add_library(tori INTERFACE)
