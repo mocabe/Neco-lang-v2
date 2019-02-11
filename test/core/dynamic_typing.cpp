@@ -1,139 +1,373 @@
-
 #include <tori/core.hpp>
 #include <tori/lib.hpp>
 
+#include <catch2/catch.hpp>
+
 #include <iostream>
-int main()
+
+using namespace tori::detail;
+
+TEST_CASE("subst_type")
 {
-  using namespace tori::detail;
+
+  SECTION("[X->Int] X == Int")
   {
+    auto var = genvar();
+    auto tyarrow = TyArrow {var, object_type<Int>()};
+    REQUIRE(same_type(subst_type(tyarrow, var), object_type<Int>()));
+  }
+
+  SECTION("[X->Int]X->Int == Int->Int")
+  {
+    auto var = genvar();
+    auto tyarrow = TyArrow {var, object_type<Int>()};
+    auto type = make_object<Type>(ArrowType {var, object_type<Int>()});
+    REQUIRE(same_type(
+      subst_type(tyarrow, type),
+      make_object<Type>(ArrowType {object_type<Int>(), object_type<Int>()})));
+  }
+}
+
+TEST_CASE("subst_type_all")
+{
+  { // (Y->X) -> (Float->Y) [X->Int, Y->Float] => (Float->Int) -> (Float->Float)
     auto X = genvar();
     auto Y = genvar();
-    std::vector<Constr> cs = {{X, object_type<Int>()},
-                              {Y, new Type(ArrowType {X, X})}};
-    auto ta = unify(cs, nullptr);
-    std::cout << std::endl;
-    std::cout << "{X = Int, Y = X->X}" << std::endl;
-    for (auto a : ta) {
-      std::cout << "TyArrow{" << to_string(a.from) << " -> " << to_string(a.to)
-                << "}\n";
+    std::vector tyarrows = {TyArrow {X, object_type<Int>()},
+                            TyArrow {Y, object_type<Float>()}};
+    auto type = make_object<Type>(
+      ArrowType {new Type(ArrowType {Y, X}),
+                 new Type(ArrowType {object_type<Float>(), Y})});
+
+    REQUIRE(same_type(
+      subst_type_all(tyarrows, type),
+      make_object<Type>(ArrowType {
+        new Type(ArrowType {object_type<Float>(), object_type<Int>()}),
+        new Type(ArrowType {object_type<Float>(), object_type<Float>()})})));
+  }
+}
+
+TEST_CASE("unify")
+{
+
+  // compare two TyArrow vectors
+  auto eq_arrows = [](auto&& result, auto&& ans) {
+    if (result.size() != ans.size())
+      return false;
+    for (auto&& r : result) {
+      auto b = [&]() {
+        for (auto&& a : ans) {
+          if (same_type(r.from, a.from) && same_type(r.to, a.to))
+            return true;
+        }
+        return false;
+      }();
+      if (!b)
+        return false;
+    }
+    return true;
+  };
+
+  auto print_tyarrows = [](auto&& tyarrows) {
+    std::cout << "[";
+    for (auto&& ta : tyarrows) {
+      std::cout << to_string(ta.from) << "->" << to_string(ta.to) << ", ";
+    }
+    std::cout << "]\n";
+  };
+
+  auto X = genvar();
+  auto Y = genvar();
+  auto Z = genvar();
+  auto U = genvar();
+  auto W = genvar();
+
+  SECTION("[X=int]")
+  {
+    std::vector cs = {Constr {X, object_type<Int>()}};
+    auto result = unify(cs, nullptr);
+
+    SECTION("reunify")
+    {
+      for (auto&& ta : result) {
+        cs = subst_constr_all(ta, cs);
+      }
+      REQUIRE(unify(cs, nullptr).empty());
+    }
+
+    SECTION("eq")
+    {
+      std::vector ans = {TyArrow {X, object_type<Int>()}};
+      print_tyarrows(result);
+      print_tyarrows(ans);
+      CHECK(eq_arrows(result, ans));
     }
   }
+
+  SECTION("[X=Int, Y=X->X]")
   {
-    auto X = genvar();
-    auto Y = genvar();
-    std::vector<Constr> cs = {
-      {new Type(ArrowType {object_type<Int>(), object_type<Int>()}),
-       new Type(ArrowType {X, Y})}};
-    auto ta = unify(cs, nullptr);
-    std::cout << std::endl;
-    std::cout << "{Int->Int = X->Y}" << std::endl;
-    for (auto a : ta) {
-      std::cout << "TyArrow{" << to_string(a.from) << " -> " << to_string(a.to)
-                << "}\n";
+    std::vector cs = {Constr {X, object_type<Int>()},
+                      Constr {Y, new Type(ArrowType {X, X})}};
+    std::vector result = unify(cs, nullptr);
+
+    SECTION("reunify")
+    {
+      for (auto&& ta : result) {
+        cs = subst_constr_all(ta, cs);
+      }
+      REQUIRE(unify(cs, nullptr).empty());
+    }
+
+    SECTION("eq")
+    {
+      std::vector ans = {
+        TyArrow {X, object_type<Int>()},
+        TyArrow {Y,
+                 new Type(ArrowType {object_type<Int>(), object_type<Int>()})}};
+
+      print_tyarrows(result);
+      print_tyarrows(ans);
+      CHECK(eq_arrows(result, ans));
     }
   }
+
+  SECTION("[Int-Int=X->Y]")
   {
-    auto X = genvar();
-    auto Y = genvar();
-    auto Z = genvar();
-    auto U = genvar();
-    auto W = genvar();
-    std::vector<Constr> cs = {
-      {new Type(ArrowType {X, Y}), new Type(ArrowType {Y, Z})},
-      {Z, new Type(ArrowType {U, W})}};
-    auto ta = unify(cs, nullptr);
-    std::cout << std::endl;
-    std::cout << "{X->Y = Y->Z, Z = U->W}" << std::endl;
-    for (auto a : ta) {
-      std::cout << "TyArrow{" << to_string(a.from) << " -> " << to_string(a.to)
-                << "}\n";
+    std::vector cs = {
+      Constr {new Type(ArrowType {object_type<Int>(), object_type<Int>()}),
+              new Type(ArrowType {X, Y})}};
+    std::vector result = unify(cs, nullptr);
+
+    SECTION("reunify")
+    {
+      for (auto&& ta : result) {
+        cs = subst_constr_all(ta, cs);
+      }
+      REQUIRE(unify(cs, nullptr).empty());
+    }
+
+    SECTION("eq")
+    {
+      std::vector ans = {TyArrow {X, object_type<Int>()},
+                         TyArrow {Y, object_type<Int>()}};
+      print_tyarrows(result);
+      print_tyarrows(ans);
+      CHECK(eq_arrows(result, ans));
     }
   }
+
+  SECTION("[Int->Int=X->Y]")
   {
-    auto X = genvar();
-    std::vector<Constr> cs = {
-      {new Type(ArrowType {object_type<Int>(), object_type<Double>()}),
-       new Type(ArrowType {object_type<Int>(), X})}};
-    auto ta = unify(cs, nullptr);
-    std::cout << std::endl;
-    std::cout << "{Int->Dobule = Int->genvar[0]}" << std::endl;
-    for (auto a : ta) {
-      std::cout << "TyArrow{" << to_string(a.from) << " -> " << to_string(a.to)
-                << "}\n";
+    std::vector cs = {
+      Constr {new Type(ArrowType {X, Y}), new Type(ArrowType {Y, Z})},
+      Constr {Z, new Type(ArrowType {U, W})}};
+    auto result = unify(cs, nullptr);
+
+    SECTION("reunify")
+    {
+      for (auto&& ta : result) {
+        cs = subst_constr_all(ta, cs);
+      }
+      REQUIRE(unify(cs, nullptr).empty());
+    }
+
+    SECTION("eq")
+    {
+      std::vector ans = {TyArrow {X, new Type(ArrowType {U, W})},
+                         TyArrow {Y, new Type(ArrowType {U, W})},
+                         TyArrow {Z, new Type(ArrowType {U, W})}};
+      print_tyarrows(result);
+      print_tyarrows(ans);
+      CHECK(eq_arrows(result, ans));
     }
   }
+
+  SECTION("[]")
   {
-    std::vector<Constr> cs = {};
-    auto ta = unify(cs, nullptr);
-    assert(ta.empty());
+    std::vector<Constr> cs;
+    auto result = unify(cs, nullptr);
+    REQUIRE(result.empty());
   }
+}
+
+TEST_CASE("type_of")
+{
+  SECTION("type")
   {
-    auto Y = genvar();
-    std::vector<Constr> cs = {
-      {object_type<Int>(), new Type(ArrowType {object_type<Int>(), Y})}};
-    try {
-      std::cout << "hey" << std::endl;
-      auto ta = unify(cs, nullptr);
-      assert(false);
-    } catch (type_error::type_error&) {
+    auto t = genvar();
+    auto type = type_of(t);
+    REQUIRE(same_type(type, object_type<Type>()));
+  }
+
+  SECTION("value")
+  {
+    auto i = make_object<Int>();
+    auto type = type_of(i);
+    REQUIRE(same_type(type, object_type<Int>()));
+  }
+
+  SECTION("arrow")
+  {
+    {
+      struct A : Function<A, closure<Int, Int>, Int>
+      {
+        return_type code() const
+        {
+        }
+      };
+      auto a = make_object<A>();
+      auto type = type_of(a);
+      REQUIRE(same_type(type, object_type<closure<closure<Int, Int>, Int>>()));
     }
   }
+  SECTION("apply")
   {
-    auto Y = genvar();
-    std::vector<Constr> cs = {{Y, new Type(ArrowType {object_type<Int>(), Y})}};
-    try {
-      std::cout << "hey" << std::endl;
-      auto ta = unify(cs, nullptr);
-      assert(false);
-    } catch (type_error::type_error&) {
+    SECTION("simple")
+    {
+      struct A : Function<A, Int, Double>
+      {
+        return_type code() const
+        {
+        }
+      };
+
+      auto a = make_object<A>();
+      auto i = make_object<Int>();
+
+      SECTION("Apply")
+      {
+        object_ptr app = new Apply {a, i};
+        auto type = type_of(app);
+        REQUIRE(same_type(type, object_type<Double>()));
+      }
+
+      SECTION("ApplyR")
+      {
+        object_ptr app = make_object<ApplyR>(a, i);
+        auto type = type_of(app);
+        REQUIRE(same_type(type, object_type<Double>()));
+      }
+
+      SECTION("operator<<")
+      {
+        auto app = a << i;
+        auto type = type_of(app);
+        REQUIRE(same_type(type, object_type<Double>()));
+      }
     }
   }
+  SECTION("higher-order")
   {
-    struct F : Function<F, closure<Int, Int>, Int, Int>
+    struct A : Function<A, closure<Double, Int>, Double, Int>
     {
       return_type code() const
       {
-        return new Int();
       }
     };
-    auto f = make_object<F>();
-    auto app = make_object<Fix>() << f << new Int();
-    check_type<Int>(app);
-  }
-  {
-    try {
-      auto app = make_object<Fix>() << new Int();
-      auto tp = type_of(app);
-      assert(false);
-    } catch (type_error::type_error&) {
-    }
-  }
-  {
-    struct ThunkTest : Function<ThunkTest, Unit, Int>
+
+    struct B : Function<B, Double, Int>
     {
       return_type code() const
       {
-        std::cout << "ThunkTest evaluated" << std::endl;
-        return new Int(21);
       }
     };
-    auto test = make_object<ThunkTest>();
-    auto add = make_object<PlusInt>();
-    // (a -> a) ((Unit -> Int) Unit)
-    auto appThunk = test << new Unit();
-    check_type<Int>(appThunk);
-    auto app = add << appThunk << appThunk;
-    check_type<Int>(app);
-    auto result = eval(app);
-    assert(*value_cast<Int>(result) == 42);
+
+    auto a = make_object<A>();
+    auto b = make_object<B>();
+    auto i = make_object<Int>();
+
+    SECTION("Apply")
+    {
+      object_ptr app = new Apply(new Apply(a, b), i);
+      auto type = type_of(app);
+      REQUIRE(same_type(type, object_type<Int>()));
+    }
+
+    SECTION("operator<<")
+    {
+      auto app = a << b << i;
+      auto type = type_of(app);
+      REQUIRE(same_type(type, object_type<Int>()));
+    }
   }
+
+  SECTION("polymorphic")
   {
-    object_ptr<Int> i = new Int(42);
-    object_ptr<const Int> ci = i;
+    struct A : Function<A, Bool, forall<class X>, forall<class X>>
+    {
+      return_type code() const
+      {
+      }
+    };
+
+    auto a = make_object<A>();
+    auto b = make_object<Bool>();
+    auto i = make_object<Int>();
+    auto d = make_object<Double>();
+
+    SECTION("mono")
+    {
+      auto app = a << b << i << i;
+      auto type = type_of(app);
+      REQUIRE(same_type(type, object_type<Int>()));
+    }
+
+    SECTION("poly")
+    {
+      auto app = a << b << (a << b << d << d) << d;
+      auto type = type_of(app);
+      REQUIRE(same_type(type, object_type<Double>()));
+    }
   }
+
+  SECTION("fix")
   {
-    std::shared_ptr<int> i = std::make_shared<int>(42);
-    std::shared_ptr<const int> ci = i;
+
+    struct A : Function<A, closure<Int, Double>, closure<Int, Double>>
+    {
+      return_type code() const
+      {
+      }
+    };
+
+    struct B : Function<B, closure<Int, Double>, Int, Double>
+    {
+      return_type code() const
+      {
+      }
+    };
+
+    struct C : Function<C, Int, Double, Int, Double>
+    {
+      return_type code() const
+      {
+      }
+    };
+
+    auto a = make_object<A>();
+    auto b = make_object<B>();
+    auto c = make_object<C>();
+    auto fix = make_object<Fix>();
+
+    SECTION("a")
+    {
+      auto app = fix << a;
+      auto type = type_of(app);
+      REQUIRE(same_type(type, object_type<closure<Int, Double>>()));
+    }
+
+    SECTION("b")
+    {
+      auto app = fix << b;
+      auto type = type_of(app);
+      REQUIRE(same_type(type, object_type<closure<Int, Double>>()));
+    }
+
+    SECTION("c")
+    {
+      auto app = fix << c;
+      auto type = type_of(app);
+      REQUIRE(same_type(type, object_type<closure<Int, Double>>()));
+    }
   }
 }
