@@ -10,7 +10,6 @@
 #include "static_typing.hpp"
 #include "dynamic_typing.hpp"
 #include "value_cast.hpp"
-#include "closure_cast.hpp"
 #include "offset_of_member.hpp"
 
 #include <type_traits>
@@ -132,8 +131,6 @@ namespace TORI_NS::detail {
         return r;
       } catch (const bad_value_cast& e) {
         return new Exception(new BadValueCast(e.from(), e.to()));
-      } catch (const bad_closure_cast& e) {
-        return new Exception(new BadClosureCast(e.from(), e.to()));
       } catch (const type_error::type_error& e) {
         return new Exception(new TypeError(new String(e.what()), e.src()));
       } catch (const eval_error::eval_error& e) {

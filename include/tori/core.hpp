@@ -15,7 +15,6 @@
 #include "core/exception.hpp"
 #include "core/type_error.hpp"
 #include "core/value_cast.hpp"
-#include "core/closure_cast.hpp"
 #include "core/fix.hpp"
 #include "core/apply.hpp"
 #include "core/eval.hpp"
