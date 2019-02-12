@@ -28,53 +28,53 @@ namespace TORI_NS::detail {
   /// internal storage of object_ptr
   struct object_ptr_storage
   {
-    enum class pointer_tag_flags : uint32_t
+    enum class pointer_tags : uint32_t
     {
       // clang-format off
 
       //            32bit
       // h <---------------------> l
-      // | ---- , ----, ----, ---- | :8bit x4
-      //                    |<---->|
-      //                      tag
-      //                     ^^^^^
+      // | -- -- -- -- -- -- -- -- |
+      //                        |<>|
+      //                        tag (3bit)
+      //                        ^^^^^^^^^^
       // |<---------------->|
       //       type flag
 
-      pointer   = 0x00, //< plain pointer
-      immediate = 0x01, //< immediate value
-      apply     = 0x02, //< apply value (optional)
-      exception = 0x04, //< exception value (optional)
+      pointer   = 0x00000000, //< plain pointer
+      immediate = 0x00000001, //< immediate value
+      apply     = 0x00000002, //< apply value (optional)
+      exception = 0x00000003, //< exception value (optional)
 
-      extract_mask = 0x000000FF,
-      clear_mask   = 0xFFFFFF00,
+      extract_mask = 0x00000007,
+      clear_mask   = 0xFFFFFFF8,
 
       // clang-format on
     };
 
-    enum class immediate_type_flags : uint32_t
+    enum class immediate_type_tags : uint32_t
     {
       // clang-format off
 
       //            32bit
       // h <---------------------> l
-      // | ---- , ----, ----, ---- | :8bit x4
-      //                    |<---->|
-      //                      tag
-      // |<---------------->|
+      // | -- -- -- -- -- -- -- -- |
+      //                        |<>|
+      //                        tag(3bit)
+      // |<------------------>|
       //       type flag
       //       ^^^^^^^^^
 
-      u8  = 0x00000100, //< uint8_t
-      u16 = 0x00000200, //< uint16_t
-      u32 = 0x00000400, //< uint32_t
-      i8  = 0x00000800, //< int8_t
-      i16 = 0x00001000, //< int16_t
-      i32 = 0x00002000, //< int32_t
-      f32 = 0x00004000, //< float (IEEE754 32bit)
+      u8  = 0x00000010, //< uint8_t
+      u16 = 0x00000020, //< uint16_t
+      u32 = 0x00000030, //< uint32_t
+      i8  = 0x00000040, //< int8_t
+      i16 = 0x00000050, //< int16_t
+      i32 = 0x00000060, //< int32_t
+      f32 = 0x00000070, //< float (IEEE754 32bit)
 
-      extract_mask = 0xFFFFFF00,
-      clear_mask   = 0x000000FF,
+      extract_mask = 0xFFFFFFF0,
+      clear_mask   = 0x0000000F,
 
       // clang-format on
     };
@@ -82,10 +82,13 @@ namespace TORI_NS::detail {
     // immediate
     struct non_pointer
     {
-      // **LITTLE ENDIAN ONLY**  
-      // h <---------------------------------> l
-      // | immediate union | [3] [2] [1] | [0] |
-      // |      value      |     type    | tag |
+      // Only works when:
+      // - little endian
+      // - byte addressable
+      //                 64bit
+      // h <-------------------------------------> l
+      // |        32       |     28     | 1 |   3  |
+      // |      value      |    type    | - |  tag |
 
       /// pointer flags
       uint32_t flag;
@@ -99,15 +102,15 @@ namespace TORI_NS::detail {
     {
       uint32_t flag {};
       std::memcpy(&flag, &imm.flag, 4);
-      return flag & (uint32_t)pointer_tag_flags::extract_mask;
+      return flag & (uint32_t)pointer_tags::extract_mask;
     }
 
     /// set new pointer tag flag
-    void set_pointer_tag_flag(pointer_tag_flags flag)
+    void set_pointer_tag_flag(pointer_tags flag)
     {
       uint32_t flg {};
       std::memcpy(&flg, &imm.flag, 4);
-      flg &= (uint32_t)pointer_tag_flags::clear_mask;
+      flg &= (uint32_t)pointer_tags::clear_mask;
       flg |= (uint32_t)flag;
       std::memcpy(&imm.flag, &flg, 4);
     }
@@ -119,17 +122,17 @@ namespace TORI_NS::detail {
       assert(is_immediate());
       uint32_t flag {};
       std::memcpy(&flag, &imm.flag, 4);
-      return flag & (uint32_t)immediate_type_flags::extract_mask;
+      return flag & (uint32_t)immediate_type_tags::extract_mask;
     }
 
     /// \requires is_immediate() == true
     /// set new immediate type flag
-    void set_immediate_type_flag(immediate_type_flags flag)
+    void set_immediate_type_flag(immediate_type_tags flag)
     {
       assert(is_immediate());
       uint32_t flg {};
       std::memcpy(&flg, &imm.flag, 4);
-      flg &= (uint32_t)immediate_type_flags::clear_mask;
+      flg &= (uint32_t)immediate_type_tags::clear_mask;
       flg |= (uint32_t)flag;
       std::memcpy(&imm.flag, &flg, 4);
     }
@@ -137,13 +140,13 @@ namespace TORI_NS::detail {
     /// pointer?
     bool is_pointer() const
     {
-      return get_pointer_tag_flag() == (uint32_t)pointer_tag_flags::pointer;
+      return get_pointer_tag_flag() == (uint32_t)pointer_tags::pointer;
     }
 
     /// immediate?
     bool is_immediate() const
     {
-      return get_pointer_tag_flag() == (uint32_t)pointer_tag_flags::immediate;
+      return get_pointer_tag_flag() == (uint32_t)pointer_tags::immediate;
     }
 
     /// get immediate
@@ -172,29 +175,29 @@ namespace TORI_NS::detail {
     {
       assert(is_immediate());
 
-      set_pointer_tag_flag(pointer_tag_flags::immediate);
+      set_pointer_tag_flag(pointer_tags::immediate);
 
       if constexpr (type_c<U> == type_c<uint8_t>)
-        return set_immediate_type_flag(immediate_type_flags::u8);
+        return set_immediate_type_flag(immediate_type_tags::u8);
       if constexpr (type_c<U> == type_c<uint16_t>)
-        return set_immediate_type_flag(immediate_type_flags::u16);
+        return set_immediate_type_flag(immediate_type_tags::u16);
       if constexpr (type_c<U> == type_c<uint32_t>)
-        return set_immediate_type_flag(immediate_type_flags::u32);
+        return set_immediate_type_flag(immediate_type_tags::u32);
       if constexpr (type_c<U> == type_c<int8_t>)
-        return set_immediate_type_flag(immediate_type_flags::i8);
+        return set_immediate_type_flag(immediate_type_tags::i8);
       if constexpr (type_c<U> == type_c<int16_t>)
-        return set_immediate_type_flag(immediate_type_flags::i16);
+        return set_immediate_type_flag(immediate_type_tags::i16);
       if constexpr (type_c<U> == type_c<int32_t>)
-        return set_immediate_type_flag(immediate_type_flags::i32);
+        return set_immediate_type_flag(immediate_type_tags::i32);
       if constexpr (type_c<U> == type_c<float>)
-        return set_immediate_type_flag(immediate_type_flags::f32);
+        return set_immediate_type_flag(immediate_type_tags::f32);
 
       unreachable();
     }
 
     /// check immediate type
     /// \requires is_immediate() == true
-    bool check_immediate_type(immediate_type_flags flag) const
+    bool check_immediate_type(immediate_type_tags flag) const
     {
       assert(is_immediate());
       return get_immediate_type_flag() == (uint32_t)flag;
@@ -208,19 +211,19 @@ namespace TORI_NS::detail {
         return false;
 
       if constexpr (type_c<U> == type_c<uint8_t>)
-        return check_immediate_type(immediate_type_flags::u8);
+        return check_immediate_type(immediate_type_tags::u8);
       if constexpr (type_c<U> == type_c<uint16_t>)
-        return check_immediate_type(immediate_type_flags::u16);
+        return check_immediate_type(immediate_type_tags::u16);
       if constexpr (type_c<U> == type_c<uint32_t>)
-        return check_immediate_type(immediate_type_flags::u32);
+        return check_immediate_type(immediate_type_tags::u32);
       if constexpr (type_c<U> == type_c<int8_t>)
-        return check_immediate_type(immediate_type_flags::i8);
+        return check_immediate_type(immediate_type_tags::i8);
       if constexpr (type_c<U> == type_c<int16_t>)
-        return check_immediate_type(immediate_type_flags::i16);
+        return check_immediate_type(immediate_type_tags::i16);
       if constexpr (type_c<U> == type_c<int32_t>)
-        return check_immediate_type(immediate_type_flags::i32);
+        return check_immediate_type(immediate_type_tags::i32);
       if constexpr (type_c<U> == type_c<float>)
-        return check_immediate_type(immediate_type_flags::f32);
+        return check_immediate_type(immediate_type_tags::f32);
 
       return false;
     }
@@ -235,23 +238,23 @@ namespace TORI_NS::detail {
 
     constexpr uint32_t get_pointer_tag_flag_imm() const
     {
-      return imm.flag & (uint32_t)pointer_tag_flags::extract_mask;
+      return imm.flag & (uint32_t)pointer_tags::extract_mask;
     }
 
-    constexpr void set_pointer_tag_flag_imm(pointer_tag_flags flag)
+    constexpr void set_pointer_tag_flag_imm(pointer_tags flag)
     {
-      imm.flag &= (uint32_t)pointer_tag_flags::clear_mask;
+      imm.flag &= (uint32_t)pointer_tags::clear_mask;
       imm.flag |= (uint32_t)flag;
     }
 
     constexpr uint32_t get_immediate_type_flag_imm() const
     {
-      return imm.flag & (uint32_t)immediate_type_flags::extract_mask;
+      return imm.flag & (uint32_t)immediate_type_tags::extract_mask;
     }
 
-    constexpr void set_immediate_type_flag_imm(immediate_type_flags flag)
+    constexpr void set_immediate_type_flag_imm(immediate_type_tags flag)
     {
-      imm.flag &= (uint32_t)immediate_type_flags::clear_mask;
+      imm.flag &= (uint32_t)immediate_type_tags::clear_mask;
       imm.flag |= (uint32_t)flag;
     }
 
@@ -262,40 +265,40 @@ namespace TORI_NS::detail {
     constexpr object_ptr_storage(Object* p) noexcept
       : ptr {p}
     {
-      set_pointer_tag_flag(pointer_tag_flags::pointer);
+      set_pointer_tag_flag(pointer_tags::pointer);
     }
     constexpr object_ptr_storage(const Object* p) noexcept
       : ptr {const_cast<Object*>(p)}
     {
-      set_pointer_tag_flag(pointer_tag_flags::pointer);
+      set_pointer_tag_flag(pointer_tags::pointer);
     }
 
     constexpr object_ptr_storage(nullptr_t p) noexcept
       : ptr {p}
     {
-      set_pointer_tag_flag(pointer_tag_flags::pointer);
+      set_pointer_tag_flag(pointer_tags::pointer);
     }
 
     template <class T, class = std::enable_if_t<!std::is_pointer_v<T>>>
     constexpr object_ptr_storage(T t) noexcept
       : imm {{}, {t}}
     {
-      set_pointer_tag_flag_imm(pointer_tag_flags::immediate);
+      set_pointer_tag_flag_imm(pointer_tags::immediate);
 
       if constexpr (type_c<T> == type_c<uint8_t>)
-        set_immediate_type_flag_imm(immediate_type_flags::u8);
+        set_immediate_type_flag_imm(immediate_type_tags::u8);
       if constexpr (type_c<T> == type_c<uint16_t>)
-        set_immediate_type_flag_imm(immediate_type_flags::u16);
+        set_immediate_type_flag_imm(immediate_type_tags::u16);
       if constexpr (type_c<T> == type_c<uint32_t>)
-        set_immediate_type_flag_imm(immediate_type_flags::u32);
+        set_immediate_type_flag_imm(immediate_type_tags::u32);
       if constexpr (type_c<T> == type_c<int8_t>)
-        set_immediate_type_flag_imm(immediate_type_flags::i8);
+        set_immediate_type_flag_imm(immediate_type_tags::i8);
       if constexpr (type_c<T> == type_c<int16_t>)
-        set_immediate_type_flag_imm(immediate_type_flags::i16);
+        set_immediate_type_flag_imm(immediate_type_tags::i16);
       if constexpr (type_c<T> == type_c<int32_t>)
-        set_immediate_type_flag_imm(immediate_type_flags::i32);
+        set_immediate_type_flag_imm(immediate_type_tags::i32);
       if constexpr (type_c<T> == type_c<float>)
-        set_immediate_type_flag_imm(immediate_type_flags::f32);
+        set_immediate_type_flag_imm(immediate_type_tags::f32);
     }
 
     union
@@ -802,19 +805,19 @@ namespace TORI_NS::detail {
   {
     assert(is_immediate());
 
-    if (check_immediate_type(immediate_type_flags::u8))
+    if (check_immediate_type(immediate_type_tags::u8))
       return object_type<uint8_t>();
-    if (check_immediate_type(immediate_type_flags::u16))
+    if (check_immediate_type(immediate_type_tags::u16))
       return object_type<uint16_t>();
-    if (check_immediate_type(immediate_type_flags::u32))
+    if (check_immediate_type(immediate_type_tags::u32))
       return object_type<uint32_t>();
-    if (check_immediate_type(immediate_type_flags::i8))
+    if (check_immediate_type(immediate_type_tags::i8))
       return object_type<int8_t>();
-    if (check_immediate_type(immediate_type_flags::i16))
+    if (check_immediate_type(immediate_type_tags::i16))
       return object_type<int16_t>();
-    if (check_immediate_type(immediate_type_flags::i32))
+    if (check_immediate_type(immediate_type_tags::i32))
       return object_type<int32_t>();
-    if (check_immediate_type(immediate_type_flags::f32))
+    if (check_immediate_type(immediate_type_tags::f32))
       return object_type<float>();
 
     unreachable();
