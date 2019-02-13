@@ -68,13 +68,13 @@ namespace TORI_NS::detail {
     [[nodiscard]] object_ptr<T> value_cast(const object_ptr<U>& obj)
     {
       static_assert(
-        !is_tm_closure(T::term),
-        "Casting to closure types might cause slicing.");
-
-      static_assert(
         !is_immediate(type_c<T>), "Cannot cast to/from unboxed types");
       static_assert(
         !is_immediate(type_c<U>), "Cannot cast to/from unboxed types");
+
+      static_assert(
+        !is_tm_closure(T::term),
+        "Casting to closure types might cause slicing.");
 
       if (likely(obj && has_type<T>(obj))) {
         return static_object_cast<T>(obj);
@@ -90,13 +90,13 @@ namespace TORI_NS::detail {
     [[nodiscard]] object_ptr<T> value_cast(object_ptr<U>&& obj)
     {
       static_assert(
-        !is_tm_closure(T::term),
-        "Casting to closure types might cause slicing.");
-
-      static_assert(
         !is_immediate(type_c<T>), "Cannot cast to/from unboxed types");
       static_assert(
         !is_immediate(type_c<U>), "Cannot cast to/from unboxed types");
+
+      static_assert(
+        !is_tm_closure(T::term),
+        "Casting to closure types might cause slicing.");
 
       if (likely(obj && has_type<T>(obj))) {
         return static_object_cast<T>(std::move(obj));
@@ -113,13 +113,13 @@ namespace TORI_NS::detail {
     [[nodiscard]] object_ptr<T> value_cast_if(const object_ptr<U>& obj) noexcept
     {
       static_assert(
-        !is_tm_closure(T::term),
-        "Casting to closure types might cause slicing.");
-
-      static_assert(
         !is_immediate(type_c<T>), "Cannot cast to/from unboxed types");
       static_assert(
         !is_immediate(type_c<U>), "Cannot cast to/from unboxed types");
+
+      static_assert(
+        !is_tm_closure(T::term),
+        "Casting to closure types might cause slicing.");
 
       if (likely(obj && has_type<T>(obj))) {
         return static_object_cast<T>(obj);
@@ -135,13 +135,13 @@ namespace TORI_NS::detail {
     [[nodiscard]] object_ptr<T> value_cast_if(object_ptr<U>&& obj) noexcept
     {
       static_assert(
-        !is_tm_closure(T::term),
-        "Casting to closure types might cause slicing.");
-
-      static_assert(
         !is_immediate(type_c<T>), "Cannot cast to/from unboxed types");
       static_assert(
         !is_immediate(type_c<U>), "Cannot cast to/from unboxed types");
+
+      static_assert(
+        !is_tm_closure(T::term),
+        "Casting to closure types might cause slicing.");
 
       if (likely(obj && has_type<T>(obj))) {
         return static_object_cast<T>(std::move(obj));
