@@ -11,37 +11,39 @@
 
 namespace TORI_NS::detail {
 
-  /// bad_value_cast exception
-  class bad_value_cast : public std::logic_error
-  {
-  public:
-    explicit bad_value_cast(
-      object_ptr<const Type> from,
-      object_ptr<const Type> to)
-      : std::logic_error("bad_value_cast")
-      , m_from {std::move(from)}
-      , m_to {std::move(to)}
+  namespace interface {
+    /// bad_value_cast exception
+    class bad_value_cast : public std::logic_error
     {
-    }
+    public:
+      explicit bad_value_cast(
+        object_ptr<const Type> from,
+        object_ptr<const Type> to)
+        : std::logic_error("bad_value_cast")
+        , m_from {std::move(from)}
+        , m_to {std::move(to)}
+      {
+      }
 
-    /// get from
-    const object_ptr<const Type>& from() const
-    {
-      return m_from;
-    }
+      /// get from
+      const object_ptr<const Type>& from() const
+      {
+        return m_from;
+      }
 
-    /// get to
-    const object_ptr<const Type>& to() const
-    {
-      return m_to;
-    }
+      /// get to
+      const object_ptr<const Type>& to() const
+      {
+        return m_to;
+      }
 
-  private:
-    /// cast from
-    object_ptr<const Type> m_from;
-    /// cast to
-    object_ptr<const Type> m_to;
-  };
+    private:
+      /// cast from
+      object_ptr<const Type> m_from;
+      /// cast to
+      object_ptr<const Type> m_to;
+    };
+  } // namespace interface
 
   struct BadValueCastValue
   {
@@ -65,7 +67,14 @@ namespace TORI_NS::detail {
     template <class T, class U>
     [[nodiscard]] object_ptr<T> value_cast(const object_ptr<U>& obj)
     {
-      static_assert(!is_tm_closure(T::term), "T is not value type");
+      static_assert(
+        !is_tm_closure(T::term),
+        "Casting to closure types might cause slicing.");
+
+      static_assert(
+        !is_immediate(type_c<T>), "Cannot cast to/from unboxed types");
+      static_assert(
+        !is_immediate(type_c<U>), "Cannot cast to/from unboxed types");
 
       if (likely(obj && has_type<T>(obj))) {
         return static_object_cast<T>(obj);
@@ -80,7 +89,14 @@ namespace TORI_NS::detail {
     template <class T, class U>
     [[nodiscard]] object_ptr<T> value_cast(object_ptr<U>&& obj)
     {
-      static_assert(!is_tm_closure(T::term), "T is not value type");
+      static_assert(
+        !is_tm_closure(T::term),
+        "Casting to closure types might cause slicing.");
+
+      static_assert(
+        !is_immediate(type_c<T>), "Cannot cast to/from unboxed types");
+      static_assert(
+        !is_immediate(type_c<U>), "Cannot cast to/from unboxed types");
 
       if (likely(obj && has_type<T>(obj))) {
         return static_object_cast<T>(std::move(obj));
@@ -88,45 +104,6 @@ namespace TORI_NS::detail {
       throw bad_value_cast(obj ? get_type(obj) : nullptr, object_type<T>());
     }
 
-    template <class T>
-    [[nodiscard]] object_ptr<T> value_cast(const object_ptr_generic& obj)
-    {
-      if constexpr (is_transfarable_immediate(type_c<T>)) {
-        // return immediate type
-        if (obj.m_storage.has_immediate_type<T>())
-          return get<T>(obj.m_storage.immediate_union());
-        else
-          throw bad_value_cast(
-            obj.m_storage.get_immediate_type(), object_type<T>());
-      } else {
-        auto ptr = obj.m_storage.ptr;
-        if (obj.m_storage.has_pointer_type<T>()) {
-          auto tmp = object_ptr(ptr);
-          return static_object_cast<T>(tmp); // add refcount
-        } else
-          throw bad_value_cast(
-            ptr ? get_type(object_ptr(ptr)) : nullptr, object_type<T>());
-      }
-    }
-
-    template <class T>
-    [[nodiscard]] object_ptr<T> value_cast(object_ptr_generic&& obj)
-    {
-      if constexpr (is_transfarable_immediate(type_c<T>)) {
-        if (obj.m_storage.has_immediate_type<T>())
-          return get<T>(obj.m_storage.immediate_union());
-        else
-          throw bad_value_cast(
-            obj.m_storage.get_immediate_type(), object_type<T>());
-      } else {
-        auto ptr = obj.m_storage.ptr;
-        if (obj.m_storage.has_pointer_type<T>())
-          return static_object_cast<T>(object_ptr(ptr));
-        else
-          throw bad_value_cast(
-            ptr ? get_type(object_ptr(ptr)) : nullptr, object_type<T>());
-      }
-    }
 
     /// value_cast_if
     ///
@@ -135,7 +112,14 @@ namespace TORI_NS::detail {
     template <class T, class U>
     [[nodiscard]] object_ptr<T> value_cast_if(const object_ptr<U>& obj) noexcept
     {
-      static_assert(!is_tm_closure(T::term), "T is not value type");
+      static_assert(
+        !is_tm_closure(T::term),
+        "Casting to closure types might cause slicing.");
+
+      static_assert(
+        !is_immediate(type_c<T>), "Cannot cast to/from unboxed types");
+      static_assert(
+        !is_immediate(type_c<U>), "Cannot cast to/from unboxed types");
 
       if (likely(obj && has_type<T>(obj))) {
         return static_object_cast<T>(obj);
@@ -150,12 +134,92 @@ namespace TORI_NS::detail {
     template <class T, class U>
     [[nodiscard]] object_ptr<T> value_cast_if(object_ptr<U>&& obj) noexcept
     {
-      static_assert(!is_tm_closure(T::term), "T is not value type");
+      static_assert(
+        !is_tm_closure(T::term),
+        "Casting to closure types might cause slicing.");
+
+      static_assert(
+        !is_immediate(type_c<T>), "Cannot cast to/from unboxed types");
+      static_assert(
+        !is_immediate(type_c<U>), "Cannot cast to/from unboxed types");
 
       if (likely(obj && has_type<T>(obj))) {
         return static_object_cast<T>(std::move(obj));
       }
       return nullptr;
+    }
+
+
+    template <class T>
+    [[nodiscard]] object_ptr<T> value_cast(const object_ptr_generic& obj)
+    {
+      if constexpr (is_transfarable_immediate(type_c<T>)) {
+        // return immediate type
+        if (obj.m_storage.has_immediate_type<T>())
+          return get<T>(obj.m_storage.immediate_union());
+        else
+          throw bad_value_cast(
+            obj.m_storage.get_immediate_type(), object_type<T>());
+      } else {
+        auto ptr = obj.m_storage.ptr();
+        if (obj.m_storage.has_pointer_type<T>()) {
+          auto tmp = object_ptr(ptr);
+          return static_object_cast<T>(tmp); // add refcount
+        } else
+          throw bad_value_cast(
+            ptr ? get_type(object_ptr(ptr)) : nullptr, object_type<T>());
+      }
+    }
+
+    template <class T>
+    [[nodiscard]] object_ptr<T> value_cast(object_ptr_generic&& obj)
+    {
+      if constexpr (is_transfarable_immediate(type_c<T>)) {
+        // delegate to lvalue version
+        return value_cast<T>(obj);
+      } else {
+        auto ptr = obj.m_storage.ptr();
+        if (obj.m_storage.has_pointer_type<T>())
+          // move cast
+          return static_object_cast<T>(object_ptr(ptr));
+        else
+          throw bad_value_cast(
+            ptr ? get_type(object_ptr(ptr)) : nullptr, object_type<T>());
+      }
+    }
+
+    template <class T>
+    [[nodiscard]] object_ptr<T> value_cast_if(const object_ptr_generic& obj)
+    {
+      if constexpr (is_transfarable_immediate(type_c<T>)) {
+        if (obj.m_storage.has_immediate_type<T>())
+          return get<T>(obj.m_storage.immediate_union());
+        else
+          return T{0};
+      } else {
+        auto ptr = obj.m_storage.ptr();
+        if (obj.m_storage.has_pointer_type<T>()) {
+          auto tmp = object_ptr(ptr);
+          return static_object_cast<T>(tmp); // add refcount
+        } else
+          return nullptr;
+      }
+    }
+
+    template <class T>
+    [[nodiscard]] object_ptr<T> value_cast_if(object_ptr_generic&& obj)
+    {
+      if constexpr (is_transfarable_immediate(type_c<T>)) {
+        // delegate to lvalue version
+        return value_cast_if<T>(obj);
+      } else {
+        auto ptr = obj.m_storage.ptr();
+        if (obj.m_storage.has_pointer_type<T>())
+          // move cast
+          return static_object_cast<T>(object_ptr(ptr));
+        else
+          return nullptr;
+      }
     }
 
   } // namespace interface

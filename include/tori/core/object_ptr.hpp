@@ -263,6 +263,32 @@ namespace TORI_NS::detail {
     template <class U>
     bool has_pointer_type() const; // define later
 
+    explicit operator bool() const
+    {
+      if (is_pointer()) {
+        return ptr();
+      }
+
+      if (is_immediate()) {
+        if (get_immediate_type_tag() == immediate_type_tags::u8)
+          return get<uint8_t>(m_np.value);
+        if (get_immediate_type_tag() == immediate_type_tags::u16)
+          return get<uint16_t>(m_np.value);
+        if (get_immediate_type_tag() == immediate_type_tags::u32)
+          return get<uint32_t>(m_np.value);
+        if (get_immediate_type_tag() == immediate_type_tags::i8)
+          return get<int8_t>(m_np.value);
+        if (get_immediate_type_tag() == immediate_type_tags::i16)
+          return get<int16_t>(m_np.value);
+        if (get_immediate_type_tag() == immediate_type_tags::i32)
+          return get<int32_t>(m_np.value);
+        if (get_immediate_type_tag() == immediate_type_tags::f32)
+          return get<float>(m_np.value);
+      }
+
+      unreachable();
+    }
+
   private:
     // -------------------------------------------
     // Helper functions for constexpr initializer.
@@ -689,6 +715,10 @@ namespace TORI_NS::detail {
       friend object_ptr<T> value_cast(const object_ptr_generic&);
       template <class T>
       friend object_ptr<T> value_cast(object_ptr_generic&&);
+      template <class T>
+      friend object_ptr<T> value_cast_if(const object_ptr_generic&);
+      template <class T>
+      friend object_ptr<T> value_cast_if(object_ptr_generic&&);
 
     public:
       /// default ctor
@@ -792,6 +822,15 @@ namespace TORI_NS::detail {
       bool is_immediate() const noexcept
       {
         return m_storage.is_immediate();
+      }
+
+      explicit operator bool() const
+      {
+        if (m_storage.is_pointer())
+          return m_storage.ptr();
+        else {
+          return static_cast<bool>(m_storage);
+        }
       }
 
     private:
