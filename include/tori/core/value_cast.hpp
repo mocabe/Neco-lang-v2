@@ -149,7 +149,10 @@ namespace TORI_NS::detail {
       return nullptr;
     }
 
-
+    /// value_cast
+    ///
+    /// dynamically cast object to specified value type.
+    /// \throws bad_value_cast when fail.
     template <class T>
     [[nodiscard]] object_ptr<T> value_cast(const object_ptr_generic& obj)
     {
@@ -180,6 +183,10 @@ namespace TORI_NS::detail {
       }
     }
 
+    /// value_cast
+    ///
+    /// dynamically cast object to specified value type.
+    /// \throws bad_value_cast when fail.
     template <class T>
     [[nodiscard]] object_ptr<T> value_cast(object_ptr_generic&& obj)
     {
@@ -202,16 +209,20 @@ namespace TORI_NS::detail {
       }
     }
 
+    /// value_cast_if
+    ///
+    /// dynamically cast object to specified value type.
+    /// \returns nullptr or zero initialized immediate value when fail.
     template <class T>
     [[nodiscard]] object_ptr<T> value_cast_if(const object_ptr_generic& obj)
     {
       if constexpr (is_transfarable_immediate(type_c<T>)) {
         if (!obj.is_immediate())
-          return T {0};
+          return T {};
         if (obj.m_storage.has_immediate_type<T>())
           return get<T>(obj.m_storage.immediate_union());
         else
-          return T {0};
+          return T {};
       } else {
         if (!obj.is_pointer())
           return nullptr;
@@ -224,6 +235,10 @@ namespace TORI_NS::detail {
       }
     }
 
+    /// value_cast_if
+    ///
+    /// dynamically cast object to specified value type.
+    /// \returns nullptr or zero initialized immediate value when fail.
     template <class T>
     [[nodiscard]] object_ptr<T> value_cast_if(object_ptr_generic&& obj)
     {
