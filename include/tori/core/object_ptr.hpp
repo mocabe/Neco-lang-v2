@@ -514,7 +514,7 @@ namespace TORI_NS::detail {
       /// swap data
       void swap(object_ptr<element_type>& obj) noexcept
       {
-        std::swap(obj.m_storage.ptr_nomask(), m_storage.ptr_nomask());
+        std::swap(m_storage, obj.m_storage);
       }
 
       /// operator=
@@ -799,16 +799,13 @@ namespace TORI_NS::detail {
 
       object_ptr_generic& operator=(const object_ptr_generic& other)
       {
-        m_storage = other.m_storage;
-        increment_refcount_when_pointer();
+        object_ptr_generic(other).swap(*this);
         return *this;
       }
 
       object_ptr_generic& operator=(object_ptr_generic&& other)
       {
-        m_storage = other.m_storage;
-        if (m_storage.is_pointer())
-          other.m_storage.ptr_nomask() = nullptr;
+        object_ptr_generic(std::move(other)).swap(*this);
         return *this;
       }
 
@@ -834,6 +831,11 @@ namespace TORI_NS::detail {
         else {
           return static_cast<bool>(m_storage);
         }
+      }
+
+      void swap(object_ptr_generic& other) noexcept
+      {
+        std::swap(m_storage, other.m_storage);
       }
 
     private:
