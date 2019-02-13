@@ -174,3 +174,61 @@ TEST_CASE("generic construct")
     REQUIRE(*p == 42);
   }
 }
+
+TEST_CASE("value_cast")
+{
+  SECTION("immediate")
+  {
+    object_ptr<int> i = 42;
+    object_ptr_generic g = i;
+
+    SECTION("value_cast")
+    {
+      REQUIRE_NOTHROW(value_cast<int>(g));
+      REQUIRE_THROWS_AS(value_cast<float>(g), bad_value_cast);
+      REQUIRE_THROWS_AS(value_cast<Float>(g), bad_value_cast);
+      REQUIRE(*value_cast<int>(g) == 42);
+    }
+
+    SECTION("value_cast_if")
+    {
+      REQUIRE(value_cast_if<int>(g));
+      REQUIRE(!value_cast_if<float>(g));
+      REQUIRE(*value_cast_if<int>(g) == 42);
+    }
+  }
+
+  SECTION("pointer")
+  {
+    object_ptr i = new Int(42);
+    object_ptr_generic g = i;
+
+    SECTION("value_cast")
+    {
+      REQUIRE_NOTHROW(value_cast<Int>(g));
+      REQUIRE_THROWS_AS(value_cast<float>(g), bad_value_cast);
+      REQUIRE_THROWS_AS(value_cast<Float>(g), bad_value_cast);
+      REQUIRE(*value_cast<Int>(g) == 42);
+    }
+
+    SECTION("value_cast_if")
+    {
+      REQUIRE(value_cast_if<Int>(g));
+      REQUIRE(!value_cast_if<Float>(g));
+      REQUIRE(*value_cast_if<Int>(g) == 42);
+    }
+  }
+
+  SECTION("obj")
+  {
+    object_ptr i = new Int(42);
+    object_ptr<Object> o = i;
+
+    SECTION("value_cast")
+    {
+      REQUIRE_NOTHROW(value_cast<Int>(o));
+      REQUIRE_THROWS_AS(value_cast<Double>(o), bad_value_cast);
+      REQUIRE(*value_cast<Int>(o) == 42);
+    }
+  }
+}
