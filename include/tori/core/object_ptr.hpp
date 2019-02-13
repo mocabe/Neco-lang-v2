@@ -197,6 +197,9 @@ namespace TORI_NS::detail {
       return m_np.value;
     }
 
+    /// get pointer type
+    auto get_pointer_type() const;
+
     /// get immediate type
     auto get_immediate_type() const;
 
@@ -897,6 +900,18 @@ namespace TORI_NS::detail {
       return object_type<float>();
 
     unreachable();
+  }
+
+  auto object_ptr_storage::get_pointer_type() const
+  {
+    assert(is_pointer());
+
+    auto p = ptr();
+    // null
+    if (!p)
+      return object_ptr<const Type>(nullptr);
+    // get type
+    return p->info_table->obj_type;
   }
 
 } // namespace TORI_NS::detail
