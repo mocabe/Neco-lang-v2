@@ -175,6 +175,52 @@ TEST_CASE("generic construct")
   }
 }
 
+TEST_CASE("operator bool")
+{
+  SECTION("immediate")
+  {
+    object_ptr<int> i {};
+    REQUIRE(!i);
+    *i = 42;
+    REQUIRE(i);
+    *i = 0;
+    REQUIRE(!i);
+  }
+
+  SECTION("pointer")
+  {
+    object_ptr<Int> i {};
+    REQUIRE(!i);
+    i = new Int(42);
+    REQUIRE(i);
+    i = nullptr;
+    REQUIRE(!i);
+  }
+
+  SECTION("generic")
+  {
+    object_ptr_generic g {};
+
+    REQUIRE(!g);
+
+    SECTION("immediate")
+    {
+      g = 42;
+      REQUIRE(g);
+      g = nullptr;
+      REQUIRE(!g);
+    }
+
+    SECTION("pointer")
+    {
+      g = new Int(42);
+      REQUIRE(g);
+      g = 0;
+      REQUIRE(!g);
+    }
+  }
+}
+
 TEST_CASE("value_cast")
 {
   SECTION("immediate")
