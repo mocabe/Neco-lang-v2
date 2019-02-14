@@ -43,7 +43,7 @@ namespace TORI_NS::detail {
     struct Box;
 
     // handler for heap-allocated object
-    template <class, class>
+    template <class>
     class object_ptr;
 
     // object info table

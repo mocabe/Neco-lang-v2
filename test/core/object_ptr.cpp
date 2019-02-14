@@ -74,25 +74,25 @@ TEST_CASE("immediate construct")
 {
   SECTION("immediate")
   {
-    object_ptr<int> i {};
+    immediate<int> i {};
     REQUIRE(!i);
     REQUIRE(*i == 0);
   }
   SECTION("immediate")
   {
-    object_ptr<int> i = 42;
+    immediate<int> i = 42;
     REQUIRE(i);
     REQUIRE(*i == 42);
   }
   SECTION("deduction")
   {
-    object_ptr i = 42;
+    immediate i = 42;
     REQUIRE(i);
     REQUIRE(*i == 42);
   }
   SECTION("deduction")
   {
-    auto i = object_ptr(42);
+    auto i = immediate(42);
     REQUIRE(i);
     REQUIRE(*i == 42);
   }
@@ -104,13 +104,13 @@ TEST_CASE("immediate construct")
   }
   SECTION("copy")
   {
-    auto i = object_ptr(42);
+    auto i = immediate(42);
     auto j = i;
     REQUIRE(*j == 42);
   }
   SECTION("move")
   {
-    auto i = object_ptr(42);
+    auto i = immediate(42);
     auto j = std::move(i);
     REQUIRE(*j == 42);
   }
@@ -179,7 +179,7 @@ TEST_CASE("operator bool")
 {
   SECTION("immediate")
   {
-    object_ptr<int> i {};
+    immediate<int> i {};
     REQUIRE(!i);
     *i = 42;
     REQUIRE(i);
@@ -225,7 +225,7 @@ TEST_CASE("value_cast")
 {
   SECTION("immediate")
   {
-    object_ptr<int> i = 42;
+    immediate<int> i = 42;
     object_ptr_generic g = i;
 
     SECTION("value_cast")

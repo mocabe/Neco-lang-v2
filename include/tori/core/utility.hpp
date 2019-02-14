@@ -6,6 +6,7 @@
 #include "../config/config.hpp"
 
 #include "object_ptr.hpp"
+#include "immediate.hpp"
 
 namespace TORI_NS::detail {
 
@@ -30,10 +31,10 @@ namespace TORI_NS::detail {
 
     /// make object
     template <class T, class... Args>
-    object_ptr<T> make_object(Args&&... args)
+    auto make_object(Args&&... args)
     {
       if constexpr (is_transfarable_immediate(type_c<T>))
-        return object_ptr(std::forward<Args>(args)...);
+        return immediate(std::forward<Args>(args)...);
       else
         return object_ptr(new T {std::forward<Args>(args)...});
     }

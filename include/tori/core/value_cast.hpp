@@ -4,6 +4,9 @@
 #pragma once
 
 #include "object_ptr.hpp"
+#include "immediate.hpp"
+#include "object_ptr_generic.hpp"
+#include "object_ptr_storage.hpp"
 #include "object_cast.hpp"
 #include "dynamic_typing.hpp"
 
@@ -154,7 +157,7 @@ namespace TORI_NS::detail {
     /// dynamically cast object to specified value type.
     /// \throws bad_value_cast when fail.
     template <class T>
-    [[nodiscard]] object_ptr<T> value_cast(const object_ptr_generic& obj)
+    [[nodiscard]] auto value_cast(const object_ptr_generic& obj)
     {
       if constexpr (is_transfarable_immediate(type_c<T>)) {
         // not immediate
@@ -163,7 +166,7 @@ namespace TORI_NS::detail {
             obj.m_storage.get_pointer_type(), object_type<T>());
         // return immediate type
         if (obj.m_storage.has_immediate_type<T>())
-          return get<T>(obj.m_storage.immediate_union());
+          return immediate(get<T>(obj.m_storage.immediate_union()));
         else
           throw bad_value_cast(
             obj.m_storage.get_immediate_type(), object_type<T>());
@@ -176,7 +179,7 @@ namespace TORI_NS::detail {
         if (obj.m_storage.has_pointer_type<T>()) {
           auto ptr = obj.m_storage.ptr();
           ptr->refcount.fetch_add(); // add refcount
-          return static_cast<T*>(ptr);
+          return object_ptr(static_cast<T*>(ptr));
         } else
           throw bad_value_cast(
             obj.m_storage.get_pointer_type(), object_type<T>());
@@ -188,7 +191,7 @@ namespace TORI_NS::detail {
     /// dynamically cast object to specified value type.
     /// \throws bad_value_cast when fail.
     template <class T>
-    [[nodiscard]] object_ptr<T> value_cast(object_ptr_generic&& obj)
+    [[nodiscard]] auto value_cast(object_ptr_generic&& obj)
     {
       if constexpr (is_transfarable_immediate(type_c<T>)) {
         // delegate to lvalue version
@@ -200,7 +203,7 @@ namespace TORI_NS::detail {
             obj.m_storage.get_immediate_type(), object_type<T>());
         // pointer
         if (obj.m_storage.has_pointer_type<T>())
-          return static_cast<T*>(obj.m_storage.ptr());
+          return object_ptr(static_cast<T*>(obj.m_storage.ptr()));
         else
           throw bad_value_cast(
             obj.m_storage.get_pointer_type(), object_type<T>());
