@@ -28,6 +28,7 @@ namespace TORI_NS::detail {
   /// internal storage of object_ptr
   struct object_ptr_storage
   {
+    /// pointer tag values. stored in lowest 3 bits of 64bit data.
     enum class pointer_tags : uint32_t
     {
       // clang-format off
@@ -52,7 +53,7 @@ namespace TORI_NS::detail {
     };
 
     /// extract pointer tag flag
-    pointer_tags get_pointer_tag() const
+    pointer_tags get_pointer_tag() const noexcept
     {
       uint32_t flag {};
       std::memcpy(&flag, &m_np.flag, 4);
@@ -61,7 +62,7 @@ namespace TORI_NS::detail {
     }
 
     /// set new pointer tag flag
-    void set_pointer_tag(pointer_tags flag)
+    void set_pointer_tag(pointer_tags flag) noexcept
     {
       uint32_t flg {};
       std::memcpy(&flg, &m_np.flag, 4);
@@ -71,47 +72,40 @@ namespace TORI_NS::detail {
     }
 
     /// get pointer
-    Object* ptr() const
+    Object* ptr() const noexcept
     {
       assert(is_pointer());
-      // remove tags
+      // Ideally, single AND instruction which is very cheap.
       return (Object*)((uintptr_t)m_ptr & (uint32_t)pointer_tags::clear_mask);
     }
 
-    /// get pointer without masking
-    Object*& ptr_nomask()
-    {
-      assert(get_pointer_tag() == pointer_tags::pointer);
-      return m_ptr;
-    }
-
-    Object* ptr_nomask() const
-    {
-      assert(get_pointer_tag() == pointer_tags::pointer);
-      return m_ptr;
-    }
-
-    bool is_immediate() const
+    /// immediate?
+    bool is_immediate() const noexcept
     {
       return get_pointer_tag() == pointer_tags::immediate;
     }
 
-    bool is_pointer() const
+    /// pointer?
+    bool is_pointer() const noexcept
     {
       // include apply and exception
       return !is_immediate();
     }
 
-    bool is_apply() const
+    /// apply? (optional)
+    bool is_apply() const noexcept
     {
       return get_pointer_tag() == pointer_tags::apply;
     }
 
-    bool is_exception() const
+    /// exception? (optional)
+    bool is_exception() const noexcept
     {
       return get_pointer_tag() == pointer_tags::exception;
     }
 
+    /// immediate type tags. stored in higher 28bits of lower 32bits of total
+    /// 64bit data.
     enum class immediate_type_tags : uint32_t
     {
       // clang-format off
@@ -141,7 +135,7 @@ namespace TORI_NS::detail {
 
     /// extract immediate type flag
     /// \requires is_immediate() == true
-    immediate_type_tags get_immediate_type_tag() const
+    immediate_type_tags get_immediate_type_tag() const noexcept
     {
       assert(is_immediate());
       uint32_t flag {};
@@ -152,7 +146,7 @@ namespace TORI_NS::detail {
 
     /// \requires is_immediate() == true
     /// set new immediate type flag
-    void set_immediate_type_tag(immediate_type_tags flag)
+    void set_immediate_type_tag(immediate_type_tags flag) noexcept
     {
       assert(is_immediate());
       uint32_t flg {};
@@ -183,7 +177,7 @@ namespace TORI_NS::detail {
 
     /// get immediate
     /// \requires is_immediate() == true
-    const immediate_transfarable_union& immediate_union() const
+    const immediate_transfarable_union& immediate_union() const noexcept
     {
       assert(is_immediate());
       return m_np.value;
@@ -191,22 +185,22 @@ namespace TORI_NS::detail {
 
     /// get immediate
     /// \requires is_immediate() == true
-    immediate_transfarable_union& immediate_union()
+    immediate_transfarable_union& immediate_union() noexcept
     {
       assert(is_immediate());
       return m_np.value;
     }
 
     /// get pointer type
-    auto get_pointer_type() const;
+    auto get_pointer_type() const noexcept;
 
     /// get immediate type
-    auto get_immediate_type() const;
+    auto get_immediate_type() const noexcept;
 
     /// set new immediate type
     /// \requires is_immediate() == true
     template <class U>
-    void set_immediate_type()
+    void set_immediate_type() noexcept
     {
       assert(is_immediate());
 
@@ -232,7 +226,7 @@ namespace TORI_NS::detail {
 
     /// check immediate type
     /// \requires is_immediate() == true
-    bool check_immediate_type(immediate_type_tags flag) const
+    bool check_immediate_type(immediate_type_tags flag) const noexcept
     {
       assert(is_immediate());
       return get_immediate_type_tag() == flag;
@@ -240,7 +234,7 @@ namespace TORI_NS::detail {
 
     /// check immediate type
     template <class U>
-    bool has_immediate_type() const
+    bool has_immediate_type() const noexcept
     {
       if (!is_immediate())
         return false;
@@ -264,13 +258,12 @@ namespace TORI_NS::detail {
     }
 
     template <class U>
-    bool has_pointer_type() const; // define later
+    bool has_pointer_type() const noexcept;
 
-    explicit operator bool() const
+    explicit operator bool() const noexcept
     {
-      if (is_pointer()) {
+      if (is_pointer())
         return ptr();
-      }
 
       if (is_immediate()) {
         if (get_immediate_type_tag() == immediate_type_tags::u8)
@@ -297,23 +290,23 @@ namespace TORI_NS::detail {
     // Helper functions for constexpr initializer.
     // can be removed in C++20 since memcpy will become constexpr
 
-    constexpr uint32_t get_pointer_tag_imm() const
+    constexpr uint32_t get_pointer_tag_imm() const noexcept
     {
       return m_np.flag & (uint32_t)pointer_tags::extract_mask;
     }
 
-    constexpr void set_pointer_tag_imm(pointer_tags flag)
+    constexpr void set_pointer_tag_imm(pointer_tags flag) noexcept
     {
       m_np.flag &= (uint32_t)pointer_tags::clear_mask;
       m_np.flag |= (uint32_t)flag;
     }
 
-    constexpr uint32_t get_immediate_type_tag_imm() const
+    constexpr uint32_t get_immediate_type_tag_imm() const noexcept
     {
       return m_np.flag & (uint32_t)immediate_type_tags::extract_mask;
     }
 
-    constexpr void set_immediate_type_tag_imm(immediate_type_tags flag)
+    constexpr void set_immediate_type_tag_imm(immediate_type_tags flag) noexcept
     {
       m_np.flag &= (uint32_t)immediate_type_tags::clear_mask;
       m_np.flag |= (uint32_t)flag;
@@ -366,7 +359,7 @@ namespace TORI_NS::detail {
     union
     {
       /// pointer to object
-      Object* m_ptr;
+      const Object* m_ptr;
       /// non-pointer transfarable immediate value
       non_pointer m_np;
     };
@@ -377,8 +370,7 @@ namespace TORI_NS::detail {
   namespace interface {
 
     /// Smart pointer to manage heap-allocated objects
-    /// Holds a pointer to an object in storage member without tagging lowest
-    /// bits.
+    /// Holds a (possibly tagged) pointer to an object in storage member.
     template <class T = Object, class = void>
     class object_ptr
     {
@@ -416,7 +408,7 @@ namespace TORI_NS::detail {
       object_ptr(const object_ptr<element_type>& other) noexcept
         : m_storage {other.m_storage}
       {
-        if (likely(m_storage.ptr_nomask() && !is_static()))
+        if (likely(m_storage.ptr() && !is_static()))
           head()->refcount.fetch_add();
       }
 
@@ -424,7 +416,7 @@ namespace TORI_NS::detail {
       object_ptr(object_ptr<element_type>&& other) noexcept
         : m_storage {other.m_storage}
       {
-        other.m_storage = nullptr;
+        other.m_storage = {nullptr};
       }
 
       /// Copy convert constructor
@@ -435,7 +427,7 @@ namespace TORI_NS::detail {
       object_ptr(const object_ptr<U>& other) noexcept
         : m_storage {other.m_storage}
       {
-        if (likely(m_storage.ptr_nomask() && !is_static()))
+        if (likely(m_storage.ptr() && !is_static()))
           head()->refcount.fetch_add();
       }
 
@@ -446,29 +438,29 @@ namespace TORI_NS::detail {
       object_ptr(object_ptr<U>&& other) noexcept
         : m_storage {other.m_storage}
       {
-        other.m_storage = nullptr;
+        other.m_storage = {nullptr};
       }
 
       /// get address of object
       pointer get() const noexcept
       {
-        return static_cast<pointer>(m_storage.ptr_nomask());
+        return static_cast<pointer>(m_storage.ptr());
       }
 
       /// get address of header
       auto* head() const noexcept
       {
         if constexpr (std::is_const_v<element_type>)
-          return static_cast<const Object*>(m_storage.ptr_nomask());
+          return static_cast<const Object*>(m_storage.ptr());
         else
-          return static_cast<Object*>(m_storage.ptr_nomask());
+          return static_cast<Object*>(m_storage.ptr());
       }
 
       /// get address of info table
       /// \requires not null.
       const object_info_table* info_table() const noexcept
       {
-        assert(m_storage.ptr_nomask());
+        assert(m_storage.ptr());
         return head()->info_table;
       }
 
@@ -476,21 +468,21 @@ namespace TORI_NS::detail {
       /// \requires not null.
       auto* value() const noexcept
       {
-        assert(m_storage.ptr_nomask());
-        return &static_cast<pointer>(m_storage.ptr_nomask())->_value;
+        assert(m_storage.ptr());
+        return &static_cast<pointer>(m_storage.ptr())->_value;
       }
 
       /// operator bool
       explicit operator bool() const noexcept
       {
-        return m_storage.ptr_nomask() != nullptr;
+        return m_storage.ptr() != nullptr;
       }
 
       /// use_count
       /// \requires not null.
       uint64_t use_count() const noexcept
       {
-        assert(m_storage.ptr_nomask());
+        assert(m_storage.ptr());
         return head()->refcount.load();
       }
 
@@ -498,7 +490,7 @@ namespace TORI_NS::detail {
       /// \requires not null.
       bool is_static() const noexcept
       {
-        assert(m_storage.ptr_nomask());
+        assert(m_storage.ptr());
         return use_count() == 0;
       }
 
@@ -506,8 +498,8 @@ namespace TORI_NS::detail {
       /// \effects get() return nullptr after call
       pointer release() noexcept
       {
-        auto tmp = static_cast<pointer>(m_storage.ptr_nomask());
-        m_storage.ptr_nomask() = nullptr;
+        auto tmp = static_cast<pointer>(m_storage.ptr());
+        m_storage = {nullptr};
         return tmp;
       }
 
@@ -651,11 +643,11 @@ namespace TORI_NS::detail {
     template <class T, class U>
     object_ptr<T, U>::~object_ptr() noexcept
     {
-      if (likely(m_storage.ptr_nomask() && !is_static())) {
+      if (likely(m_storage.ptr() && !is_static())) {
         // delete object if needed
         if (head()->refcount.fetch_sub() == 1) {
           std::atomic_thread_fence(std::memory_order_acquire);
-          info_table()->destroy(m_storage.ptr_nomask());
+          info_table()->destroy(m_storage.ptr());
         }
       }
     }
@@ -763,9 +755,9 @@ namespace TORI_NS::detail {
       object_ptr_generic(object_ptr_generic&& other)
         : m_storage {other.m_storage}
       {
-        // take over ownership
+        // take over ownership if pointer
         if (m_storage.is_pointer())
-          other.m_storage.ptr_nomask() = nullptr;
+          other.m_storage = {nullptr};
       }
 
       /// convert ctor
@@ -778,8 +770,8 @@ namespace TORI_NS::detail {
         } else {
           assert(m_storage.is_pointer());
           // add refcount
-          if (m_storage.ptr_nomask() && !is_static())
-            m_storage.ptr_nomask()->refcount.fetch_add();
+          if (m_storage.ptr() && !is_static())
+            m_storage.ptr()->refcount.fetch_add();
           // TODO: add optional tags
         }
       }
@@ -793,7 +785,7 @@ namespace TORI_NS::detail {
           assert(m_storage.is_immediate());
         } else {
           assert(m_storage.is_pointer());
-          ptr.m_storage.ptr_nomask() = nullptr;
+          ptr.m_storage = {nullptr};
         }
       }
 
@@ -826,11 +818,7 @@ namespace TORI_NS::detail {
 
       explicit operator bool() const
       {
-        if (m_storage.is_pointer())
-          return m_storage.ptr();
-        else {
-          return static_cast<bool>(m_storage);
-        }
+        return static_cast<bool>(m_storage);
       }
 
       void swap(object_ptr_generic& other) noexcept
@@ -874,7 +862,7 @@ namespace TORI_NS::detail {
   } // namespace interface
 
   template <class U>
-  bool object_ptr_storage::has_pointer_type() const
+  bool object_ptr_storage::has_pointer_type() const noexcept
   {
     if (!is_pointer())
       return false;
@@ -882,7 +870,7 @@ namespace TORI_NS::detail {
     return ptr() && same_type(ptr()->info_table->obj_type, object_type<U>());
   }
 
-  auto object_ptr_storage::get_immediate_type() const
+  auto object_ptr_storage::get_immediate_type() const noexcept
   {
     assert(is_immediate());
 
@@ -904,7 +892,7 @@ namespace TORI_NS::detail {
     unreachable();
   }
 
-  auto object_ptr_storage::get_pointer_type() const
+  auto object_ptr_storage::get_pointer_type() const noexcept
   {
     assert(is_pointer());
 
