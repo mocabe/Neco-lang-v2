@@ -235,13 +235,6 @@ TEST_CASE("value_cast")
       REQUIRE_THROWS_AS(value_cast<Float>(g), bad_value_cast);
       REQUIRE(*value_cast<int>(g) == 42);
     }
-
-    SECTION("value_cast_if")
-    {
-      REQUIRE(value_cast_if<int>(g));
-      REQUIRE(!value_cast_if<float>(g));
-      REQUIRE(*value_cast_if<int>(g) == 42);
-    }
   }
 
   SECTION("pointer")

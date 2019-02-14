@@ -710,9 +710,9 @@ namespace TORI_NS::detail {
       friend object_ptr<T> value_cast(const object_ptr_generic&);
       template <class T>
       friend object_ptr<T> value_cast(object_ptr_generic&&);
-      template <class T>
+      template <class T, class>
       friend object_ptr<T> value_cast_if(const object_ptr_generic&);
-      template <class T>
+      template <class T, class>
       friend object_ptr<T> value_cast_if(object_ptr_generic&&);
 
     public:
@@ -769,10 +769,8 @@ namespace TORI_NS::detail {
           assert(m_storage.is_immediate());
         } else {
           assert(m_storage.is_pointer());
-          // add refcount
           if (m_storage.ptr() && !is_static())
             m_storage.ptr()->refcount.fetch_add();
-          // TODO: add optional tags
         }
       }
 
