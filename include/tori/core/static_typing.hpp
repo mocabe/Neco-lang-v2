@@ -114,6 +114,44 @@ namespace TORI_NS::detail {
   }
 
   // ------------------------------------------
+  // compose_subst
+
+  template <class... TyArrows, class TyT1, class TyT2, class... Results>
+  constexpr auto compose_subst_impl(
+    meta_tuple<TyArrows...> tyarrows,
+    meta_type<tyarrow<TyT1, TyT2>> a,
+    meta_tuple<Results...> result)
+  {
+    auto h = head(tyarrows);
+    auto t = tail(tyarrows);
+
+    auto r = make_tyarrow(h.t1(), subst(a, h.t2()));
+
+    if constexpr (empty(t))
+      return append(r, result);
+    else
+      return compose_subst_impl(t, a, append(r, result));
+  }
+
+  /// compose substitution
+  /// g(f(S)):
+  /// | X->g(T) when (X->T) belongs f
+  /// | X->T    when (X->T) belongs g && X not belongs dom(f)
+  template <class... TyArrows, class TyT1, class TyT2>
+  constexpr auto compose_subst(
+    meta_tuple<TyArrows...> tyarrows,
+    meta_type<tyarrow<TyT1, TyT2>> a)
+  {
+    if constexpr (empty(tyarrows))
+      return make_tuple(a);
+    else {
+      auto r = compose_subst_impl(tyarrows, a, tuple_c<>);
+      // FIXME: add domain check
+      return append(a, r);
+    }
+  }
+
+  // ------------------------------------------
   // occurs
 
   /// "Occurs check" algorithm
@@ -156,7 +194,7 @@ namespace TORI_NS::detail {
       if constexpr (is_error_type(t))
         return t;
       else
-        return append(arr, t);
+        return compose_subst(t, arr);
     }
   }
 

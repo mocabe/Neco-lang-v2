@@ -202,6 +202,7 @@ namespace TORI_NS::detail {
     return subst_type_impl(ta, in);
   }
 
+  /// apply all substitution
   [[nodiscard]] inline object_ptr<const Type> subst_type_all(
     const std::vector<TyArrow>& tas,
     const object_ptr<const Type>& ty)
@@ -211,6 +212,22 @@ namespace TORI_NS::detail {
       t = subst_type(tyArrow, t);
     }
     return t;
+  }
+
+  /// compose substitution
+  void compose_subst(std::vector<TyArrow>& tyarrows, const TyArrow& a)
+  {
+    for (auto&& ta : tyarrows) {
+      ta.to = subst_type(a, ta.to);
+    }
+
+    [&]() {
+      for (auto&& ta : tyarrows) {
+        if (same_type(ta.from, a.from))
+          return;
+      }
+      tyarrows.push_back(a);
+    }();
   }
 
   // ------------------------------------------
@@ -271,7 +288,7 @@ namespace TORI_NS::detail {
         if (likely(!occurs(c.t2, c.t1))) {
           auto arr = TyArrow {c.t2, c.t1};
           cs = subst_constr_all(arr, cs);
-          ta.push_back(arr);
+          compose_subst(ta, arr);
           continue;
         }
         throw type_error::circular_constraint(src, c.t1);
@@ -280,7 +297,7 @@ namespace TORI_NS::detail {
         if (likely(!occurs(c.t1, c.t2))) {
           auto arr = TyArrow {c.t1, c.t2};
           cs = subst_constr_all(arr, cs);
-          ta.push_back(arr);
+          compose_subst(ta, arr);
           continue;
         }
         throw type_error::circular_constraint(src, c.t1);
