@@ -194,7 +194,7 @@ TEST_CASE("type_of")
 {
   SECTION("type")
   {
-    auto t = genvar();
+    auto t = make_object<Type>(ValueType {});
     auto type = type_of(t);
     REQUIRE(same_type(type, object_type<Type>()));
   }
