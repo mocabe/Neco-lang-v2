@@ -15,14 +15,9 @@ namespace TORI_NS::detail {
     /// contains either a pointer-to-object or immediate(unboxed) value.
     class object_ptr_generic
     {
-      template <class T>
-      friend auto value_cast(const object_ptr_generic&);
-      template <class T>
-      friend auto value_cast(object_ptr_generic&&);
-      template <class T, class>
-      friend object_ptr<T> value_cast_if(const object_ptr_generic&);
-      template <class T, class>
-      friend object_ptr<T> value_cast_if(object_ptr_generic&&);
+      // internal storage accessor
+      friend const object_ptr_storage& _get_storage(const object_ptr_generic&);
+      friend object_ptr_storage& _get_storage(object_ptr_generic&);
 
     public:
       /// default ctor
@@ -182,6 +177,16 @@ namespace TORI_NS::detail {
       /// storage
       object_ptr_storage m_storage;
     };
+
+    const object_ptr_storage& _get_storage(const object_ptr_generic& ptr)
+    {
+      return ptr.m_storage;
+    }
+
+    object_ptr_storage& _get_storage(object_ptr_generic& ptr)
+    {
+      return ptr.m_storage;
+    }
 
   } // namespace interface
 

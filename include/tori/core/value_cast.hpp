@@ -159,30 +159,27 @@ namespace TORI_NS::detail {
     template <class T>
     [[nodiscard]] auto value_cast(const object_ptr_generic& obj)
     {
+      const auto& storage = _get_storage(obj);
       if constexpr (is_transfarable_immediate(type_c<T>)) {
         // not immediate
         if (!obj.is_immediate())
-          throw bad_value_cast(
-            obj.m_storage.get_pointer_type(), object_type<T>());
+          throw bad_value_cast(storage.get_pointer_type(), object_type<T>());
         // return immediate type
-        if (obj.m_storage.has_immediate_type<T>())
-          return immediate(get<T>(obj.m_storage.immediate_union()));
+        if (storage.has_immediate_type<T>())
+          return immediate(get<T>(storage.immediate_union()));
         else
-          throw bad_value_cast(
-            obj.m_storage.get_immediate_type(), object_type<T>());
+          throw bad_value_cast(storage.get_immediate_type(), object_type<T>());
       } else {
         // not pointer
         if (!obj.is_pointer())
-          throw bad_value_cast(
-            obj.m_storage.get_immediate_type(), object_type<T>());
+          throw bad_value_cast(storage.get_immediate_type(), object_type<T>());
         // pointer
-        if (obj.m_storage.has_pointer_type<T>()) {
-          auto ptr = obj.m_storage.ptr();
+        if (storage.has_pointer_type<T>()) {
+          auto ptr = storage.ptr();
           ptr->refcount.fetch_add(); // add refcount
           return object_ptr(static_cast<T*>(ptr));
         } else
-          throw bad_value_cast(
-            obj.m_storage.get_pointer_type(), object_type<T>());
+          throw bad_value_cast(storage.get_pointer_type(), object_type<T>());
       }
     }
 
@@ -193,20 +190,19 @@ namespace TORI_NS::detail {
     template <class T>
     [[nodiscard]] auto value_cast(object_ptr_generic&& obj)
     {
+      auto& storage = _get_storage(obj);
       if constexpr (is_transfarable_immediate(type_c<T>)) {
         // delegate to lvalue version
         return value_cast<T>(obj);
       } else {
         // not pointer
         if (!obj.is_pointer())
-          throw bad_value_cast(
-            obj.m_storage.get_immediate_type(), object_type<T>());
+          throw bad_value_cast(storage.get_immediate_type(), object_type<T>());
         // pointer
-        if (obj.m_storage.has_pointer_type<T>())
-          return object_ptr(static_cast<T*>(obj.m_storage.ptr()));
+        if (storage.has_pointer_type<T>())
+          return object_ptr(static_cast<T*>(storage.ptr()));
         else
-          throw bad_value_cast(
-            obj.m_storage.get_pointer_type(), object_type<T>());
+          throw bad_value_cast(storage.get_pointer_type(), object_type<T>());
       }
     }
 
@@ -219,10 +215,11 @@ namespace TORI_NS::detail {
       class = std::enable_if_t<!is_transfarable_immediate(type_c<T>)>>
     [[nodiscard]] object_ptr<T> value_cast_if(const object_ptr_generic& obj)
     {
+      const auto& storage = _get_storage(obj);
       if (!obj.is_pointer())
         return nullptr;
-      if (obj.m_storage.has_pointer_type<T>()) {
-        auto ptr = obj.m_storage.ptr();
+      if (storage.has_pointer_type<T>()) {
+        auto ptr = storage.ptr();
         ptr->refcount.fetch_add(); // add refcount
         return static_cast<T*>(ptr);
       } else
@@ -238,11 +235,12 @@ namespace TORI_NS::detail {
       class = std::enable_if_t<!is_transfarable_immediate(type_c<T>)>>
     [[nodiscard]] object_ptr<T> value_cast_if(object_ptr_generic&& obj)
     {
-      if (!obj.m_storage.is_pointer())
+      auto& storage = _get_storage(obj);
+      if (!storage.is_pointer())
         return nullptr;
       // pointer
-      if (obj.m_storage.has_pointer_type<T>())
-        return static_cast<T*>(obj.m_storage.ptr());
+      if (storage.has_pointer_type<T>())
+        return static_cast<T*>(storage.ptr());
       else
         return nullptr;
     }
