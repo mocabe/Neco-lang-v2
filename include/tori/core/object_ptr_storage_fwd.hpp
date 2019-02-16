@@ -318,18 +318,18 @@ namespace TORI_NS::detail {
     constexpr object_ptr_storage(Object* p) noexcept
       : m_ptr {p}
     {
-      set_pointer_tag(pointer_tags::pointer);
+      set_pointer_tag_imm(pointer_tags::pointer);
     }
     constexpr object_ptr_storage(const Object* p) noexcept
       : m_ptr {const_cast<Object*>(p)}
     {
-      set_pointer_tag(pointer_tags::pointer);
+      set_pointer_tag_imm(pointer_tags::pointer);
     }
 
     constexpr object_ptr_storage(nullptr_t p) noexcept
       : m_ptr {p}
     {
-      set_pointer_tag(pointer_tags::pointer);
+      set_pointer_tag_imm(pointer_tags::pointer);
     }
 
     template <class T, class = std::enable_if_t<!std::is_pointer_v<T>>>
