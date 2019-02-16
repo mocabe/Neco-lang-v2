@@ -75,31 +75,26 @@ TEST_CASE("immediate construct")
   SECTION("immediate")
   {
     immediate<int> i {};
-    REQUIRE(!i);
     REQUIRE(*i == 0);
   }
   SECTION("immediate")
   {
     immediate<int> i = 42;
-    REQUIRE(i);
     REQUIRE(*i == 42);
   }
   SECTION("deduction")
   {
     immediate i = 42;
-    REQUIRE(i);
     REQUIRE(*i == 42);
   }
   SECTION("deduction")
   {
     auto i = immediate(42);
-    REQUIRE(i);
     REQUIRE(*i == 42);
   }
   SECTION("make_object")
   {
     auto i = make_object<int>(42);
-    REQUIRE(i);
     REQUIRE(*i == 42);
   }
   SECTION("copy")
@@ -177,16 +172,6 @@ TEST_CASE("generic construct")
 
 TEST_CASE("operator bool")
 {
-  SECTION("immediate")
-  {
-    immediate<int> i {};
-    REQUIRE(!i);
-    *i = 42;
-    REQUIRE(i);
-    *i = 0;
-    REQUIRE(!i);
-  }
-
   SECTION("pointer")
   {
     object_ptr<Int> i {};
