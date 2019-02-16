@@ -17,8 +17,8 @@ namespace TORI_NS::detail {
   //         |   __________________|  |_________________   |
   //         |   |    value_cast          value_cast   |   |
   //         |   v                                     v   |
-  //      [object_ptr<T>]                      [object_ptr<Imm>]
-  //      (for heap objects)                   (for immediate values)
+  //    [object_ptr<T>]                           [immediate<T>]
+  //    (for heap objects)                     (for immediate values)
   //              |   ^
   //   conversion |   | value_cast
   //              v   |
@@ -207,18 +207,20 @@ namespace TORI_NS::detail {
 
       if constexpr (type_c<U> == type_c<uint8_t>)
         return set_immediate_type_tag(immediate_type_tags::u8);
-      if constexpr (type_c<U> == type_c<uint16_t>)
+      else if constexpr (type_c<U> == type_c<uint16_t>)
         return set_immediate_type_tag(immediate_type_tags::u16);
-      if constexpr (type_c<U> == type_c<uint32_t>)
+      else if constexpr (type_c<U> == type_c<uint32_t>)
         return set_immediate_type_tag(immediate_type_tags::u32);
-      if constexpr (type_c<U> == type_c<int8_t>)
+      else if constexpr (type_c<U> == type_c<int8_t>)
         return set_immediate_type_tag(immediate_type_tags::i8);
-      if constexpr (type_c<U> == type_c<int16_t>)
+      else if constexpr (type_c<U> == type_c<int16_t>)
         return set_immediate_type_tag(immediate_type_tags::i16);
-      if constexpr (type_c<U> == type_c<int32_t>)
+      else if constexpr (type_c<U> == type_c<int32_t>)
         return set_immediate_type_tag(immediate_type_tags::i32);
-      if constexpr (type_c<U> == type_c<float>)
+      else if constexpr (type_c<U> == type_c<float>)
         return set_immediate_type_tag(immediate_type_tags::f32);
+      else
+        static_assert(false_v<U>);
 
       unreachable();
     }
@@ -256,9 +258,11 @@ namespace TORI_NS::detail {
       return false;
     }
 
+    /// check pointer type 
     template <class U>
     bool has_pointer_type() const noexcept;
 
+    /// operator bool
     explicit operator bool() const noexcept
     {
       if (is_pointer())
@@ -280,7 +284,6 @@ namespace TORI_NS::detail {
         if (get_immediate_type_tag() == immediate_type_tags::f32)
           return get<float>(m_np.value);
       }
-
       unreachable();
     }
 
@@ -312,26 +315,29 @@ namespace TORI_NS::detail {
     }
 
   public:
-    // -------------------------------------------
-    // Ctor
 
+    /// Ctor
     constexpr object_ptr_storage(Object* p) noexcept
       : m_ptr {p}
     {
       set_pointer_tag_imm(pointer_tags::pointer);
     }
+
+    /// Ctor
     constexpr object_ptr_storage(const Object* p) noexcept
-      : m_ptr {const_cast<Object*>(p)}
+      : m_ptr {p}
     {
       set_pointer_tag_imm(pointer_tags::pointer);
     }
 
+    /// Ctor
     constexpr object_ptr_storage(nullptr_t p) noexcept
       : m_ptr {p}
     {
       set_pointer_tag_imm(pointer_tags::pointer);
     }
 
+    /// Ctor
     template <class T, class = std::enable_if_t<!std::is_pointer_v<T>>>
     constexpr object_ptr_storage(T t) noexcept
       : m_np {{}, {t}}
@@ -340,18 +346,20 @@ namespace TORI_NS::detail {
 
       if constexpr (type_c<T> == type_c<uint8_t>)
         set_immediate_type_tag_imm(immediate_type_tags::u8);
-      if constexpr (type_c<T> == type_c<uint16_t>)
+      else if constexpr (type_c<T> == type_c<uint16_t>)
         set_immediate_type_tag_imm(immediate_type_tags::u16);
-      if constexpr (type_c<T> == type_c<uint32_t>)
+      else if constexpr (type_c<T> == type_c<uint32_t>)
         set_immediate_type_tag_imm(immediate_type_tags::u32);
-      if constexpr (type_c<T> == type_c<int8_t>)
+      else if constexpr (type_c<T> == type_c<int8_t>)
         set_immediate_type_tag_imm(immediate_type_tags::i8);
-      if constexpr (type_c<T> == type_c<int16_t>)
+      else if constexpr (type_c<T> == type_c<int16_t>)
         set_immediate_type_tag_imm(immediate_type_tags::i16);
-      if constexpr (type_c<T> == type_c<int32_t>)
+      else if constexpr (type_c<T> == type_c<int32_t>)
         set_immediate_type_tag_imm(immediate_type_tags::i32);
-      if constexpr (type_c<T> == type_c<float>)
+      else if constexpr (type_c<T> == type_c<float>)
         set_immediate_type_tag_imm(immediate_type_tags::f32);
+      else
+        static_assert(false_v<T>);
     }
 
   private:
@@ -364,6 +372,7 @@ namespace TORI_NS::detail {
     };
   };
 
+  // should be standard layout
   static_assert(std::is_standard_layout_v<object_ptr_storage>);
 
 } // namespace TORI_NS::detail

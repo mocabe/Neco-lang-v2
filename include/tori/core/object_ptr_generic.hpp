@@ -105,44 +105,55 @@ namespace TORI_NS::detail {
         *imm = {};
       }
 
+      /// operator=
       object_ptr_generic& operator=(const object_ptr_generic& other)
       {
         object_ptr_generic(other).swap(*this);
         return *this;
       }
 
+      /// operator=
       object_ptr_generic& operator=(object_ptr_generic&& other)
       {
         object_ptr_generic(std::move(other)).swap(*this);
         return *this;
       }
 
+      /// Conditionally delete holding object when reference count become zero.
       ~object_ptr_generic() noexcept
       {
         decrement_refcount_when_pointer();
       }
 
+      /// pointer?
       bool is_pointer() const noexcept
       {
         return m_storage.is_pointer();
       }
 
+      /// immediate?
       bool is_immediate() const noexcept
       {
         return m_storage.is_immediate();
       }
 
+      /// operator bool.
+      /// When holding pointer, check if the pointer is not nullptr.
+      /// When holding immediate values, process implicit cast to bool depending
+      /// on holding value types.
       explicit operator bool() const
       {
         return static_cast<bool>(m_storage);
       }
 
+      /// swap
       void swap(object_ptr_generic& other) noexcept
       {
         std::swap(m_storage, other.m_storage);
       }
 
     private:
+      /// static?
       bool is_static() const
       {
         assert(m_storage.is_pointer());
@@ -168,6 +179,7 @@ namespace TORI_NS::detail {
       }
 
     private:
+      /// storage
       object_ptr_storage m_storage;
     };
 
