@@ -17,6 +17,24 @@ if(TORI_BUILD_TEST OR TORI_BUILD_BENCHMARK OR TORI_BUILD_EXAMPLE)
   set(TORI_BUILD ON)
 endif()
 
+# Detect compiler
+
+if(CMAKE_<LANG>_COMPILER_ID MATCHES "Clang")
+  set(TORI_COMPILER_LLVM true)
+endif()
+
+if(CMAKE_<LANG>_COMPILER_ID STREQUAL "GNU")
+  set(TORI_COMPILER_GNU true)
+endif()
+
+if(CMAKE_<LANG>_COMPILER_ID STREQUAL "Intel")
+  set(TORI_COMPILER_INTEL true)
+endif()
+
+if(MSVC)
+  set(TORI_COMPILER_MSVC true)
+endif()
+
 # ------------------------------------------
 # Add target requirements
 # ------------------------------------------
@@ -42,14 +60,14 @@ target_compile_features(tori INTERFACE cxx_std_17)
 # ------------------------------------------
 # Compiler Flags
 # ------------------------------------------
-if(MSVC)
+if(TORI_COMPILER_MSVC)
   set(TORI_COMPILE_FLAGS /W4 /Zi /EHsc /std:c++17 /permissive-)
 else()
   set(TORI_COMPILE_FLAGS -O0 -Wall -Wextra -Wshadow -g -std=c++17 -pedantic)
 endif()
 
 # use UBsan
-if(UNIX)
+if(UNIX AND TORI_COMPILER_LLVM)
   set(TORI_COMPILE_FLAGS ${TORI_COMPILE_FLAGS} -fsanitize=undefined)
   set(TORI_LINK_FLAGS ${TORI_LINK_FLAGS} -fsanitize=undefined)
 endif()
