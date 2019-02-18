@@ -15,9 +15,14 @@ namespace TORI_NS::detail {
     template <class T = Object>
     class object_ptr
     {
+      // for conversion
       template <class>
       friend class object_ptr;
-      friend class object_ptr_generic;
+      // storage accessors
+      template <class U>
+      friend const object_ptr_storage& _get_storage(const object_ptr<U>&);
+      template <class U>
+      friend object_ptr_storage& _get_storage(object_ptr<U>&);
 
     public:
       // value type
@@ -236,6 +241,18 @@ namespace TORI_NS::detail {
     bool operator!=(const object_ptr<T>& p, nullptr_t) noexcept
     {
       return static_cast<bool>(p);
+    }
+
+    template <class U>
+    const object_ptr_storage& _get_storage(const object_ptr<U>& obj)
+    {
+      return obj.m_storage;
+    }
+
+    template <class U>
+    object_ptr_storage& _get_storage(object_ptr<U>& obj)
+    {
+      return obj.m_storage;
     }
 
   } // namespace interface

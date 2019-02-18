@@ -67,7 +67,7 @@ namespace TORI_NS::detail {
       /// convert ctor (pointer)
       template <class T>
       object_ptr_generic(const object_ptr<T>& ptr)
-        : m_storage {ptr.m_storage}
+        : m_storage {_get_storage(ptr)}
       {
         assert(m_storage.is_pointer());
         if (m_storage.ptr() && !is_static())
@@ -77,7 +77,7 @@ namespace TORI_NS::detail {
       /// convert ctor (immediate)
       template <class T>
       object_ptr_generic(const immediate<T>& imm)
-        : m_storage {imm.m_storage}
+        : m_storage {_get_storage(imm)}
       {
         assert(m_storage.is_immediate());
       }
@@ -85,7 +85,7 @@ namespace TORI_NS::detail {
       /// convert move ctor (pointer)
       template <class T>
       object_ptr_generic(object_ptr<T>&& ptr)
-        : m_storage {ptr.m_storage}
+        : m_storage {_get_storage(ptr)}
       {
         assert(m_storage.is_pointer());
         ptr.m_storage = {nullptr};
@@ -94,7 +94,7 @@ namespace TORI_NS::detail {
       /// convert move ctor (immediate)
       template <class T>
       object_ptr_generic(immediate<T>&& imm)
-        : m_storage {imm.m_storage}
+        : m_storage {_get_storage(imm)}
       {
         assert(m_storage.is_immediate());
         *imm = {};
@@ -178,14 +178,14 @@ namespace TORI_NS::detail {
       object_ptr_storage m_storage;
     };
 
-    const object_ptr_storage& _get_storage(const object_ptr_generic& ptr)
+    const object_ptr_storage& _get_storage(const object_ptr_generic& obj)
     {
-      return ptr.m_storage;
+      return obj.m_storage;
     }
 
-    object_ptr_storage& _get_storage(object_ptr_generic& ptr)
+    object_ptr_storage& _get_storage(object_ptr_generic& obj)
     {
-      return ptr.m_storage;
+      return obj.m_storage;
     }
 
   } // namespace interface

@@ -14,7 +14,11 @@ namespace TORI_NS::detail {
     template <class T>
     class immediate
     {
-      friend class object_ptr_generic;
+      // storage accessors
+      template <class U>
+      friend const object_ptr_storage& _get_storage(const immediate<U>&);
+      template <class U>
+      friend object_ptr_storage& _get_storage(immediate<U>&);
 
       static_assert(is_transfarable_immediate(type_c<T>));
 
@@ -73,6 +77,18 @@ namespace TORI_NS::detail {
     private:
       object_ptr_storage m_storage;
     };
+
+    template <class U>
+    const object_ptr_storage& _get_storage(const immediate<U>& imm)
+    {
+      return imm.m_storage;
+    }
+
+    template <class U>
+    object_ptr_storage& _get_storage(immediate<U>& imm)
+    {
+      return imm.m_storage;
+    }
 
   } // namespace interface
 
