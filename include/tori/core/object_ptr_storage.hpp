@@ -84,7 +84,7 @@ namespace TORI_NS::detail {
       /// pointer tag
       uint32_t flag;
       /// padding
-      [[maybe_unused]] uint32_t padding;
+      uint32_t padding;
     };
 
   private:
