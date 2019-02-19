@@ -20,24 +20,20 @@ endif()
 # ------------------------------------------
 # Detect compiler
 # ------------------------------------------
-if(CMAKE_<LANG>_COMPILER_ID MATCHES "Clang")
-  message("Detected compiler: LLVM Clang")
+if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+  message(STATUS "Detected compiler: LLVM Clang")
   set(TORI_COMPILER_LLVM true)
-endif()
-
-if(CMAKE_<LANG>_COMPILER_ID STREQUAL "GNU")
-  message("Detected compiler: GNU GCC")
+elseif(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+  message(STATUS "Detected compiler: GNU GCC")
   set(TORI_COMPILER_GNU true)
-endif()
-
-if(CMAKE_<LANG>_COMPILER_ID STREQUAL "Intel")
-  message("Detected compiler: Intel ICC")
+elseif(CMAKE_CXX_COMPILER_ID STREQUAL "Intel")
+  message(STATU "Detected compiler: Intel ICC")
   set(TORI_COMPILER_INTEL true)
-endif()
-
-if(MSVC)
-  message("Detected compiler: Microsoft MSVC")
+elseif(MSVC)
+  message(STATUS "Detected compiler: Microsoft MSVC")
   set(TORI_COMPILER_MSVC true)
+else()
+  message(WARNING "Unknown compiler: ${CMAKE_CXX_COMPILER_ID}")
 endif()
 
 # ------------------------------------------
@@ -80,7 +76,7 @@ endif()
 # ------------------------------------------
 # valgrind
 # ------------------------------------------
-if(TORI_BUILD)
+if(UNIX AND TORI_BUILD)
   add_custom_target(tori-valgrind-test
       COMMAND ${CMAKE_CTEST_COMMAND} 
           --force-new-ctest-process --test-action memcheck
