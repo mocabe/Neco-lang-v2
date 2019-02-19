@@ -6,6 +6,7 @@
 #include "../config/config.hpp"
 
 #include "object.hpp"
+#include "object_ptr_storage.hpp"
 
 namespace TORI_NS::detail {
 
@@ -15,6 +16,13 @@ namespace TORI_NS::detail {
     template <class T = Object>
     class object_ptr
     {
+      // storage access
+      template <class U>
+      friend object_ptr_storage& _get_storage(object_ptr<U>&) noexcept;
+      template <class U>
+      friend const object_ptr_storage&
+        _get_storage(const object_ptr<U>&) noexcept;
+
     public:
       // value type
       using element_type = T;
@@ -23,74 +31,74 @@ namespace TORI_NS::detail {
 
       /// Constructor
       constexpr object_ptr() noexcept
-        : m_ptr {nullptr}
+        : m_storage {nullptr}
       {
       }
 
       /// Constructor
       constexpr object_ptr(nullptr_t) noexcept
-        : m_ptr {nullptr}
+        : m_storage {nullptr}
       {
       }
 
       /// Pointer constructor
       constexpr object_ptr(pointer p) noexcept
-        : m_ptr {p}
+        : m_storage {p}
       {
       }
 
       /// Copy constructor
       /// \effects increases reference count.
-      object_ptr(const object_ptr<element_type>& other) noexcept
-        : m_ptr {other.get()}
+      object_ptr(const object_ptr& other) noexcept
+        : m_storage {other.m_storage}
       {
-        if (likely(m_ptr && !is_static()))
-          head()->refcount.fetch_add();
+        increment_refcount();
       }
 
       /// Move constructor
-      object_ptr(object_ptr<element_type>&& other) noexcept
-        : m_ptr {other.release()}
+      object_ptr(object_ptr&& other) noexcept
+        : m_storage {other.m_storage}
       {
+        other.m_storage = {nullptr};
       }
 
       /// Copy convert constructor
       /// \effects increases reference count.
       template <class U>
       object_ptr(const object_ptr<U>& other) noexcept
-        : m_ptr {other.get()}
+        : m_storage {_get_storage(other)}
       {
-        if (likely(m_ptr && !is_static()))
-          head()->refcount.fetch_add();
+        increment_refcount();
       }
 
       /// Move convert constructor
       template <class U>
       object_ptr(object_ptr<U>&& other) noexcept
-        : m_ptr {other.release()}
+        : m_storage {_get_storage(other)}
       {
+        _get_storage(other) = {nullptr};
       }
 
       /// get address of object
       pointer get() const noexcept
       {
-        return m_ptr;
+        return static_cast<pointer>(m_storage.ptr());
       }
 
       /// get address of header
       auto* head() const noexcept
       {
         if constexpr (std::is_const_v<element_type>)
-          return static_cast<const Object*>(m_ptr);
+          return static_cast<const Object*>(m_storage.ptr());
         else
-          return static_cast<Object*>(m_ptr);
+          return static_cast<Object*>(m_storage.ptr());
       }
 
       /// get address of info table
       /// \requires not null.
       const object_info_table* info_table() const noexcept
       {
-        assert(m_ptr);
+        assert(head());
         return head()->info_table;
       }
 
@@ -98,21 +106,21 @@ namespace TORI_NS::detail {
       /// \requires not null.
       auto* value() const noexcept
       {
-        assert(m_ptr);
-        return &m_ptr->_value;
+        assert(get());
+        return &get()->_value;
       }
 
       /// operator bool
       explicit operator bool() const noexcept
       {
-        return m_ptr != nullptr;
+        return m_storage.ptr() != nullptr;
       }
 
       /// use_count
       /// \requires not null.
       uint64_t use_count() const noexcept
       {
-        assert(m_ptr);
+        assert(head());
         return head()->refcount.load();
       }
 
@@ -120,23 +128,22 @@ namespace TORI_NS::detail {
       /// \requires not null.
       bool is_static() const noexcept
       {
-        assert(m_ptr);
-        return use_count() == 0;
+        return m_storage.is_static();
       }
 
       /// release pointer
       /// \effects get() return nullptr after call
       pointer release() noexcept
       {
-        auto tmp = m_ptr;
-        m_ptr = nullptr;
+        auto tmp = m_storage.ptr();
+        m_storage = {nullptr};
         return tmp;
       }
 
       /// swap data
       void swap(object_ptr<element_type>& obj) noexcept
       {
-        std::swap(obj.m_ptr, m_ptr);
+        std::swap(obj.m_storage, m_storage);
       }
 
       /// operator=
@@ -187,8 +194,15 @@ namespace TORI_NS::detail {
       ~object_ptr() noexcept;
 
     private:
+      void increment_refcount()
+      {
+        if (likely(m_storage.ptr() && !m_storage.is_static()))
+          m_storage.ptr()->refcount.fetch_add();
+      }
+
+    private:
       /// pointer to object
-      pointer m_ptr;
+      object_ptr_storage m_storage;
     };
 
     /// Object info table
@@ -212,11 +226,11 @@ namespace TORI_NS::detail {
     template <class T>
     object_ptr<T>::~object_ptr() noexcept
     {
-      if (likely(m_ptr && !is_static())) {
+      if (likely(head() && !is_static())) {
         // delete object if needed
         if (head()->refcount.fetch_sub() == 1) {
           std::atomic_thread_fence(std::memory_order_acquire);
-          info_table()->destroy(m_ptr);
+          info_table()->destroy(get());
         }
       }
     }
@@ -261,6 +275,20 @@ namespace TORI_NS::detail {
     bool operator!=(const object_ptr<T>& p, nullptr_t) noexcept
     {
       return static_cast<bool>(p);
+    }
+
+    /// internal storage accessor
+    template <class U>
+    object_ptr_storage& _get_storage(object_ptr<U>& obj) noexcept
+    {
+      return obj.m_storage;
+    }
+
+    /// internal storage accessor
+    template <class U>
+    const object_ptr_storage& _get_storage(const object_ptr<U>& obj) noexcept
+    {
+      return obj.m_storage;
     }
 
   } // namespace interface
