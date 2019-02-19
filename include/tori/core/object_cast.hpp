@@ -10,6 +10,7 @@
 namespace TORI_NS::detail {
 
   /// cast object_ptr without type check
+  /// \requires obj holds T*
   template <class T, class U>
   [[nodiscard]] object_ptr<T> static_object_cast(const object_ptr<U>& obj)
   {
@@ -19,6 +20,7 @@ namespace TORI_NS::detail {
   }
 
   /// cast object_ptr without type check
+  /// \requires obj holds T*
   template <class T, class U>
   [[nodiscard]] object_ptr<T> static_object_cast(object_ptr<U>&& obj)
   {
@@ -26,6 +28,7 @@ namespace TORI_NS::detail {
   }
 
   /// cast object_ptr_generic without type check
+  /// \requires obj holds T*
   template <class T>
   [[nodiscard]] object_ptr<T> static_object_cast(const object_ptr_generic& obj)
   {
@@ -40,6 +43,7 @@ namespace TORI_NS::detail {
   }
 
   /// cast object_ptr_generic without type check
+  /// \requires obj holds T*
   template <class T>
   [[nodiscard]] object_ptr<T> static_object_cast(object_ptr_generic&& obj)
   {
@@ -52,7 +56,30 @@ namespace TORI_NS::detail {
     return ret;
   }
 
+  /// cast object_ptr_generic to Object
+  /// \requires obj holds pointer
+  [[nodiscard]] object_ptr<>
+    static_object_cast_top(const object_ptr_generic& obj)
+  {
+    object_ptr<> ret = nullptr;
+    _get_storage(ret) = _get_storage(obj);
+    if (likely(ret && !ret.is_static()))
+      ret.head()->refcount.fetch_add();
+    return ret;
+  }
+
+  /// cast object_ptr_generic to Object
+  /// \requires obj holds pointer
+  [[nodiscard]] object_ptr<> static_object_cast_top(object_ptr_generic&& obj)
+  {
+    object_ptr<> ret = nullptr;
+    _get_storage(ret) = _get_storage(obj);
+    _get_storage(obj) = {nullptr};
+    return ret;
+  }
+
   /// cast object_ptr_generic without type check
+  /// \requires obj hold immeiate value of T
   template <class T>
   [[nodiscard]] immediate<T>
     static_immediate_cast(const object_ptr_generic& obj)
@@ -65,6 +92,7 @@ namespace TORI_NS::detail {
   }
 
   /// cast object_ptr_generic without type check
+  /// \requires obj holds immediate value of T
   template <class T>
   [[nodiscard]] immediate<T> static_immediate_cast(object_ptr_generic&& obj)
   {
@@ -76,6 +104,7 @@ namespace TORI_NS::detail {
   }
 
   /// cast object_ptr_generic without type check
+  /// \requires obj holds T object
   template <class T>
   [[nodiscard]] auto static_auto_cast(const object_ptr_generic& obj)
   {
@@ -86,6 +115,7 @@ namespace TORI_NS::detail {
   }
 
   /// cast object_ptr_generic without type check
+  /// \requires obj holds T object
   template <class T>
   [[nodiscard]] auto static_auto_cast(object_ptr_generic&& obj)
   {
