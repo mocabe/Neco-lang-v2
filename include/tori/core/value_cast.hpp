@@ -11,37 +11,41 @@
 
 namespace TORI_NS::detail {
 
-  /// bad_value_cast exception
-  class bad_value_cast : public std::logic_error
-  {
-  public:
-    explicit bad_value_cast(
-      object_ptr<const Type> from,
-      object_ptr<const Type> to)
-      : std::logic_error("bad_value_cast")
-      , m_from {std::move(from)}
-      , m_to {std::move(to)}
-    {
-    }
+  namespace interface {
 
-    /// get from
-    const object_ptr<const Type>& from() const
+    /// bad_value_cast exception
+    class bad_value_cast : public std::logic_error
     {
-      return m_from;
-    }
+    public:
+      explicit bad_value_cast(
+        object_ptr<const Type> from,
+        object_ptr<const Type> to)
+        : std::logic_error("bad_value_cast")
+        , m_from {std::move(from)}
+        , m_to {std::move(to)}
+      {
+      }
 
-    /// get to
-    const object_ptr<const Type>& to() const
-    {
-      return m_to;
-    }
+      /// get from
+      const object_ptr<const Type>& from() const
+      {
+        return m_from;
+      }
 
-  private:
-    /// cast from
-    object_ptr<const Type> m_from;
-    /// cast to
-    object_ptr<const Type> m_to;
-  };
+      /// get to
+      const object_ptr<const Type>& to() const
+      {
+        return m_to;
+      }
+
+    private:
+      /// cast from
+      object_ptr<const Type> m_from;
+      /// cast to
+      object_ptr<const Type> m_to;
+    };
+
+  } // namespace interface
 
   struct BadValueCastValue
   {
