@@ -6,6 +6,7 @@
 #include "../config/config.hpp"
 
 #include "object_ptr.hpp"
+#include "object_ptr_generic.hpp"
 
 namespace TORI_NS::detail {
 

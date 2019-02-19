@@ -7,8 +7,19 @@
 
 #include "object_ptr.hpp"
 #include "immediate.hpp"
+#include "object_cast.hpp"
 
 namespace TORI_NS::detail {
+
+  // call clone
+  object_ptr<const Object> clone(const Object* obj)
+  {
+    assert(obj);
+    auto r = obj->info_table->clone(obj);
+    if (unlikely(!r))
+      throw std::bad_alloc();
+    return r;
+  }
 
   namespace interface {
 
@@ -22,11 +33,7 @@ namespace TORI_NS::detail {
     template <class T>
     object_ptr<T> clone(const object_ptr<T>& obj)
     {
-      assert(obj);
-      auto r = static_cast<T*>(obj.info_table()->clone(obj.get()));
-      if (unlikely(!r))
-        throw std::bad_alloc();
-      return r;
+      return static_object_cast<T>(clone(obj.get()));
     }
 
     /// make object

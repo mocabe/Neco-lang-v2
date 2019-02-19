@@ -41,18 +41,19 @@ namespace TORI_NS::detail {
   struct closure_info_table : object_info_table
   {
     /// Number of arguments
-    uint64_t n_args;
+    const uint64_t n_args;
     /// Size of extended header
-    uint64_t clsr_ext_bytes;
+    const uint64_t clsr_ext_bytes;
     /// vtable for code
-    object_ptr<> (*code)(const Closure<>*);
+    object_ptr_generic (*code)(const Closure<>*);
   };
 
   template <class Closure1>
   struct Closure : Object
   {
     /// Arity of this closure.
-    uint64_t _arity;
+    /// mutable for evaluation
+    mutable uint64_t _arity;
 
 #if defined(CLOSURE_HEADER_EXTEND_BYTES)
     /// additional buffer storage
@@ -66,21 +67,22 @@ namespace TORI_NS::detail {
     }
 
     /// Execute core with vtable function
-    object_ptr<> code() const noexcept
+    auto code() const noexcept
     {
       return static_cast<const closure_info_table*>(info_table)->code(this);
     }
 
     /// get nth argument
-    object_ptr<>& arg(uint64_t n)
+    object_ptr_generic& arg(uint64_t n) const noexcept
     {
       constexpr uint64_t offset = offset_of_member(&Closure1::_args);
-      static_assert(offset % sizeof(object_ptr<>) == 0);
-      return ((object_ptr<>*)this)[offset / sizeof(object_ptr<>) + n];
+      static_assert(offset % sizeof(object_ptr_generic) == 0);
+      return (
+        (object_ptr_generic*)this)[offset / sizeof(object_ptr_generic) + n];
     }
 
     ///  get arity
-    uint64_t& arity()
+    uint64_t& arity() const noexcept
     {
       return _arity;
     }
@@ -98,22 +100,15 @@ namespace TORI_NS::detail {
   {
     /// get raw arg
     template <uint64_t Arg>
-    object_ptr<>& nth_arg() noexcept
-    {
-      static_assert(Arg < N, "Invalid index of argument");
-      return _args[N - Arg - 1];
-    }
-
-    /// get raw arg
-    template <uint64_t Arg>
-    const object_ptr<>& nth_arg() const noexcept
+    auto& nth_arg() const noexcept
     {
       static_assert(Arg < N, "Invalid index of argument");
       return _args[N - Arg - 1];
     }
 
     /// args
-    std::array<object_ptr<>, N> _args = {};
+    /// mutable for evaluation
+    mutable std::array<object_ptr_generic, N> _args = {};
   };
 
   // ------------------------------------------
@@ -123,7 +118,7 @@ namespace TORI_NS::detail {
   template <class T>
   struct vtbl_eval_wrapper
   {
-    static object_ptr<> code(const Closure<>* _this) noexcept
+    static object_ptr_generic code(const Closure<>* _this) noexcept
     {
       try {
         auto r = (static_cast<const T*>(_this)->code()).value();
@@ -202,16 +197,34 @@ namespace TORI_NS::detail {
       : m_value {std::move(obj)}
     {
       // check return type
-      check_return_type(return_type, type_of(U::term));
+      check_return_type(return_type, type_of(get_term<U>()));
+    }
+
+    /// immediate<U>
+    template <class U>
+    return_type_checker(immediate<U> imm)
+      : m_value {std::move(imm)}
+    {
+      // check return type
+      check_return_type(return_type, type_of(get_term<U>()));
     }
 
     /// U*
     template <class U>
     return_type_checker(U* ptr)
-      : m_value(ptr)
+      : m_value(object_ptr(ptr))
     {
       // check return type
-      check_return_type(return_type, type_of(U::term));
+      check_return_type(return_type, type_of(get_term<U>()));
+    }
+
+    /// U
+    template <class U>
+    return_type_checker(U value)
+      : m_value(immediate(value))
+    {
+      // check return type
+      check_return_type(return_type, type_of(get_term<U>()));
     }
 
     /// deleted
@@ -222,13 +235,13 @@ namespace TORI_NS::detail {
     return_type_checker(return_type_checker&& other) = delete;
 
     /// value
-    object_ptr<>&& value() &&
+    object_ptr_generic&& value() &&
     {
       return std::move(m_value);
     }
 
   private:
-    object_ptr<> m_value;
+    object_ptr_generic m_value;
   };
 
   // ------------------------------------------
@@ -246,7 +259,7 @@ namespace TORI_NS::detail {
 
       /// export term
       static constexpr auto term =
-        remove_varvalue(make_tm_closure(Ts::term...));
+        remove_varvalue(make_tm_closure(get_term<Ts>()...));
 
       /// Closure info table initializer
       struct info_table_initializer
@@ -261,8 +274,9 @@ namespace TORI_NS::detail {
       {
         using To = std::tuple_element_t<N, std::tuple<Ts...>>;
         auto obj = ClosureN<sizeof...(Ts) - 1>::template nth_arg<N>();
-        assert(obj);
-        return static_object_cast<To>(obj);
+        // convert argument without type check.
+        // runtime type system should enforce that argumet type is valid.
+        return static_auto_cast<To>(obj);
       }
 
       /// Evaluate N'th argument and take result
@@ -271,6 +285,7 @@ namespace TORI_NS::detail {
       {
         // workaround: gcc 8.1
         return eval(this->template arg<N>());
+        // TODO: Replace argument with result.
       }
 
       /// Ctor

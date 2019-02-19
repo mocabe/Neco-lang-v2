@@ -10,6 +10,7 @@
 #include "exception.hpp"
 #include "type_error.hpp"
 #include "utility.hpp"
+#include "object_ptr_generic.hpp"
 
 #include <vector>
 
@@ -33,7 +34,30 @@ namespace TORI_NS::detail {
     [[nodiscard]] inline object_ptr<const Type>
       get_type(const object_ptr<T>& obj)
     {
-      return obj.info_table()->obj_type;
+      return _get_storage(obj).get_pointer_type();
+    }
+
+    /// \brief get **RAW** type of the object
+    /// \notes NO null check.
+    /// \notes use type_of() to get actual type of terms.
+    template <class T>
+    [[nodiscard]] inline object_ptr<const Type>
+      get_type(const immediate<T>& imm)
+    {
+      return _get_storage(imm).get_immediate_type();
+    }
+
+    /// \brief get **RAW** type of the object
+    /// \notes NO null check.
+    /// \notes use type_of() to get actual type of terms.
+    [[nodiscard]] inline object_ptr<const Type>
+      get_type(const object_ptr_generic& obj)
+    {
+      if (obj.is_pointer())
+        return _get_storage(obj).get_pointer_type();
+      if (obj.is_immediate())
+        return _get_storage(obj).get_immediate_type();
+      unreachable();
     }
 
     /// is_value_type
@@ -69,16 +93,22 @@ namespace TORI_NS::detail {
       return is_value_type(get_type(obj));
     }
 
+    /// has_value_type
+    [[nodiscard]] inline bool has_value_type(const object_ptr_generic& obj)
+    {
+      return is_value_type(get_type(obj));
+    }
+
     /// has_arrow_type
     [[nodiscard]] inline bool has_arrow_type(const object_ptr<>& obj)
     {
       return is_arrow_type(get_type(obj));
     }
 
-    /// has_vartype
-    [[nodiscard]] inline bool has_vartype(const object_ptr<>& obj)
+    /// has_arrow_type
+    [[nodiscard]] inline bool has_arrow_type(const object_ptr_generic& obj)
     {
-      return is_vartype(get_type(obj));
+      return is_arrow_type(get_type(obj));
     }
 
   } // namespace interface
@@ -153,9 +183,29 @@ namespace TORI_NS::detail {
       return same_type_impl(lhs, rhs);
     }
 
-    /// has_type
+    /// check type of object itself
+    /// \requires obj is not null
     template <class T, class U>
     [[nodiscard]] bool has_type(const object_ptr<U>& obj)
+    {
+      if (same_type(get_type(obj), object_type<T>()))
+        return true;
+      return false;
+    }
+
+    /// check type of object itself
+    template <class T, class U>
+    [[nodiscard]] bool has_type(const immediate<U>& imm)
+    {
+      if (same_type(get_type(imm), object_type<T>()))
+        return true;
+      return false;
+    }
+
+    /// check type of object itself
+    /// \requires obj is not null pointer
+    template <class T>
+    [[nodiscard]] bool has_type(const object_ptr_generic& obj)
     {
       if (same_type(get_type(obj), object_type<T>()))
         return true;
@@ -408,14 +458,10 @@ namespace TORI_NS::detail {
     // value -> value
     if (has_value_type(obj))
       return get_type(obj);
-    // var -> var
-    if (has_vartype(obj))
-      return get_type(obj);
     // arrow -> genpoly arrow
     if (has_arrow_type(obj))
       return genpoly(get_type(obj));
 
-    assert(false);
     unreachable();
   }
 

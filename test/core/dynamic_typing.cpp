@@ -275,17 +275,18 @@ TEST_CASE("type_of")
     auto a = make_object<A>();
     auto b = make_object<B>();
     auto i = make_object<Int>();
+    auto d = make_object<Double>();
 
     SECTION("Apply")
     {
-      object_ptr app = new Apply {new Apply {a, b}, i};
+      object_ptr app = new Apply {new Apply {a, b}, d};
       auto type = type_of(app);
       REQUIRE(same_type(type, object_type<Int>()));
     }
 
     SECTION("operator<<")
     {
-      auto app = a << b << i;
+      auto app = a << b << d;
       auto type = type_of(app);
       REQUIRE(same_type(type, object_type<Int>()));
     }
@@ -293,7 +294,13 @@ TEST_CASE("type_of")
 
   SECTION("polymorphic")
   {
-    struct A : Function<A, Bool, forall<class X>, forall<class X>>
+
+#if defined(__clang__)
+    class X;
+#endif
+
+    struct A
+      : Function<A, Bool, forall<class X>, forall<class X>, forall<class X>>
     {
       return_type code() const
       {
@@ -309,6 +316,8 @@ TEST_CASE("type_of")
     {
       auto app = a << b << i << i;
       auto type = type_of(app);
+      INFO(to_string(object_type<A>()));
+      INFO(to_string(type));
       REQUIRE(same_type(type, object_type<Int>()));
     }
 
@@ -316,6 +325,7 @@ TEST_CASE("type_of")
     {
       auto app = a << b << (a << b << d << d) << d;
       auto type = type_of(app);
+      INFO(to_string(type));
       REQUIRE(same_type(type, object_type<Double>()));
     }
   }
@@ -337,7 +347,16 @@ TEST_CASE("type_of")
       }
     };
 
-    struct C : Function<C, Int, Double, Int, Double>
+#if defined(__clang__)
+    class X;
+    class Y;
+#endif
+
+    struct C : Function<
+                 C,
+                 closure<forall<class X>, forall<class Y>>,
+                 forall<class X>,
+                 forall<class Y>>
     {
       return_type code() const
       {
@@ -367,7 +386,9 @@ TEST_CASE("type_of")
     {
       auto app = fix << c;
       auto type = type_of(app);
-      REQUIRE(same_type(type, object_type<closure<Int, Double>>()));
+      INFO(to_string(object_type<C>()));
+      INFO(to_string(type));
+      REQUIRE(same_type(type, object_type<closure<forall<X>, forall<Y>>>()));
     }
   }
 }

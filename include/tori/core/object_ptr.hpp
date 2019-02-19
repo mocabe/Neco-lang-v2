@@ -17,6 +17,7 @@ namespace TORI_NS::detail {
     template <class T>
     object_ptr<T>::~object_ptr() noexcept
     {
+      assert(m_storage.is_pointer());
       if (likely(m_storage.ptr() && !is_static())) {
         // delete object if needed
         if (head()->refcount.fetch_sub() == 1) {

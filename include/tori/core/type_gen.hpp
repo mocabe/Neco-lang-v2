@@ -45,14 +45,14 @@ namespace TORI_NS::detail {
     struct closure : Object
     {
       /// term
-      static constexpr auto term = make_tm_closure(Ts::term...);
+      static constexpr auto term = make_tm_closure(get_term(type_c<Ts>)...);
     };
 
     /// Type variable value
     template <class Tag>
     struct forall : Object
     {
-      // term
+      /// term
       static constexpr auto term = type_c<tm_varvalue<Tag>>;
     };
 

@@ -22,6 +22,21 @@ TEST_CASE("simple function test")
     };
     auto f = make_object<F>();
   }
+
+  SECTION("int->int")
+  {
+    struct F : Function<F, int, int>
+    {
+      return_type code() const
+      {
+        return arg<0>();
+        return eval_arg<0>();
+        return eval(arg<0>());
+        return eval(eval_arg<0>());
+      }
+    };
+    auto f = make_object<F>();
+  }
 }
 
 TEST_CASE("higher order function test")

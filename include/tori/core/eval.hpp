@@ -64,8 +64,16 @@ namespace TORI_NS::detail {
   } // namespace interface
 
   /// eval implementation
-  [[nodiscard]] inline object_ptr<> eval_impl(const object_ptr<>& obj)
+  [[nodiscard]] inline object_ptr_generic
+    eval_impl(const object_ptr_generic& obj_generic)
   {
+    // immediate
+    if (obj_generic.is_immediate())
+      return obj_generic;
+
+    // TODO: avoid incrementing reference count
+    auto& obj = obj_generic;
+
     // apply
     if (auto apply = value_cast_if<ApplyR>(obj)) {
       // graph reduction
@@ -88,19 +96,20 @@ namespace TORI_NS::detail {
         }
         // check arg
         if (unlikely(has_value_type(f))) {
+          // value type (including immediate types)
           throw eval_error::bad_fix(
-            "eval_error: Expected closure after Fix", obj);
+            "eval_error: Expected closure after Fix", apply);
         }
         // cast to closure
-        auto c = static_cast<Closure<>*>(f.get());
+        auto c = static_cast<const Closure<>*>(_get_storage(f).ptr());
         // check arity
         if (unlikely(c->arity() == 0)) {
           throw eval_error::bad_fix(
-            "eval_error: Expected appliable closure after Fix", obj);
+            "eval_error: Expected appliable closure after Fix", apply);
         }
         // process
-        auto pap = clone(f);
-        auto cc = static_cast<Closure<>*>(pap.get());
+        auto pap = clone(c);
+        auto cc = static_cast<const Closure<>*>(pap.get());
         auto arity = --cc->arity();
         cc->arg(arity) = obj;
         if (arity == 0) {
@@ -148,13 +157,13 @@ namespace TORI_NS::detail {
 
     /// evaluate each apply node and replace with result
     template <class T>
-    [[nodiscard]] auto eval(const object_ptr<T>& obj)
+    [[nodiscard]] auto eval(const object_ptr_generic& obj)
     {
-      auto result = eval_impl(object_ptr<>(obj));
+      auto result = eval_impl(obj);
       assert(result);
 
       // for gcc 7
-      constexpr auto type = type_of(T::term, false_c);
+      constexpr auto type = type_of(get_term<T>(), false_c);
 
       // run compile time type check
       if constexpr (!is_error_type(type)) {
@@ -166,7 +175,7 @@ namespace TORI_NS::detail {
         // them to Object.
         using To = typename decltype(guess_object_type(type))::type;
         // cast to resutn type
-        return static_object_cast<To>(result);
+        return static_auto_cast<To>(result);
       } else {
         // fallback to object_ptr<>
         return result;

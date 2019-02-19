@@ -22,6 +22,8 @@ namespace TORI_NS::detail {
   static_assert(sizeof(void*) == 8);
   // bool should be 1 byte
   static_assert(sizeof(bool) == 1, "sizeof(bool) is not 1byte");
+  static_assert(true == 1);
+  static_assert(false == 0);
 
   // IEEE 754
   static_assert(

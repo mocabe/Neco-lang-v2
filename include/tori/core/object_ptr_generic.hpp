@@ -5,6 +5,7 @@
 
 #include "../config/config.hpp"
 #include "object_ptr.hpp"
+#include "object_ptr_storage.hpp"
 #include "immediate.hpp"
 
 namespace TORI_NS::detail {
@@ -88,7 +89,7 @@ namespace TORI_NS::detail {
         : m_storage {_get_storage(ptr)}
       {
         assert(m_storage.is_pointer());
-        ptr.m_storage = {nullptr};
+        _get_storage(ptr) = {nullptr};
       }
 
       /// convert move ctor (immediate)
@@ -97,7 +98,6 @@ namespace TORI_NS::detail {
         : m_storage {_get_storage(imm)}
       {
         assert(m_storage.is_immediate());
-        *imm = {};
       }
 
       /// operator=

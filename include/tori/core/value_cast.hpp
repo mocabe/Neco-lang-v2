@@ -219,8 +219,9 @@ namespace TORI_NS::detail {
     /// \returns nullptr or zero initialized immediate value when fail.
     template <
       class T,
+      // disabled because immediate<T> cannot propagate error conditions.
       class = std::enable_if_t<!is_transfarable_immediate(type_c<T>)>>
-    [[nodiscard]] object_ptr<T> value_cast_if(const object_ptr_generic& obj)
+    [[nodiscard]] object_ptr<T> value_cast_if(const object_ptr_generic& obj) noexcept
     {
       const auto& storage = _get_storage(obj);
       if (!obj.is_pointer())
@@ -240,7 +241,7 @@ namespace TORI_NS::detail {
     template <
       class T,
       class = std::enable_if_t<!is_transfarable_immediate(type_c<T>)>>
-    [[nodiscard]] object_ptr<T> value_cast_if(object_ptr_generic&& obj)
+    [[nodiscard]] object_ptr<T> value_cast_if(object_ptr_generic&& obj) noexcept
     {
       auto& storage = _get_storage(obj);
       if (!storage.is_pointer())

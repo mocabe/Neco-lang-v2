@@ -42,8 +42,8 @@ namespace TORI_NS::detail {
 
       pointer   = 0x00000000, //< plain pointer
       immediate = 0x00000001, //< immediate value
-      apply     = 0x00000002, //< apply value (optional)
-      exception = 0x00000003, //< exception value (optional)
+      apply     = 0x00000002, //< pointer to apply (optional)
+      exception = 0x00000003, //< pointer to exception (optional)
 
       extract_mask = 0x00000007, // ...0111
       clear_mask   = 0xFFFFFFF8, // ...1000
@@ -374,5 +374,8 @@ namespace TORI_NS::detail {
 
   // should be standard layout
   static_assert(std::is_standard_layout_v<object_ptr_storage>);
+  static_assert(std::is_trivially_copy_constructible_v<object_ptr_storage>);
+  static_assert(std::is_trivially_copy_assignable_v<object_ptr_storage>);
+  static_assert(std::is_trivially_copyable_v<object_ptr_storage>);
 
 } // namespace TORI_NS::detail

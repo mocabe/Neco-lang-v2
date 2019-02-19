@@ -7,6 +7,7 @@
 #include "box.hpp"
 #include "type_gen.hpp"
 #include "fix.hpp"
+#include "object_ptr_generic.hpp"
 
 namespace TORI_NS::detail {
 
@@ -24,30 +25,28 @@ namespace TORI_NS::detail {
     {
     }
 
-    const object_ptr<>& app() const
+    const object_ptr_generic& app() const
     {
-      assert(m_app != nullptr);
       return m_app;
     }
 
-    const object_ptr<>& arg() const
+    const object_ptr_generic& arg() const
     {
-      assert(m_app != nullptr);
       return m_arg;
     }
 
     bool evaluated() const
     {
-      return m_app == nullptr;
+      return m_app.is_pointer() && _get_storage(m_app).ptr();
     }
 
-    const object_ptr<>& get_cache() const
+    const object_ptr_generic& get_cache() const
     {
       assert(evaluated());
       return m_arg;
     }
 
-    void set_cache(const object_ptr<>& obj)
+    void set_cache(const object_ptr_generic& obj)
     {
       assert(!evaluated());
       m_app = nullptr;
@@ -57,10 +56,10 @@ namespace TORI_NS::detail {
   private:
     /// closure
     /// when evaluated: nullptr
-    object_ptr<> m_app;
+    object_ptr_generic m_app;
     /// argument
     /// when evaluated: result
-    object_ptr<> m_arg;
+    object_ptr_generic m_arg;
   };
 
   namespace interface {
@@ -71,6 +70,11 @@ namespace TORI_NS::detail {
   } // namespace interface
 
   namespace interface {
+
+    // apply x y
+    //  (x:T, y:U) -> Apply<T,U>
+    //  (x:generic, y:U) -> Apply
+    //  (x:T, y:generic) -> Apply
 
     /// compile time apply object
     template <class App, class Arg>
@@ -97,6 +101,7 @@ namespace TORI_NS::detail {
 
       // clang-format on
     };
+
   } // namespace interface
 
   template <class T>
