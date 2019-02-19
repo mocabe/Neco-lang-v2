@@ -9,6 +9,7 @@
 #include "object_ptr_storage.hpp"
 #include "object_cast.hpp"
 #include "dynamic_typing.hpp"
+#include "undefined.hpp"
 
 #include <exception>
 
@@ -163,7 +164,10 @@ namespace TORI_NS::detail {
       if constexpr (is_transfarable_immediate(type_c<T>)) {
         // not immediate
         if (!obj.is_immediate())
-          throw bad_value_cast(storage.get_pointer_type(), object_type<T>());
+          throw bad_value_cast(
+            storage.ptr() ? storage.get_pointer_type()
+                          : object_type<Undefined>(),
+            object_type<T>());
         // return immediate type
         if (storage.has_immediate_type<T>())
           return immediate(get<T>(storage.immediate_union()));
@@ -179,7 +183,10 @@ namespace TORI_NS::detail {
           ptr->refcount.fetch_add(); // add refcount
           return object_ptr(static_cast<T*>(ptr));
         } else
-          throw bad_value_cast(storage.get_pointer_type(), object_type<T>());
+          throw bad_value_cast(
+            storage.ptr() ? storage.get_pointer_type()
+                          : object_type<Undefined>(),
+            object_type<T>());
       }
     }
 

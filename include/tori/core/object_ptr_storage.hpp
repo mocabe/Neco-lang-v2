@@ -43,11 +43,9 @@ namespace TORI_NS::detail {
   auto object_ptr_storage::get_pointer_type() const noexcept
   {
     assert(is_pointer());
+    assert(ptr());
 
     auto p = ptr();
-    // null
-    if (!p)
-      return object_ptr<const Type>(nullptr);
     // get type
     return p->info_table->obj_type;
   }
