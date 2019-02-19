@@ -7,6 +7,7 @@
 
 #include "meta_type.hpp"
 #include "meta_tuple.hpp"
+#include "unboxed.hpp"
 
 namespace TORI_NS::detail {
 
@@ -330,6 +331,15 @@ namespace TORI_NS::detail {
   }
 
   // ------------------------------------------
+  // make_tm_value
+
+  template <class T>
+  constexpr auto make_tm_value(meta_type<T>)
+  {
+    return type_c<tm_value<T>>;
+  }
+
+  // ------------------------------------------
   // make_tm_closure
 
   template <class... Ts>
@@ -384,8 +394,11 @@ namespace TORI_NS::detail {
   // get_term
 
   template <class T>
-  constexpr auto get_term(meta_type<T>)
+  constexpr auto get_term(meta_type<T> = {})
   {
-    return T::term;
+    if constexpr (is_transfarable_immediate(type_c<T>))
+      return make_tm_value(type_c<T>);
+    else
+      return T::term;
   }
 }
