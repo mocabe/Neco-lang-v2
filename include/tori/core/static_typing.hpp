@@ -90,7 +90,7 @@ namespace TORI_NS::detail {
   // ------------------------------------------
   // subst_constr
 
-  /// Type substitution on a type constraint
+  /// Type substitution on type constraint
   template <class TyT1, class TyT2, class T1, class T2>
   constexpr auto
     subst_constr(meta_type<tyarrow<TyT1, TyT2>> a, meta_type<constr<T1, T2>>)
@@ -134,14 +134,14 @@ namespace TORI_NS::detail {
   }
 
   /// compose substitution
-  /// g(f(S)):
-  /// | X->g(T) when (X->T) belongs f
-  /// | X->T    when (X->T) belongs g && X not belongs dom(f)
   template <class... TyArrows, class TyT1, class TyT2>
   constexpr auto compose_subst(
     meta_tuple<TyArrows...> tyarrows,
     meta_type<tyarrow<TyT1, TyT2>> a)
   {
+    // g(f(S)):
+    // | X->g(T) when (X->T) belongs f
+    // | X->T    when (X->T) belongs g && X not belongs dom(f)
     if constexpr (empty(tyarrows))
       return make_tuple(a);
     else {
@@ -308,7 +308,7 @@ namespace TORI_NS::detail {
   /// Replace type `From` with `To` in a `Term` tree.
   /// \param from a type going to be replaced
   /// \param to a type going to replace
-  /// \term term tree
+  /// \param term term tree
   template <class From, class To, class Term>
   constexpr auto
     subst_term(meta_type<From> from, meta_type<To> to, meta_type<Term> term)
@@ -340,7 +340,7 @@ namespace TORI_NS::detail {
   /// Recursively traverse term tree and replace tm_var with new one.
   /// \param term a point on term tree currently being processed
   /// \param gen generator
-  /// \param target temporal result of procedure
+  /// \param target current result of procedure
   template <class Term, class Gen, class Target>
   constexpr auto genpoly_impl(
     meta_type<Term> term,

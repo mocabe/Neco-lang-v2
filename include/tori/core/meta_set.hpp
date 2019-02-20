@@ -80,7 +80,7 @@ namespace TORI_NS::detail {
   }
 
   // ------------------------------------------
-  // set_include
+  // includes
 
   template <class T1, class T2, size_t... S>
   constexpr auto set_includes_impl(T1 t1, T2 t2, std::index_sequence<S...>)
@@ -102,7 +102,7 @@ namespace TORI_NS::detail {
   }
 
   // ------------------------------------------
-  // set_eq
+  // equal
 
   template <class... Ts1, class... Ts2>
   constexpr auto equal(meta_set<Ts1...> t1, meta_set<Ts2...> t2)
