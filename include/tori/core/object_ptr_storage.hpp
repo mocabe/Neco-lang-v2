@@ -36,8 +36,8 @@ namespace TORI_NS::detail {
     /// extract pointer tag flag
     pointer_tags get_pointer_tag() const noexcept
     {
-      uint32_t flag {};
-      std::memcpy(&flag, &m_np.flag, 4);
+      uint32_t flag;
+      std::memcpy(&flag, &m_np.flag, sizeof(flag));
       return static_cast<pointer_tags>(
         flag & (uint32_t)pointer_tags::extract_mask);
     }
@@ -45,18 +45,20 @@ namespace TORI_NS::detail {
     /// set new pointer tag flag
     void set_pointer_tag(pointer_tags flag) noexcept
     {
-      uint32_t flg {};
-      std::memcpy(&flg, &m_np.flag, 4);
+      uint32_t flg;
+      std::memcpy(&flg, &m_np.flag, sizeof(flg));
       flg &= (uint32_t)pointer_tags::clear_mask;
       flg |= (uint32_t)flag;
-      std::memcpy(&m_np.flag, &flg, 4);
+      std::memcpy(&m_np.flag, &flg, sizeof(m_np.flag));
     }
 
     /// get pointer
     Object* ptr() const noexcept
     {
+      const Object* ptr;
+      std::memcpy(&ptr, &m_ptr, sizeof(ptr));
       // Ideally, single AND instruction which is very cheap.
-      return (Object*)((uintptr_t)m_ptr & (uint32_t)pointer_tags::clear_mask);
+      return (Object*)((uintptr_t)ptr & (uint32_t)pointer_tags::clear_mask);
     }
 
     /// apply? (optional)
@@ -90,7 +92,8 @@ namespace TORI_NS::detail {
   private:
     // -------------------------------------------
     // Helper functions for constexpr initializer.
-    // can be removed in C++20 since memcpy will become constexpr
+    // gcc and clang accepst non-constexpr call but msvc doesn't.
+    // Can be removed in C++20 since memcpy will become constexpr.
 
     constexpr uint32_t get_pointer_tag_constexpr() const noexcept
     {
