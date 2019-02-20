@@ -53,12 +53,18 @@ namespace TORI_NS::detail {
     }
 
     /// get pointer
+    /// Ideally, optimized into single AND instruction.
     Object* ptr() const noexcept
     {
-      const Object* ptr;
-      std::memcpy(&ptr, &m_ptr, sizeof(ptr));
-      // Ideally, single AND instruction which is very cheap.
-      return (Object*)((uintptr_t)ptr & (uint32_t)pointer_tags::clear_mask);
+      // load as non-pointer
+      non_pointer np;
+      std::memcpy(&np, &m_np, sizeof(np));
+      // clear pointer tag
+      np.flag &= (uint32_t)pointer_tags::clear_mask;
+      // cast to pointer
+      Object* ptr;
+      std::memcpy(&ptr, &np, sizeof(ptr));
+      return ptr;
     }
 
     /// apply? (optional)
@@ -83,10 +89,10 @@ namespace TORI_NS::detail {
     /// non pointer struct
     struct non_pointer
     {
-      /// pointer tag
+      /// pointer tag and flags
       uint32_t flag;
-      /// padding
-      uint32_t padding;
+      /// reserved for future use
+      uint32_t reserved;
     };
 
   private:
