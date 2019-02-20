@@ -43,7 +43,7 @@ namespace TORI_NS::detail {
     /// Size of extended header
     const uint64_t clsr_ext_bytes;
     /// vtable for code
-    object_ptr<> (*code)(const Closure<>*);
+    object_ptr<> (*code)(const Closure<>*) noexcept;
   };
 
   template <class Closure1>

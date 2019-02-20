@@ -215,9 +215,9 @@ namespace TORI_NS::detail {
       /// size of additional storage
       uint64_t obj_ext_bytes;
       /// vtable of delete function
-      void (*destroy)(const Object*);
+      void (*destroy)(const Object*) noexcept;
       /// vtable of clone function
-      Object* (*clone)(const Object*);
+      Object* (*clone)(const Object*) noexcept;
     };
 
     /// Destructor
@@ -230,7 +230,7 @@ namespace TORI_NS::detail {
         // delete object if needed
         if (head()->refcount.fetch_sub() == 1) {
           std::atomic_thread_fence(std::memory_order_acquire);
-          info_table()->destroy(get());
+          info_table()->destroy(head());
         }
       }
     }
