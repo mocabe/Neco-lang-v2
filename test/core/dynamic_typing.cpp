@@ -294,6 +294,11 @@ TEST_CASE("type_of")
 
   SECTION("polymorphic")
   {
+
+#if defined(__clang__)
+    class X;
+#endif
+
     struct A
       : Function<A, Bool, forall<class X>, forall<class X>, forall<class X>>
     {
