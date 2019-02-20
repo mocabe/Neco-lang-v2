@@ -41,11 +41,11 @@ namespace TORI_NS::detail {
   struct closure_info_table : object_info_table
   {
     /// Number of arguments
-    uint64_t n_args;
+    const uint64_t n_args;
     /// Size of extended header
-    uint64_t clsr_ext_bytes;
+    const uint64_t clsr_ext_bytes;
     /// vtable for code
-    object_ptr<> (*code)(Closure<>*);
+    object_ptr<> (*code)(const Closure<>*);
   };
 
   template <class Closure1>
@@ -66,7 +66,7 @@ namespace TORI_NS::detail {
     }
 
     /// Execute core with vtable function
-    object_ptr<> code() noexcept
+    object_ptr<> code() const noexcept
     {
       return static_cast<const closure_info_table*>(info_table)->code(this);
     }
@@ -123,7 +123,7 @@ namespace TORI_NS::detail {
   template <class T>
   struct vtbl_eval_wrapper
   {
-    static object_ptr<> code(Closure<>* _this) noexcept
+    static object_ptr<> code(const Closure<>* _this) noexcept
     {
       try {
         auto r = (static_cast<const T*>(_this)->code()).value();
