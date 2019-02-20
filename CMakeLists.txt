@@ -62,7 +62,7 @@ target_compile_features(tori INTERFACE cxx_std_17)
 # Compiler Flags
 # ------------------------------------------
 if(TORI_COMPILER_MSVC)
-  set(TORI_COMPILE_FLAGS /W4 /Zi /EHsc /std:c++17 /permissive-)
+  set(TORI_COMPILE_FLAGS /W4 /Zi /EHsc /std:c++17 /permissive- /w34716)
 else()
   set(TORI_COMPILE_FLAGS -O0 -Wall -Wextra -Wshadow -g -std=c++17 -pedantic)
 endif()
