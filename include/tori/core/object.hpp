@@ -11,7 +11,6 @@
 #include "terms.hpp"
 
 #include <cstdint>
-#include <type_traits>
 #include <atomic>
 #include <cassert>
 #include <stdexcept>

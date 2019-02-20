@@ -4,8 +4,7 @@
 #pragma once
 
 #include "../config/config.hpp"
-
-#include <type_traits>
+#include "type_traits.hpp"
 
 namespace TORI_NS::detail {
 

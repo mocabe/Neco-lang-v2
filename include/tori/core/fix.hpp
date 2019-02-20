@@ -8,8 +8,6 @@
 #include "box.hpp"
 #include "type_gen.hpp"
 
-#include <type_traits>
-
 namespace TORI_NS::detail {
 
   struct FixValue;

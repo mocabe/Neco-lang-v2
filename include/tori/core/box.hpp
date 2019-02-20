@@ -7,7 +7,6 @@
 #include "type_value.hpp" // clang requires definition of TypeValue to compile.
 
 #include <cassert>
-#include <type_traits>
 
 namespace TORI_NS::detail {
 

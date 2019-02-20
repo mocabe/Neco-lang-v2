@@ -12,8 +12,6 @@
 #include "value_cast.hpp"
 #include "offset_of_member.hpp"
 
-#include <type_traits>
-
 /// Size of additional space in closure header
 #if defined(CLOSURE_HEADER_EXTEND_BYTES)
 namespace TORI_NS::detail {
