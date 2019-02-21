@@ -154,7 +154,7 @@ namespace TORI_NS::detail {
       assert(result);
 
       // for gcc 7
-      constexpr auto type = type_of(T::term, false_c);
+      constexpr auto type = type_of(get_term<T>(), false_c);
 
       // run compile time type check
       if constexpr (!is_error_type(type)) {

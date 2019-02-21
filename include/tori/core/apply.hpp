@@ -79,7 +79,8 @@ namespace TORI_NS::detail {
       /// base
       using base = ApplyR;
       /// term
-      static constexpr auto term = make_tm_apply(App::term, Arg::term);
+      static constexpr auto term =
+        make_tm_apply(get_term<App>(), get_term<Arg>());
 
       // clang-format off
 

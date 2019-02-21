@@ -45,7 +45,7 @@ namespace TORI_NS::detail {
     struct closure : Object
     {
       /// term
-      static constexpr auto term = make_tm_closure(Ts::term...);
+      static constexpr auto term = make_tm_closure(get_term<Ts>()...);
     };
 
     /// Type variable value
@@ -81,7 +81,7 @@ namespace TORI_NS::detail {
   struct expected : Object
   {
     // term
-    static constexpr auto term = T::term;
+    static constexpr auto term = get_term<T>();
   };
 
   // ------------------------------------------
@@ -209,7 +209,7 @@ namespace TORI_NS::detail {
     template <class T>
     [[nodiscard]] object_ptr<const Type> object_type()
     {
-      return object_type_impl(T::term);
+      return object_type_impl(get_term<T>());
     }
 
   } // namespace interface

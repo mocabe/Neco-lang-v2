@@ -50,6 +50,19 @@ namespace TORI_NS::detail {
   };
 
   // ------------------------------------------
+  // get_term
+
+  template <class T>
+  constexpr auto get_term(meta_type<T> = {})
+  {
+    if constexpr (is_complete_v<T>)
+      return T::term;
+    else
+      // map incomplete type to type variable
+      return type_c<tm_var<T>>;
+  }
+
+  // ------------------------------------------
   // Term accessors
 
   template <class T1, class T2>
@@ -163,7 +176,7 @@ namespace TORI_NS::detail {
   template <class T>
   constexpr auto has_tm_apply()
   {
-    return is_tm_apply(T::term);
+    return is_tm_apply(get_term<T>());
   }
 
   // ------------------------------------------
@@ -192,7 +205,7 @@ namespace TORI_NS::detail {
   template <class T>
   constexpr auto has_tm_value()
   {
-    return is_tm_value(T::term);
+    return is_tm_value(get_term<T>());
   }
 
   // ------------------------------------------
@@ -221,7 +234,7 @@ namespace TORI_NS::detail {
   template <class T>
   constexpr auto has_tm_closure()
   {
-    return is_tm_closure(T::term);
+    return is_tm_closure(get_term<T>());
   }
 
   // ------------------------------------------
@@ -250,7 +263,7 @@ namespace TORI_NS::detail {
   template <class T>
   constexpr auto has_tm_var()
   {
-    return is_tm_var(T::term);
+    return is_tm_var(get_term<T>());
   }
 
   // ------------------------------------------
@@ -279,7 +292,7 @@ namespace TORI_NS::detail {
   template <class T>
   constexpr auto has_tm_varvalue()
   {
-    return is_varvalue(T::term);
+    return is_varvalue(get_term<T>());
   }
 
   // ------------------------------------------
@@ -308,7 +321,7 @@ namespace TORI_NS::detail {
   template <class T>
   constexpr auto has_tm_fix()
   {
-    return is_tm_fix(T::term);
+    return is_tm_fix(get_term<T>());
   }
 
   // ------------------------------------------
@@ -379,13 +392,4 @@ namespace TORI_NS::detail {
     return term;
   }
 
-
-  // ------------------------------------------
-  // get_term
-
-  template <class T>
-  constexpr auto get_term(meta_type<T>)
-  {
-    return T::term;
-  }
 }

@@ -201,7 +201,7 @@ namespace TORI_NS::detail {
       : m_value {std::move(obj)}
     {
       // check return type
-      check_return_type(return_type, type_of(U::term));
+      check_return_type(return_type, type_of(get_term<U>()));
     }
 
     /// U*
@@ -210,7 +210,7 @@ namespace TORI_NS::detail {
       : m_value(ptr)
     {
       // check return type
-      check_return_type(return_type, type_of(U::term));
+      check_return_type(return_type, type_of(get_term<U>()));
     }
 
     /// deleted
@@ -245,7 +245,7 @@ namespace TORI_NS::detail {
 
       /// export term
       static constexpr auto term =
-        remove_varvalue(make_tm_closure(Ts::term...));
+        remove_varvalue(make_tm_closure(get_term<Ts>()...));
 
       /// Closure info table initializer
       struct info_table_initializer
