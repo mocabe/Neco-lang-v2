@@ -60,14 +60,14 @@ namespace TORI_NS::detail {
   static_assert(offset_of_member(&Box<long>::_value) == 16);
   // ...
 
-  static_assert(offset_of_member(&Closure<>::_arity) == 16);
+  static_assert(offset_of_member(&Closure<>::m_arity) == 16);
 
 #  if !defined(CLOSURE_HEADER_EXTEND_BYTES)
 
-  static_assert(offset_of_member(&ClosureN<1>::_args) == 24);
-  static_assert(offset_of_member(&ClosureN<2>::_args) == 24);
-  static_assert(offset_of_member(&ClosureN<3>::_args) == 24);
-  static_assert(offset_of_member(&ClosureN<4>::_args) == 24);
+  static_assert(offset_of_member(&ClosureN<1>::m_args) == 24);
+  static_assert(offset_of_member(&ClosureN<2>::m_args) == 24);
+  static_assert(offset_of_member(&ClosureN<3>::m_args) == 24);
+  static_assert(offset_of_member(&ClosureN<4>::m_args) == 24);
   // ...
 
 #  endif
