@@ -409,8 +409,8 @@ namespace TORI_NS::detail {
         auto t2 = p2.first();
         auto g2 = p2.second();
 
-        // No need for error check (as long as tm_closure is used just for
-        // declaration).
+        // No need for error check (as far as tm_closure is used just for
+        // type declaration).
 
         return make_pair(make_arrow(t1, t2), g2);
       }

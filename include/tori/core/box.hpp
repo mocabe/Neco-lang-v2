@@ -58,6 +58,7 @@ namespace TORI_NS::detail {
     }
   }
 
+  /// allow custom term from parameter type
   template <class T>
   constexpr auto get_value_object_term()
   {
