@@ -55,9 +55,9 @@ namespace TORI_NS::detail {
 
 #if !defined(OBJECT_HEADER_EXTEND_BYTES)
 
-  static_assert(offset_of_member(&Box<char>::_value) == 16);
-  static_assert(offset_of_member(&Box<int>::_value) == 16);
-  static_assert(offset_of_member(&Box<long>::_value) == 16);
+  static_assert(offset_of_member(&Box<char>::value) == 16);
+  static_assert(offset_of_member(&Box<int>::value) == 16);
+  static_assert(offset_of_member(&Box<long>::value) == 16);
   // ...
 
   static_assert(offset_of_member(&Closure<>::m_arity) == 16);

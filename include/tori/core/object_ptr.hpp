@@ -107,7 +107,7 @@ namespace TORI_NS::detail {
       auto* value() const noexcept
       {
         assert(get());
-        return &get()->_value;
+        return &get()->value;
       }
 
       /// operator bool

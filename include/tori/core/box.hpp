@@ -97,7 +97,7 @@ namespace TORI_NS::detail {
           !std::is_same_v<std::decay_t<U>, static_construct_t>>>
       constexpr Box(U &&u, Args &&... args)
         : Object {1u, &info_table_initializer::info_table}
-        , _value {std::forward<U>(u), std::forward<Args>(args)...}
+        , value {std::forward<U>(u), std::forward<Args>(args)...}
       {
       }
 
@@ -113,38 +113,40 @@ namespace TORI_NS::detail {
       /// Ctor
       constexpr Box()
         : Object {1u, &info_table_initializer::info_table}
-        , _value {}
+        , value {}
       {
       }
 
       /// Copy ctor
       constexpr Box(const Box &obj)
         : Object {1u, &info_table_initializer::info_table}
-        , _value {obj._value}
+        , value {obj.value}
       {
       }
 
       /// Move ctor
       constexpr Box(Box &&obj)
         : Object {1u, &info_table_initializer::info_table}
-        , _value {std::move(obj._value)}
+        , value {std::move(obj.value)}
       {
       }
 
       /// operator=
-      Box &operator=(const Box &obj)
+      constexpr Box &operator=(const Box &obj)
       {
-        _value = obj._value;
+        value = obj.value;
+        return *this;
       }
 
       /// operator=
-      Box &operator=(Box &&obj)
+      constexpr Box &operator=(Box &&obj)
       {
-        _value = std::move(obj._value);
+        value = std::move(obj.value);
+        return *this;
       }
 
       /// value
-      value_type _value;
+      value_type value;
     };
 
     // Initialize object header

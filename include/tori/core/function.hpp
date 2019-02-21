@@ -190,7 +190,7 @@ namespace TORI_NS::detail {
 
     /// object_ptr<U>&&
     template <class U>
-    return_type_checker(object_ptr<U> obj)
+    return_type_checker(object_ptr<U> obj) noexcept
       : m_value {std::move(obj)}
     {
       // check return type
@@ -199,7 +199,7 @@ namespace TORI_NS::detail {
 
     /// U*
     template <class U>
-    return_type_checker(U* ptr)
+    return_type_checker(U* ptr) noexcept
       : m_value(ptr)
     {
       // check return type
@@ -214,7 +214,7 @@ namespace TORI_NS::detail {
     return_type_checker(return_type_checker&& other) = delete;
 
     /// value
-    auto&& value() &&
+    auto&& value() && noexcept
     {
       return std::move(m_value);
     }
@@ -249,7 +249,7 @@ namespace TORI_NS::detail {
 
       /// Get N'th argument
       template <uint64_t N>
-      auto arg() const
+      auto arg() const noexcept
       {
         using To = std::add_const_t<std::tuple_element_t<N, std::tuple<Ts...>>>;
         auto obj = ClosureN<sizeof...(Ts) - 1>::template nth_arg<N>();
@@ -286,6 +286,35 @@ namespace TORI_NS::detail {
             },
             other.m_args}
       {
+      }
+
+      /// Move ctor
+      Function(Function&& other) noexcept
+        : ClosureN<sizeof...(Ts) - 1> {
+            {
+              {1u,
+               static_cast<const object_info_table*>(
+                 &info_table_initializer::info_table)},
+              std::move(other.m_arity),
+            },
+            std::move(other.m_args)}
+      {
+      }
+
+      /// operator=
+      Function& operator=(const Function& other) noexcept
+      {
+        m_arity = other.m_arity;
+        m_args = other.m_args;
+        return *this;
+      }
+
+      /// operator=
+      Function& operator=(Function&& other) noexcept
+      {
+        m_arity = std::move(other.m_arity);
+        m_args = std::move(other.m_args);
+        return *this;
       }
 
     protected:
