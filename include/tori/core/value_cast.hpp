@@ -67,12 +67,13 @@ namespace TORI_NS::detail {
     /// dynamically cast object to specified value type.
     /// \throws bad_value_cast when fail.
     template <class T, class U>
-    [[nodiscard]] object_ptr<T> value_cast(const object_ptr<U>& obj)
+    [[nodiscard]] object_ptr<propagate_const_t<T, U>>
+      value_cast(const object_ptr<U>& obj)
     {
       static_assert(!is_tm_closure(get_term<T>()), "T is not value type");
 
       if (likely(obj && has_type<T>(obj))) {
-        return static_object_cast<T>(obj);
+        return static_object_cast<propagate_const_t<T, U>>(obj);
       }
       throw bad_value_cast(obj ? get_type(obj) : nullptr, object_type<T>());
     }
@@ -82,12 +83,13 @@ namespace TORI_NS::detail {
     /// dynamically cast object to specified value type.
     /// \throws bad_value_cast when fail.
     template <class T, class U>
-    [[nodiscard]] object_ptr<T> value_cast(object_ptr<U>&& obj)
+    [[nodiscard]] object_ptr<propagate_const_t<T, U>>
+      value_cast(object_ptr<U>&& obj)
     {
       static_assert(!is_tm_closure(get_term<T>()), "T is not value type");
 
       if (likely(obj && has_type<T>(obj))) {
-        return static_object_cast<T>(std::move(obj));
+        return static_object_cast<propagate_const_t<T, U>>(std::move(obj));
       }
       throw bad_value_cast(obj ? get_type(obj) : nullptr, object_type<T>());
     }
@@ -97,12 +99,13 @@ namespace TORI_NS::detail {
     /// dynamically cast object to specified value type.
     /// \returns nullptr when fail.
     template <class T, class U>
-    [[nodiscard]] object_ptr<T> value_cast_if(const object_ptr<U>& obj) noexcept
+    [[nodiscard]] object_ptr<propagate_const_t<T, U>>
+      value_cast_if(const object_ptr<U>& obj) noexcept
     {
       static_assert(!is_tm_closure(get_term<T>()), "T is not value type");
 
       if (likely(obj && has_type<T>(obj))) {
-        return static_object_cast<T>(obj);
+        return static_object_cast<propagate_const_t<T, U>>(obj);
       }
       return nullptr;
     }
@@ -112,12 +115,13 @@ namespace TORI_NS::detail {
     /// dynamically cast object to specified value type.
     /// \returns nullptr when fail.
     template <class T, class U>
-    [[nodiscard]] object_ptr<T> value_cast_if(object_ptr<U>&& obj) noexcept
+    [[nodiscard]] object_ptr<propagate_const_t<T, U>>
+      value_cast_if(object_ptr<U>&& obj) noexcept
     {
       static_assert(!is_tm_closure(get_term<T>()), "T is not value type");
 
       if (likely(obj && has_type<T>(obj))) {
-        return static_object_cast<T>(std::move(obj));
+        return static_object_cast<propagate_const_t<T, U>>(std::move(obj));
       }
       return nullptr;
     }

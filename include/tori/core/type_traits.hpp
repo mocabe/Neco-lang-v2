@@ -27,4 +27,23 @@ namespace TORI_NS::detail {
   template <class T>
   constexpr bool is_complete_v = is_complete_impl<T>::value;
 
+  // ------------------------------------------
+  // propagate_const
+
+  template <class T, class U>
+  struct propagate_const
+  {
+    using type = T;
+  };
+
+  template <class T, class U>
+  struct propagate_const<T, const U>
+  {
+    using type = std::add_const_t<T>;
+  };
+
+  /// conditionally add const to T depending on constness of U
+  template <class T, class U>
+  using propagate_const_t = typename propagate_const<T, U>::type;
+
 } // namespace TORI_NS::detail
