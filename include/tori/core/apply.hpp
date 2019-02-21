@@ -24,13 +24,13 @@ namespace TORI_NS::detail {
     {
     }
 
-    const object_ptr<>& app() const
+    const auto& app() const
     {
       assert(m_app != nullptr);
       return m_app;
     }
 
-    const object_ptr<>& arg() const
+    const auto& arg() const
     {
       assert(m_app != nullptr);
       return m_arg;
@@ -41,13 +41,13 @@ namespace TORI_NS::detail {
       return m_app == nullptr;
     }
 
-    const object_ptr<>& get_cache() const
+    const auto& get_cache() const
     {
       assert(evaluated());
       return m_arg;
     }
 
-    void set_cache(const object_ptr<>& obj)
+    void set_cache(const object_ptr<const Object>& obj) const
     {
       assert(!evaluated());
       m_app = nullptr;
@@ -57,10 +57,10 @@ namespace TORI_NS::detail {
   private:
     /// closure
     /// when evaluated: nullptr
-    object_ptr<> m_app;
+    mutable object_ptr<const Object> m_app;
     /// argument
     /// when evaluated: result
-    object_ptr<> m_arg;
+    mutable object_ptr<const Object> m_arg;
   };
 
   namespace interface {
@@ -88,7 +88,7 @@ namespace TORI_NS::detail {
         : base(std::move(ap), std::move(ar)) {}
 
       Apply(App* ap, Arg* ar) 
-        : base(object_ptr<>(ap), object_ptr<>(ar)) {}
+        : base(object_ptr<const Object>(ap), object_ptr<const Object>(ar)) {}
 
       Apply(App* ap, object_ptr<Arg> ar) 
         : base(ap, std::move(ar)) {}

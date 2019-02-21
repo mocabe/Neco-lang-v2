@@ -18,7 +18,9 @@ namespace TORI_NS::detail {
       class circular_constraint : public type_error
       {
       public:
-        circular_constraint(object_ptr<> src, object_ptr<const Type> var)
+        circular_constraint(
+          object_ptr<const Object> src,
+          object_ptr<const Type> var)
           : type_error("Circular constraints", std::move(src))
           , m_var {std::move(var)}
         {
@@ -39,7 +41,7 @@ namespace TORI_NS::detail {
       {
       public:
         type_missmatch(
-          object_ptr<> src,
+          object_ptr<const Object> src,
           object_ptr<const Type> t1,
           object_ptr<const Type> t2)
           : type_error("Type missmatch", std::move(src))
@@ -74,7 +76,7 @@ namespace TORI_NS::detail {
         bad_type_check(
           object_ptr<const Type> expected,
           object_ptr<const Type> result,
-          object_ptr<> obj)
+          object_ptr<const Object> obj)
           : type_error(
               "type_error: check_type failed. Result type is invalid",
               std::move(obj))

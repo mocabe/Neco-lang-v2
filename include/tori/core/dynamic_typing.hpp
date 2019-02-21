@@ -66,19 +66,21 @@ namespace TORI_NS::detail {
     }
 
     /// has_value_type
-    [[nodiscard]] inline bool has_value_type(const object_ptr<>& obj)
+    [[nodiscard]] inline bool
+      has_value_type(const object_ptr<const Object>& obj)
     {
       return is_value_type(get_type(obj));
     }
 
     /// has_arrow_type
-    [[nodiscard]] inline bool has_arrow_type(const object_ptr<>& obj)
+    [[nodiscard]] inline bool
+      has_arrow_type(const object_ptr<const Object>& obj)
     {
       return is_arrow_type(get_type(obj));
     }
 
     /// has_vartype
-    [[nodiscard]] inline bool has_vartype(const object_ptr<>& obj)
+    [[nodiscard]] inline bool has_vartype(const object_ptr<const Object>& obj)
     {
       return is_vartype(get_type(obj));
     }
@@ -279,7 +281,7 @@ namespace TORI_NS::detail {
   inline void unify_func_impl(
     std::vector<Constr>& cs,
     std::vector<TyArrow>& ta,
-    const object_ptr<>& src)
+    const object_ptr<const Object>& src)
   {
     while (!cs.empty()) {
       auto c = cs.back();
@@ -319,7 +321,7 @@ namespace TORI_NS::detail {
   /// \param cs Type constraints
   /// \param src Source node (for error handling)
   [[nodiscard]] inline std::vector<TyArrow>
-    unify(const std::vector<Constr>& cs, const object_ptr<>& src)
+    unify(const std::vector<Constr>& cs, const object_ptr<const Object>& src)
   {
     auto _cs = cs;
     auto as = std::vector<TyArrow> {};
@@ -388,11 +390,11 @@ namespace TORI_NS::detail {
 
   // typing
   [[nodiscard]] inline const object_ptr<const Type>
-    type_of_func_impl(const object_ptr<>& obj)
+    type_of_func_impl(const object_ptr<const Object>& obj)
   {
     // Apply
-    if (auto apply = value_cast_if<ApplyR>(obj)) {
-      if (auto fix = value_cast_if<Fix>(apply->app())) {
+    if (auto apply = value_cast_if<const ApplyR>(obj)) {
+      if (auto fix = value_cast_if<const Fix>(apply->app())) {
         auto _t1 = type_of_func_impl(apply->arg());
         auto _t = genvar();
         auto c = std::vector {Constr {_t1, new Type(ArrowType {_t, _t})}};
@@ -424,7 +426,8 @@ namespace TORI_NS::detail {
   namespace interface {
 
     // type_of
-    [[nodiscard]] inline object_ptr<const Type> type_of(const object_ptr<>& obj)
+    [[nodiscard]] inline object_ptr<const Type>
+      type_of(const object_ptr<const Object>& obj)
     {
       return type_of_func_impl(obj);
     }

@@ -30,7 +30,7 @@ namespace TORI_NS::detail {
     }
 
     /// pointer to exception value
-    object_ptr<> info;
+    object_ptr<const Object> info;
   };
 
   namespace interface {
@@ -49,7 +49,7 @@ namespace TORI_NS::detail {
     /// error message
     object_ptr<String> msg;
     /// source node
-    object_ptr<> src;
+    object_ptr<const Object> src;
   };
 
   namespace interface {
@@ -84,14 +84,14 @@ namespace TORI_NS::detail {
         }
 
         /// get source node
-        const object_ptr<>& src() const
+        const object_ptr<const Object>& src() const
         {
           return m_src;
         }
 
       private:
         /// source node
-        object_ptr<> m_src;
+        object_ptr<const Object> m_src;
       };
 
     } // namespace type_error
@@ -107,7 +107,7 @@ namespace TORI_NS::detail {
     /// error message
     object_ptr<String> msg;
     /// source node
-    object_ptr<> src;
+    object_ptr<const Object> src;
   };
 
   namespace interface {
@@ -142,14 +142,14 @@ namespace TORI_NS::detail {
         }
 
         /// get source node
-        const object_ptr<>& src() const
+        const object_ptr<const Object>& src() const
         {
           return m_src;
         }
 
       private:
         /// source node
-        object_ptr<> m_src;
+        object_ptr<const Object> m_src;
       };
 
     } // namespace eval_error
