@@ -43,14 +43,14 @@ namespace TORI_NS::detail {
     /// Size of extended header
     const uint64_t clsr_ext_bytes;
     /// vtable for code
-    object_ptr<> (*code)(const Closure<>*) noexcept;
+    object_ptr<const Object> (*code)(const Closure<>*) noexcept;
   };
 
   template <class Closure1>
   struct Closure : Object
   {
     /// Arity of this closure.
-    uint64_t _arity;
+    mutable uint64_t m_arity;
 
 #if defined(CLOSURE_HEADER_EXTEND_BYTES)
     /// additional buffer storage
@@ -58,29 +58,30 @@ namespace TORI_NS::detail {
 #endif
 
     /// Get number of args
-    uint64_t n_args() const noexcept
+    auto n_args() const noexcept
     {
       return static_cast<const closure_info_table*>(info_table)->n_args;
     }
 
     /// Execute core with vtable function
-    object_ptr<> code() const noexcept
+    auto code() const noexcept
     {
       return static_cast<const closure_info_table*>(info_table)->code(this);
     }
 
     /// get nth argument
-    object_ptr<>& arg(uint64_t n)
+    auto& arg(uint64_t n) const noexcept
     {
-      constexpr uint64_t offset = offset_of_member(&Closure1::_args);
-      static_assert(offset % sizeof(object_ptr<>) == 0);
-      return ((object_ptr<>*)this)[offset / sizeof(object_ptr<>) + n];
+      using arg_type = typename decltype(Closure1::m_args)::value_type;
+      constexpr uint64_t offset = offset_of_member(&Closure1::m_args);
+      static_assert(offset % sizeof(arg_type) == 0);
+      return ((arg_type*)this)[offset / sizeof(arg_type) + n];
     }
 
     ///  get arity
-    uint64_t& arity()
+    auto& arity() const noexcept
     {
-      return _arity;
+      return m_arity;
     }
   };
 
@@ -96,22 +97,14 @@ namespace TORI_NS::detail {
   {
     /// get raw arg
     template <uint64_t Arg>
-    object_ptr<>& nth_arg() noexcept
+    auto& nth_arg() const noexcept
     {
       static_assert(Arg < N, "Invalid index of argument");
-      return _args[N - Arg - 1];
-    }
-
-    /// get raw arg
-    template <uint64_t Arg>
-    const object_ptr<>& nth_arg() const noexcept
-    {
-      static_assert(Arg < N, "Invalid index of argument");
-      return _args[N - Arg - 1];
+      return m_args[N - Arg - 1];
     }
 
     /// args
-    std::array<object_ptr<>, N> _args = {};
+    mutable std::array<object_ptr<const Object>, N> m_args = {};
   };
 
   // ------------------------------------------
@@ -121,7 +114,7 @@ namespace TORI_NS::detail {
   template <class T>
   struct vtbl_eval_wrapper
   {
-    static object_ptr<> code(const Closure<>* _this) noexcept
+    static object_ptr<const Object> code(const Closure<>* _this) noexcept
     {
       try {
         auto r = (static_cast<const T*>(_this)->code()).value();
@@ -134,7 +127,7 @@ namespace TORI_NS::detail {
       } catch (const eval_error::eval_error& e) {
         return new Exception(new EvalError(new String(e.what()), e.src()));
       } catch (const result_error::result_error& e) {
-        return object_ptr<>(e.result());
+        return object_ptr<const Object>(e.result());
       } catch (const std::exception& e) {
         return new Exception(new String(e.what()));
       } catch (...) {
@@ -221,13 +214,13 @@ namespace TORI_NS::detail {
     return_type_checker(return_type_checker&& other) = delete;
 
     /// value
-    object_ptr<>&& value() &&
+    auto&& value() &&
     {
       return std::move(m_value);
     }
 
   private:
-    object_ptr<> m_value;
+    object_ptr<const Object> m_value;
   };
 
   // ------------------------------------------
@@ -258,7 +251,7 @@ namespace TORI_NS::detail {
       template <uint64_t N>
       auto arg() const
       {
-        using To = std::tuple_element_t<N, std::tuple<Ts...>>;
+        using To = std::add_const_t<std::tuple_element_t<N, std::tuple<Ts...>>>;
         auto obj = ClosureN<sizeof...(Ts) - 1>::template nth_arg<N>();
         assert(obj);
         return static_object_cast<To>(obj);
@@ -289,9 +282,9 @@ namespace TORI_NS::detail {
               {1u,
                static_cast<const object_info_table*>(
                  &info_table_initializer::info_table)},
-              other._arity,
+              other.m_arity,
             },
-            other._args}
+            other.m_args}
       {
       }
 
