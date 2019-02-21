@@ -294,13 +294,15 @@ namespace TORI_NS::detail {
         get_term(get<sizeof...(Ts) - 1>(tuple_c<Ts...>)))::type>;
 
     private:
-      using ClosureN<sizeof...(Ts) - 1>::nth_arg;
-      using ClosureN<sizeof...(Ts) - 1>::arg;
-
-      template <auto FP>
-      struct concept_checker
-      {
-      };
+      // You Can't See Me!
+      using base = ClosureN<sizeof...(Ts) - 1>;
+      using base::nth_arg;
+      using base::arg;
+      using base::n_args;
+      using base::arity;
+      using base::code;
+      using base::m_arity;
+      using base::m_args;
 
       /// check signature of code()
       void check_code()
@@ -309,6 +311,12 @@ namespace TORI_NS::detail {
           std::is_same_v<return_type, decltype(std::declval<const T>().code())>,
           " `return_type code() const` was not found.");
       }
+
+      // instantiate checker function throught pointer
+      template <auto FP>
+      struct concept_checker;
+
+      // check_code
       using concept_check_code = concept_checker<&Function::check_code>;
     };
 
