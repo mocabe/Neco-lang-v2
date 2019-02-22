@@ -58,6 +58,12 @@ namespace TORI_NS::detail {
     return meta_set_access::create(make_set_impl(tuple_c<>, tuple));
   }
 
+  template <class T>
+  constexpr auto make_set(meta_type<T>)
+  {
+    return make_set(tuple_c<T>);
+  }
+
   template <class... Ts>
   constexpr auto make_tuple(meta_set<Ts...>)
   {
@@ -111,6 +117,18 @@ namespace TORI_NS::detail {
       return true_c;
     else
       return false_c;
+  }
+
+  // ------------------------------------------
+  // insert
+
+  template <class T, class... Ts>
+  constexpr auto insert(meta_type<T> t, meta_set<Ts...> s)
+  {
+    if constexpr (includes(make_set(t), s))
+      return s;
+    else
+      return set_c<Ts..., T>;
   }
 
 } // namespace TORI_NS::detail

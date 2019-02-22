@@ -10,6 +10,18 @@
 namespace TORI_NS::detail {
 
   // ------------------------------------------
+  // false_v
+
+  template <class...>
+  struct make_false
+  {
+    static constexpr bool value = false;
+  };
+
+  template <class... Ts>
+  static constexpr bool false_v = make_false<Ts...>::value;
+
+  // ------------------------------------------
   // is_complete
 
   template <class T>

@@ -71,15 +71,6 @@ namespace TORI_NS::detail {
 #  define unreachable() assert(false);__assume(0)
 #endif
 
-  // for false_v
-  template <class...>
-  struct make_false {
-    static constexpr bool value = false;
-  };
-  /// false_v
-  template <class... Ts>
-  static constexpr bool false_v = make_false<Ts...>::value;
-
   namespace interface {
 
     using int8_t = std::int8_t;

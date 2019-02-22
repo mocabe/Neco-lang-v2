@@ -55,6 +55,18 @@ void test_tuple_tail()
   }
 }
 
+void test_tuple_last()
+{
+  {
+    auto t = tuple_c<int, float, double>;
+    static_assert(last(t) == type_c<double>);
+  }
+  {
+    auto t = tuple_c<int>;
+    static_assert(last(t) == type_c<int>);
+  }
+}
+
 void test_tuple_get()
 {
   {
@@ -121,6 +133,22 @@ void test_set_eq()
     static_assert(equal(set_c<int, int>, set_c<int>));
     static_assert(set_c<int, int> == set_c<int>);
     static_assert(set_c<int, double> != set_c<int>);
+  }
+}
+
+void test_set_insert()
+{
+  {
+    auto s = set_c<>;
+    static_assert(insert(type_c<int>, s) == set_c<int>);
+  }
+  {
+    auto s = set_c<int, double>;
+    static_assert(insert(type_c<float>, s) == set_c<int, float, double>);
+  }
+  {
+    auto s = set_c<int, double>;
+    static_assert(insert(type_c<int>, s) == s);
   }
 }
 

@@ -47,7 +47,7 @@ namespace TORI_NS::detail {
   }
 
   // ------------------------------------------
-  /// make
+  // make
 
   template <class... Ts>
   constexpr auto make_tuple(meta_type<Ts>...)
@@ -56,7 +56,7 @@ namespace TORI_NS::detail {
   }
 
   // ------------------------------------------
-  /// get
+  // get
 
   template <size_t It, size_t Idx, class H, class... Ts>
   constexpr auto tuple_get_impl(meta_tuple<H, Ts...>)
@@ -75,7 +75,7 @@ namespace TORI_NS::detail {
   }
 
   // ------------------------------------------
-  /// head
+  // head
 
   template <class H, class... Ts>
   constexpr auto head(meta_tuple<H, Ts...>)
@@ -84,7 +84,7 @@ namespace TORI_NS::detail {
   }
 
   // ------------------------------------------
-  /// tail
+  // tail
 
   template <class H, class... Ts>
   constexpr auto tail(meta_tuple<H, Ts...>)
@@ -98,7 +98,22 @@ namespace TORI_NS::detail {
   }
 
   // ------------------------------------------
-  /// empty
+  // last
+
+  template <class... Ts>
+  constexpr auto last(meta_tuple<Ts...> t)
+  {
+    if constexpr (empty(t))
+      static_assert(false_v<Ts...>, "Empty tuple");
+
+    if constexpr (t.size() <= 1)
+      return head(t);
+    else
+      return last(tail(t));
+  }
+
+  // ------------------------------------------
+  // empty
 
   template <class... Ts>
   constexpr auto empty(meta_tuple<Ts...>)
