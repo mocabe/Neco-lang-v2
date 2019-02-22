@@ -181,9 +181,9 @@ namespace TORI_NS::detail {
   template <class Term>
   class return_type_checker
   {
-  public:
     static constexpr auto return_type = type_of(type_c<Term>);
 
+  public:
     /// object_ptr<U>&&
     template <class U>
     return_type_checker(object_ptr<U> obj) noexcept
@@ -202,6 +202,8 @@ namespace TORI_NS::detail {
       check_return_type(return_type, type_of(get_term<U>()));
     }
 
+    /// deleted
+    return_type_checker(nullptr_t) = delete;
     /// deleted
     return_type_checker() = delete;
     /// deleted
@@ -239,27 +241,9 @@ namespace TORI_NS::detail {
       /// Closure info table initializer
       struct info_table_initializer
       {
-        /// static closure infor
+        /// static closure info
         static const closure_info_table info_table;
       };
-
-      /// Get N'th argument
-      template <uint64_t N>
-      auto arg() const noexcept
-      {
-        using To = std::add_const_t<std::tuple_element_t<N, std::tuple<Ts...>>>;
-        auto obj = ClosureN<sizeof...(Ts) - 1>::template nth_arg<N>();
-        assert(obj);
-        return static_object_cast<To>(obj);
-      }
-
-      /// Evaluate N'th argument and take result
-      template <uint64_t N>
-      auto eval_arg() const
-      {
-        // workaround: gcc 8.1
-        return eval(this->template arg<N>());
-      }
 
       /// Ctor
       Function() noexcept
@@ -314,9 +298,27 @@ namespace TORI_NS::detail {
       }
 
     protected:
-      // return type for code()
+      /// return type for code()
       using return_type = return_type_checker<typename decltype(
         get_term(get<sizeof...(Ts) - 1>(tuple_c<Ts...>)))::type>;
+
+      /// Get N'th argument
+      template <uint64_t N>
+      auto arg() const noexcept
+      {
+        using To = std::add_const_t<std::tuple_element_t<N, std::tuple<Ts...>>>;
+        auto obj = ClosureN<sizeof...(Ts) - 1>::template nth_arg<N>();
+        assert(obj);
+        return static_object_cast<To>(obj);
+      }
+
+      /// Evaluate N'th argument and take result
+      template <uint64_t N>
+      auto eval_arg() const
+      {
+        // workaround: gcc 8.1
+        return eval(this->template arg<N>());
+      }
 
     private:
       // You Can't See Me!
