@@ -108,35 +108,31 @@ namespace TORI_NS::detail {
   };
 
   // ------------------------------------------
-  // Eval wrapper
+  // vtbl_code_func
 
-  /// wrapper for main code of closure
+  /// vrtable function to call code()
   template <class T>
-  struct vtbl_eval_wrapper
+  object_ptr<const Object> vtbl_code_func(const Closure<>* _this) noexcept
   {
-    static object_ptr<const Object> code(const Closure<>* _this) noexcept
-    {
-      try {
-        auto r = (static_cast<const T*>(_this)->code()).value();
-        assert(r);
-        return r;
-      } catch (const bad_value_cast& e) {
-        return new Exception(new BadValueCast(e.from(), e.to()));
-      } catch (const type_error::type_error& e) {
-        return new Exception(new TypeError(new String(e.what()), e.src()));
-      } catch (const eval_error::eval_error& e) {
-        return new Exception(new EvalError(new String(e.what()), e.src()));
-      } catch (const result_error::result_error& e) {
-        return object_ptr<const Object>(e.result());
-      } catch (const std::exception& e) {
-        return new Exception(new String(e.what()));
-      } catch (...) {
-        return new Exception(
-          new String("Unknown exception thrown while evaluation"));
-      }
+    try {
+      auto r = (static_cast<const T*>(_this)->code()).value();
+      assert(r);
+      return r;
+    } catch (const bad_value_cast& e) {
+      return new Exception(new BadValueCast(e.from(), e.to()));
+    } catch (const type_error::type_error& e) {
+      return new Exception(new TypeError(new String(e.what()), e.src()));
+    } catch (const eval_error::eval_error& e) {
+      return new Exception(new EvalError(new String(e.what()), e.src()));
+    } catch (const result_error::result_error& e) {
+      return object_ptr<const Object>(e.result());
+    } catch (const std::exception& e) {
+      return new Exception(new String(e.what()));
+    } catch (...) {
+      return new Exception(
+        new String("Unknown exception thrown while evaluation"));
     }
-  };
-
+  }
 
   // ------------------------------------------
   // remove varvalue
@@ -360,7 +356,7 @@ namespace TORI_NS::detail {
          vtbl_clone_func<T>},
         sizeof...(Ts) - 1,
         closure_header_extend_bytes,
-        vtbl_eval_wrapper<T>::code};
+        vtbl_code_func<T>};
 
   } // namespace interface
 

@@ -103,19 +103,22 @@ namespace TORI_NS::detail {
   template <class T>
   constexpr auto is_valid_app_arg(meta_type<T>)
   {
-    return std::false_type {};
+    return false_c;
   }
 
   template <class T>
   constexpr auto is_valid_app_arg(meta_type<T*>)
   {
-    return std::bool_constant<std::is_base_of_v<Object, T>> {};
+    if constexpr (std::is_base_of_v<Object, T>)
+      return true_c;
+    else
+      return false_c;
   }
 
   template <class T>
   constexpr auto is_valid_app_arg(meta_type<object_ptr<T>>)
   {
-    return std::true_type {};
+    return true_c;
   }
 
   namespace interface {
