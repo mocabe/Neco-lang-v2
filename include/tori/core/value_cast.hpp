@@ -6,59 +6,11 @@
 #include "object_ptr.hpp"
 #include "object_cast.hpp"
 #include "dynamic_typing.hpp"
+#include "bad_value_cast.hpp"
 
 #include <exception>
 
 namespace TORI_NS::detail {
-
-  namespace interface {
-
-    /// bad_value_cast exception
-    class bad_value_cast : public std::logic_error
-    {
-    public:
-      explicit bad_value_cast(
-        object_ptr<const Type> from,
-        object_ptr<const Type> to)
-        : std::logic_error("bad_value_cast")
-        , m_from {std::move(from)}
-        , m_to {std::move(to)}
-      {
-      }
-
-      /// get from
-      const object_ptr<const Type>& from() const
-      {
-        return m_from;
-      }
-
-      /// get to
-      const object_ptr<const Type>& to() const
-      {
-        return m_to;
-      }
-
-    private:
-      /// cast from
-      object_ptr<const Type> m_from;
-      /// cast to
-      object_ptr<const Type> m_to;
-    };
-
-  } // namespace interface
-
-  struct BadValueCastValue
-  {
-    object_ptr<const Type> from;
-    object_ptr<const Type> to;
-  };
-
-  namespace interface {
-
-    /// Exception object for bad_value_cast exception
-    using BadValueCast = Box<detail::BadValueCastValue>;
-
-  } // namespace interface
 
   namespace interface {
 
