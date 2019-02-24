@@ -3,14 +3,21 @@
 
 #pragma once
 
-#include "fix.hpp"
-#include "exception.hpp"
-#include "apply.hpp"
-#include "string.hpp"
+#include "offset_of_member.hpp"
 #include "static_typing.hpp"
 #include "dynamic_typing.hpp"
+
+#include "fix.hpp"
+#include "apply.hpp"
+#include "string.hpp"
+
+#include "exception.hpp"
+#include "eval_error.hpp"
+#include "bad_value_cast.hpp"
+#include "result_error.hpp"
+#include "type_error.hpp"
+
 #include "value_cast.hpp"
-#include "offset_of_member.hpp"
 
 /// Size of additional space in closure header
 #if defined(CLOSURE_HEADER_EXTEND_BYTES)
@@ -119,18 +126,19 @@ namespace TORI_NS::detail {
       assert(r);
       return r;
     } catch (const bad_value_cast& e) {
-      return new Exception(new BadValueCast(e.from(), e.to()));
+      return to_Exception(e);
     } catch (const type_error::type_error& e) {
-      return new Exception(new TypeError(new String(e.what()), e.src()));
+      return to_Exception(e);
     } catch (const eval_error::eval_error& e) {
-      return new Exception(new EvalError(new String(e.what()), e.src()));
+      return to_Exception(e);
     } catch (const result_error::result_error& e) {
-      return object_ptr<const Object>(e.result());
+      return to_Exception(e);
     } catch (const std::exception& e) {
-      return new Exception(new String(e.what()));
+      return to_Exception(e);
     } catch (...) {
-      return new Exception(
-        new String("Unknown exception thrown while evaluation"));
+      return make_object<Exception>(
+        make_object<String>("Unknown exception thrown while evaluation"),
+        make_object<String>(""));
     }
   }
 
