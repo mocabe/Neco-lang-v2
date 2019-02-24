@@ -28,13 +28,6 @@ namespace TORI_NS::detail {
       return r;
     }
 
-    /// make object
-    template <class T, class... Args>
-    object_ptr<T> make_object(Args&&... args)
-    {
-      return new T(std::forward<Args>(args)...);
-    }
-
     /// check type
     template <class T, class U>
     void check_type(const object_ptr<U>& obj)

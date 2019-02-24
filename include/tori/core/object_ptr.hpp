@@ -295,6 +295,13 @@ namespace TORI_NS::detail {
       return obj.m_storage;
     }
 
+    /// make object
+    template <class T, class... Args>
+    object_ptr<T> make_object(Args&&... args)
+    {
+      return new T(std::forward<Args>(args)...);
+    }
+
   } // namespace interface
 
 } // namespace TORI_NS::detail
