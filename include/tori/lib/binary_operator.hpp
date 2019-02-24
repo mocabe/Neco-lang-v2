@@ -20,7 +20,7 @@ namespace TORI_NS::detail {
       E<Tp> op;
       auto lhs = this->template eval_arg<0>();
       auto rhs = this->template eval_arg<1>();
-      return new R {op(*lhs, *rhs)};
+      return make_object<R>(op(*lhs, *rhs));
     }
   };
 
