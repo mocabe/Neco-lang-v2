@@ -125,16 +125,42 @@ namespace TORI_NS::detail {
       auto r = (static_cast<const T*>(_this)->code()).value();
       assert(r);
       return r;
+
+      // bad_value_cast
     } catch (const bad_value_cast& e) {
+      return to_Exception(e);
+
+      // type_error
+    } catch (const type_error::circular_constraint& e) {
+      return to_Exception(e);
+    } catch (const type_error::type_missmatch& e) {
+      return to_Exception(e);
+    } catch (const type_error::bad_type_check& e) {
       return to_Exception(e);
     } catch (const type_error::type_error& e) {
       return to_Exception(e);
+
+      // eval_error
+    } catch (const eval_error::bad_fix& e) {
+      return to_Exception(e);
+    } catch (const eval_error::bad_apply& e) {
+      return to_Exception(e);
+    } catch (const eval_error::too_many_arguments& e) {
+      return to_Exception(e);
     } catch (const eval_error::eval_error& e) {
+      return to_Exception(e);
+
+      // result_error
+    } catch (const result_error::exception_result& e) {
       return to_Exception(e);
     } catch (const result_error::result_error& e) {
       return to_Exception(e);
+
+      // std::exception
     } catch (const std::exception& e) {
       return to_Exception(e);
+
+      // unknown
     } catch (...) {
       return make_object<Exception>(
         make_object<String>("Unknown exception thrown while evaluation"),

@@ -47,6 +47,20 @@ namespace TORI_NS::detail {
 
     } // namespace result_error
 
+    object_ptr<const Exception>
+      to_Exception(const result_error::exception_result& e)
+    {
+      // forward
+      return e.exception();
+    }
+
+    object_ptr<const Exception>
+      to_Exception(const result_error::result_error& e)
+    {
+      return make_object<Exception>(
+        make_object<String>(e.what()), make_object<String>(""));
+    }
+
   } // namespace interface
 
 }
