@@ -135,35 +135,6 @@ namespace TORI_NS::detail {
   }
 
   // ------------------------------------------
-  // remove varvalue
-
-  template <class Term, class Target>
-  constexpr auto
-    remove_varvalue_impl(meta_type<Term> term, meta_type<Target> target)
-  {
-    if constexpr (is_tm_varvalue(term)) {
-      return subst_term(term, make_tm_var(term.tag()), target);
-    } else if constexpr (is_tm_closure(term)) {
-      if constexpr (term.size() == 1) {
-        return remove_varvalue_impl(head(term), target);
-      } else {
-        return remove_varvalue_impl(
-          tail(term), remove_varvalue_impl(head(term), target));
-      }
-    } else if constexpr (is_tm_apply(term)) {
-      return remove_varvalue_impl(
-        term.t2(), remove_varvalue_impl(term.t1(), target));
-    } else
-      return target;
-  }
-
-  template <class Term>
-  constexpr auto remove_varvalue(meta_type<Term> term)
-  {
-    return remove_varvalue_impl(term, term);
-  }
-
-  // ------------------------------------------
   // return type checking
 
   template <class T1, class T2>
@@ -178,10 +149,10 @@ namespace TORI_NS::detail {
   }
 
   /// Return type checker
-  template <class Term>
+  template <class T>
   class return_type_checker
   {
-    static constexpr auto return_type = type_of(type_c<Term>);
+    static constexpr auto return_type = type_of(get_term<T>());
 
   public:
     /// object_ptr<U>&&
@@ -234,16 +205,9 @@ namespace TORI_NS::detail {
         sizeof...(Ts) > 1,
         "Closure should have argument and return type");
 
-      /// export term
-      static constexpr auto term =
-        remove_varvalue(make_tm_closure(get_term<Ts>()...));
-
-      /// Closure info table initializer
-      struct info_table_initializer
-      {
-        /// static closure info
-        static const closure_info_table info_table;
-      };
+      /// specifier
+      static constexpr auto specifier =
+        normalize_specifier(type_c<closure<Ts...>>);
 
       /// Ctor
       Function() noexcept
@@ -298,21 +262,27 @@ namespace TORI_NS::detail {
       }
 
     protected:
-      /// return type for code()
-      using return_type = return_type_checker<typename decltype(
-        get_term(get<sizeof...(Ts) - 1>(tuple_c<Ts...>)))::type>;
+      /// argument proxy type
+      template <size_t N>
+      using argument_proxy_t =
+        std::add_const_t<typename decltype(get_argument_proxy_type(
+          normalize_specifier(get<N>(tuple_c<Ts...>))))::type>;
 
-      /// Get N'th argument
+      /// return type for code()
+      using return_type =
+        return_type_checker<argument_proxy_t<sizeof...(Ts) - 1>>;
+
+      /// get N'th argument thunk
       template <uint64_t N>
       auto arg() const noexcept
       {
-        using To = std::add_const_t<std::tuple_element_t<N, std::tuple<Ts...>>>;
+        using To = argument_proxy_t<N>;
         auto obj = ClosureN<sizeof...(Ts) - 1>::template nth_arg<N>();
         assert(obj);
         return static_object_cast<To>(obj);
       }
 
-      /// Evaluate N'th argument and take result
+      /// evaluate N'th argument and take result
       template <uint64_t N>
       auto eval_arg() const
       {
@@ -330,6 +300,13 @@ namespace TORI_NS::detail {
       using base::code;
       using base::m_arity;
       using base::m_args;
+
+      /// Closure info table initializer
+      struct info_table_initializer
+      {
+        /// static closure info
+        static const closure_info_table info_table;
+      };
 
       /// check signature of code()
       void check_code()

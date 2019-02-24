@@ -6,6 +6,9 @@
 #include "object_ptr.hpp"
 #include "type_value.hpp" // clang requires definition of TypeValue to compile.
 
+#include "specifiers.hpp"
+#include "terms.hpp"
+
 #include <cassert>
 
 namespace TORI_NS::detail {
@@ -58,9 +61,9 @@ namespace TORI_NS::detail {
     }
   }
 
-  /// allow custom term from parameter type
+  /// inherit custom term from parameter type
   template <class T>
-  constexpr auto get_value_object_term()
+  constexpr auto inherit_box_term()
   {
     if constexpr (has_term<T>())
       return T::term;
@@ -79,7 +82,7 @@ namespace TORI_NS::detail {
       /// value type
       using value_type = T;
       /// term
-      static constexpr auto term = get_value_object_term<T>();
+      static constexpr auto term = inherit_box_term<T>();
 
       /// info table initializer
       struct info_table_initializer

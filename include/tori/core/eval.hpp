@@ -166,7 +166,8 @@ namespace TORI_NS::detail {
         // we convert it to closure<...> which is essentially equal to to
         // Object. Type variables are also undecidable so we just convert
         // them to Object.
-        using To = std::add_const_t<typename decltype(guess_object_type(type))::type>;
+        using To =
+          std::add_const_t<typename decltype(guess_object_type(type))::type>;
         // cast to resutn type
         return static_object_cast<To>(result);
       } else {

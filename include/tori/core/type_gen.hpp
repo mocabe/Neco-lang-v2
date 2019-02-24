@@ -6,6 +6,7 @@
 #include "../config/config.hpp"
 #include "box.hpp"
 #include "type_value.hpp"
+#include "specifiers.hpp"
 
 #include <cstring>
 #include <string>
@@ -38,47 +39,37 @@ TORI_DECL_TYPE(Object)
 
 namespace TORI_NS::detail {
 
-  namespace interface {
-
-    /// proxy type of closure
-    template <class... Ts>
-    struct closure : Object
-    {
-      /// term
-      static constexpr auto term = make_tm_closure(get_term<Ts>()...);
-    };
-
-    /// Type variable value
-    template <class Tag>
-    struct forall : Object
-    {
-      // term
-      static constexpr auto term = type_c<tm_varvalue<Tag>>;
-    };
-
-  } // namespace interface
-
   // ------------------------------------------
-  // utility
+  // proxy types
 
-  template <class... Ts, class T>
-  constexpr auto append(meta_type<T>, meta_type<closure<Ts...>>)
+  /// proxy type of arbitary closure type
+  template <class... Ts>
+  struct ClosureProxy : Object
   {
-    return type_c<closure<Ts..., T>>;
-  }
+    /// term
+    static constexpr auto term =
+      closure_term_export(make_tm_closure(get_term<Ts>()...));
+  };
 
+  /// proxy type of argument closure type
+  template <class... Ts>
+  struct ClosureArgumentProxy : Object
+  {
+    /// term
+    static constexpr auto term = make_tm_closure(get_term<Ts>()...);
+  };
+
+  /// proy type of instance of type variable
   template <class Tag>
-  constexpr auto make_forall(meta_type<Tag>)
+  struct VarValueProxy : Object
   {
-    return type_c<forall<Tag>>;
-  }
+    /// term
+    static constexpr auto term = type_c<tm_varvalue<Tag>>;
+  };
 
-  // ------------------------------------------
-  // expected
-
-  /// expected
+  /// proxy type of named objec type
   template <class T>
-  struct expected : Object
+  struct ObjectProxy : Object
   {
     // term
     static constexpr auto term = get_term<T>();
@@ -209,7 +200,10 @@ namespace TORI_NS::detail {
     template <class T>
     [[nodiscard]] object_ptr<const Type> object_type()
     {
-      return object_type_impl(get_term<T>());
+      constexpr auto spec = normalize_specifier(type_c<T>);
+      constexpr auto tp = get_proxy_type(spec);
+      // get term through proxy type
+      return object_type_impl(get_term(tp));
     }
 
   } // namespace interface
@@ -221,7 +215,7 @@ namespace TORI_NS::detail {
   template <class T, class... Ts>
   constexpr auto guess_object_type_closure(
     meta_type<T> type,
-    meta_type<closure<Ts...>> result)
+    meta_type<ClosureProxy<Ts...>> result)
   {
     if constexpr (is_arrow_type(type)) {
       return guess_object_type_closure(
@@ -232,18 +226,18 @@ namespace TORI_NS::detail {
   }
 
   /// Guess C++ type of a type.
-  /// Unknown types will be converted into `Object` equivalents.
+  /// Unknown types will be converted into proxy.
   template <class T>
   constexpr auto guess_object_type(meta_type<T> type)
   {
     if constexpr (is_arrow_type(type)) {
-      return guess_object_type_closure(type, type_c<closure<>>);
+      return guess_object_type_closure(type, type_c<ClosureProxy<>>);
     } else if constexpr (is_value_type(type)) {
-      return type.tag();
-    } else if constexpr (is_var_type(type)) {
-      return type_c<Object>;
-    } else if constexpr (is_varvalue_type(type)) {
-      return make_forall(type.tag());
+      using tag = typename decltype(type.tag())::type;
+      return get_object_type(type_c<ObjectProxy<tag>>);
+    } else if constexpr (is_varvalue_type(type) || is_var_type(type)) {
+      using tag = typename decltype(type.tag())::type;
+      return type_c<VarValueProxy<tag>>;
     } else
       static_assert(false_v<T>, "Invalid type");
   }

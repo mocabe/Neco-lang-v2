@@ -21,7 +21,7 @@ namespace TORI_NS::detail {
 
   struct FixValue
   {
-    // overwrite value term
+    /// overwrite term
     static constexpr auto term = type_c<tm_fix<Fix>>;
   };
 

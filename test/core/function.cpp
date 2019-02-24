@@ -5,6 +5,7 @@
 #include <iostream>
 
 using namespace tori;
+using namespace tori::detail;
 
 TEST_CASE("simple function test")
 {
@@ -14,6 +15,8 @@ TEST_CASE("simple function test")
     {
       return_type code() const
       {
+        static_assert(
+          type_c<argument_proxy_t<0>> == type_c<const ObjectProxy<Int>>);
         return arg<0>();
         return eval_arg<0>();
         return eval(arg<0>());
@@ -32,6 +35,9 @@ TEST_CASE("higher order function test")
     {
       return_type code() const
       {
+        static_assert(
+          type_c<argument_proxy_t<0>> ==
+          type_c<const ClosureArgumentProxy<ObjectProxy<Int>, ObjectProxy<Int>>>);
         return arg<0>();
         return eval_arg<0>();
         return eval(arg<0>());
@@ -79,10 +85,31 @@ TEST_CASE("polymorphic function test")
     {
       return_type code() const
       {
+        static_assert(
+          type_c<argument_proxy_t<1>> ==
+          type_c<
+            const ClosureArgumentProxy<ObjectProxy<Int>, VarValueProxy<X>>>);
         return arg<1>() << arg<0>();
       }
     };
-    auto f4 = make_object<F>();
+    auto f = make_object<F>();
+  }
+
+  SECTION("polymorphic closure declaration")
+  {
+    class X;
+    struct F : Function<F, Int, closure<Int, X>, X>
+    {
+      return_type code() const
+      {
+        static_assert(
+          type_c<argument_proxy_t<1>> ==
+          type_c<
+            const ClosureArgumentProxy<ObjectProxy<Int>, VarValueProxy<X>>>);
+        return arg<1>() << arg<0>();
+      }
+    };
+    auto f = make_object<F>();
   }
 
   SECTION("polymorphic return type")
@@ -92,6 +119,11 @@ TEST_CASE("polymorphic function test")
     {
       return_type code() const
       {
+        static_assert(
+          type_c<argument_proxy_t<1>> == type_c<argument_proxy_t<2>>);
+        static_assert(
+          type_c<argument_proxy_t<1>> == type_c<const VarValueProxy<X>>);
+
         if (*eval_arg<0>())
           return arg<1>();
         else

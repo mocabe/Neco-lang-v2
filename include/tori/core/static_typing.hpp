@@ -4,13 +4,13 @@
 #pragma once
 
 #include "../config/config.hpp"
-#include "terms.hpp"
-#include "types.hpp"
-
 #include "meta_type.hpp"
 #include "meta_tuple.hpp"
 #include "meta_set.hpp"
 #include "meta_pair.hpp"
+
+#include "terms.hpp"
+#include "types.hpp"
 
 namespace TORI_NS::detail {
 
