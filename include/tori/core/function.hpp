@@ -201,20 +201,13 @@ namespace TORI_NS::detail {
     template <class T, class... Ts>
     struct Function : ClosureN<sizeof...(Ts) - 1>
     {
-      /// specifier
-      static constexpr auto specifier =
-        normalize_specifier(type_c<closure<Ts...>>);
-
       static_assert(
         sizeof...(Ts) > 1,
         "Closure should have argument and return type");
 
-      /// Closure info table initializer
-      struct info_table_initializer
-      {
-        /// static closure info
-        static const closure_info_table info_table;
-      };
+      /// specifier
+      static constexpr auto specifier =
+        normalize_specifier(type_c<closure<Ts...>>);
 
       /// Ctor
       Function() noexcept
@@ -279,7 +272,7 @@ namespace TORI_NS::detail {
       using return_type =
         return_type_checker<argument_proxy_t<sizeof...(Ts) - 1>>;
 
-      /// Get N'th argument
+      /// get N'th argument thunk
       template <uint64_t N>
       auto arg() const noexcept
       {
@@ -289,7 +282,7 @@ namespace TORI_NS::detail {
         return static_object_cast<To>(obj);
       }
 
-      /// Evaluate N'th argument and take result
+      /// evaluate N'th argument and take result
       template <uint64_t N>
       auto eval_arg() const
       {
@@ -307,6 +300,13 @@ namespace TORI_NS::detail {
       using base::code;
       using base::m_arity;
       using base::m_args;
+
+      /// Closure info table initializer
+      struct info_table_initializer
+      {
+        /// static closure info
+        static const closure_info_table info_table;
+      };
 
       /// check signature of code()
       void check_code()

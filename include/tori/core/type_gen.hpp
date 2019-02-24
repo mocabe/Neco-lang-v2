@@ -51,7 +51,7 @@ namespace TORI_NS::detail {
       closure_term_export(make_tm_closure(get_term<Ts>()...));
   };
 
-  /// proxy type of argument closure type in Function
+  /// proxy type of argument closure type
   template <class... Ts>
   struct ClosureArgumentProxy : Object
   {

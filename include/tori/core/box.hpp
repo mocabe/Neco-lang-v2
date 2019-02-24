@@ -81,7 +81,7 @@ namespace TORI_NS::detail {
 
       /// value type
       using value_type = T;
-      /// specifier
+      /// term
       static constexpr auto term = inherit_box_term<T>();
 
       /// info table initializer

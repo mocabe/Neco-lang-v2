@@ -30,19 +30,15 @@ namespace TORI_NS::detail {
   // ------------------------------------------
   // proxy types (forward decl)
 
-  /// proxy type of arbitary closure type
   template <class... Ts>
   struct ClosureProxy;
 
-  /// proxy type for arbitary closure type argument in Function
   template <class... Ts>
   struct ClosureArgumentProxy;
 
-  /// proy type of instance of type variable
   template <class Tag>
   struct VarValueProxy;
 
-  /// proxy type of named objec type
   template <class T>
   struct ObjectProxy;
 
