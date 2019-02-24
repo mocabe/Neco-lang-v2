@@ -360,6 +360,12 @@ void test_assume_object_type()
       type_c<VarValueProxy<class Tag>>);
   }
   {
+    // var<T> -> VarValurProxy<T>
+    static_assert(
+      guess_object_type(type_c<var<class Tag>>) ==
+      type_c<VarValueProxy<class Tag>>);
+  }
+  {
     // arrow<S, T> -> closure<S, T>
     static_assert(
       guess_object_type(type_c<arrow<value<Double>, value<Int>>>) ==
