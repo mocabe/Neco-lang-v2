@@ -235,7 +235,7 @@ namespace TORI_NS::detail {
     } else if constexpr (is_value_type(type)) {
       using tag = typename decltype(type.tag())::type;
       return get_object_type(type_c<ObjectProxy<tag>>);
-    } else if constexpr (is_varvalue_type(type)) {
+    } else if constexpr (is_varvalue_type(type) || is_var_type(type)) {
       using tag = typename decltype(type.tag())::type;
       return type_c<VarValueProxy<tag>>;
     } else
