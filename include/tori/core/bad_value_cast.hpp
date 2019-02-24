@@ -60,7 +60,7 @@ namespace TORI_NS::detail {
   object_ptr<Exception> to_Exception(const bad_value_cast& e)
   {
     return make_object<Exception>(
-      e.what(), make_object<BadValueCast>(e.from, e.to));
+      e.what(), make_object<BadValueCast>(e.from(), e.to()));
   }
 
 } // namespace TORI_NS::detail

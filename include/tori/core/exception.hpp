@@ -44,7 +44,8 @@ namespace TORI_NS::detail {
 
   object_ptr<Exception> to_Exception(const std::exception& e)
   {
-    return make_object<Exception>(e.what(), make_object<Unit>());
+    return make_object<Exception>(
+      e.what(), make_object<String>("std::exception instance"));
   }
 
 } // namespace TORI_NS::detail

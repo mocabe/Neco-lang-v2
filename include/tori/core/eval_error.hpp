@@ -43,7 +43,6 @@ namespace TORI_NS::detail {
       {
       public:
         /// Ctor
-        template <class T>
         explicit eval_error(const char* msg = "eval_error")
           : std::runtime_error(msg)
         {
