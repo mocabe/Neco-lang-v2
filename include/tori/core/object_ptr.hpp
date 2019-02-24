@@ -205,6 +205,10 @@ namespace TORI_NS::detail {
       object_ptr_storage m_storage;
     };
 
+    /// array version (disabled)
+    template <class T, size_t N>
+    class object_ptr<T[N]>; // = delete
+
     /// Object info table
     struct object_info_table
     {
