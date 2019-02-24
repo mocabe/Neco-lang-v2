@@ -105,7 +105,7 @@ namespace TORI_NS::detail {
   struct EvalErrorValue
   {
     /// error message
-    object_ptr<String> msg;
+    object_ptr<const String> msg;
     /// source node
     object_ptr<const Object> src;
   };
