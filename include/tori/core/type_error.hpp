@@ -3,16 +3,60 @@
 
 #pragma once
 
+#include "../config/config.hpp"
 #include "exception.hpp"
 
 namespace TORI_NS::detail {
 
+  // ------------------------------------------
+  // Type errors
+
+  /// TypeErrorValue
+  struct TypeErrorValue
+  {
+  };
+
   namespace interface {
 
-    // ------------------------------------------
-    // Exceptions
+    // TypeError
+    using TypeError = Box<TypeErrorValue>;
+
+  } // namespace interface
+
+  namespace interface {
 
     namespace type_error {
+
+      /// type_error
+      class type_error : public std::logic_error
+      {
+      public:
+        /// Ctor string
+        template <class T>
+        explicit type_error(const std::string& what, object_ptr<T> src)
+          : std::logic_error(what)
+          , m_src {std::move(src)}
+        {
+        }
+
+        template <class T>
+        /// Ctor const char*
+        explicit type_error(const char* what, object_ptr<T> src)
+          : std::logic_error(what)
+          , m_src {std::move(src)}
+        {
+        }
+
+        /// get source node
+        const object_ptr<const Object>& src() const
+        {
+          return m_src;
+        }
+
+      private:
+        /// source node
+        object_ptr<const Object> m_src;
+      };
 
       /// unification error(circular constraint)
       class circular_constraint : public type_error
@@ -109,3 +153,6 @@ namespace TORI_NS::detail {
   } // namespace interface
 
 } // namespace TORI_NS::detail
+
+// TypeError
+TORI_DECL_TYPE(TypeError)
