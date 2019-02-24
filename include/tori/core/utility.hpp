@@ -32,7 +32,7 @@ namespace TORI_NS::detail {
     template <class T, class... Args>
     object_ptr<T> make_object(Args&&... args)
     {
-      return new T {std::forward<Args>(args)...};
+      return new T(std::forward<Args>(args)...);
     }
 
     /// check type
