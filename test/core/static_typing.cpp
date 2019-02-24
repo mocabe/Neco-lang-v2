@@ -334,9 +334,9 @@ void test_genpoly()
   {
     // Double -> Var<X> -> Var<X>
     constexpr auto term =
-      remove_varvalue(type_c<tm_closure<
-                        tm_closure<tm_value<double>, tm_varvalue<class X>>,
-                        tm_varvalue<class X>>>);
+      closure_term_export(type_c<tm_closure<
+                            tm_closure<tm_value<double>, tm_varvalue<class X>>,
+                            tm_varvalue<class X>>>);
 
     // Double -> Var[0] -> Var[0]
     constexpr auto gterm = type_c<tm_closure<
@@ -351,24 +351,25 @@ void test_assume_object_type()
 {
   {
     // value<T> -> T
-    static_assert(guess_object_type(type_c<value<int>>) == type_c<int>);
+    static_assert(guess_object_type(type_c<value<Int>>) == type_c<Int>);
   }
   {
-    // var<class T> -> Object
+    // varvalue<T> -> VarValurProxy<T>
     static_assert(
-      guess_object_type(type_c<var<class Tag>>) == type_c<Object>);
+      guess_object_type(type_c<varvalue<class Tag>>) ==
+      type_c<VarValueProxy<class Tag>>);
   }
   {
     // arrow<S, T> -> closure<S, T>
     static_assert(
       guess_object_type(type_c<arrow<value<Double>, value<Int>>>) ==
-      type_c<closure<Double, Int>>);
+      type_c<ClosureProxy<Double, Int>>);
 
     // arrow<S, arrow<T, U>> -> closure<S, T, U>
     static_assert(
       guess_object_type(
         type_c<arrow<value<Int>, arrow<value<Double>, value<Int>>>>) ==
-      type_c<closure<Int, Double, Int>>);
+      type_c<ClosureProxy<Int, Double, Int>>);
 
     // arrow<arrow<Double, Int>, arrow<Double, Int>> -> closure<closure<Double,
     // Int>, Double, Int>
@@ -376,6 +377,6 @@ void test_assume_object_type()
       guess_object_type(type_c<arrow<
                           arrow<value<Double>, value<Int>>,
                           arrow<value<Double>, value<Int>>>>) ==
-      type_c<closure<closure<Double, Int>, Double, Int>>);
+      type_c<ClosureProxy<ClosureProxy<Double, Int>, Double, Int>>);
   }
 }

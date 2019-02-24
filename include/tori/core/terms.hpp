@@ -7,6 +7,7 @@
 
 #include "meta_type.hpp"
 #include "meta_tuple.hpp"
+#include "specifiers.hpp"
 
 namespace TORI_NS::detail {
 
@@ -50,16 +51,38 @@ namespace TORI_NS::detail {
   };
 
   // ------------------------------------------
+  // has_term
+
+  template <class T, class = void>
+  struct has_term_impl
+  {
+    static constexpr auto value = false_c;
+  };
+
+  template <class T>
+  struct has_term_impl<T, std::void_t<decltype(T::term)>>
+  {
+    static constexpr auto value = true_c;
+  };
+
+  template <class T>
+  constexpr auto has_term()
+  {
+    return has_term_impl<T>::value;
+  }
+
+  // ------------------------------------------
   // get_term
 
   template <class T>
   constexpr auto get_term(meta_type<T> = {})
   {
-    if constexpr (is_complete_v<T>)
+    if constexpr (has_specifier<T>()) {
+      return get_term(get_proxy_type(normalize_specifier(get_specifier<T>())));
+    } else if constexpr (has_term<T>()) {
       return T::term;
-    else
-      // map incomplete type to type variable
-      return type_c<tm_var<T>>;
+    } else
+      static_assert(false_v<T>, "T should have either term or specifier");
   }
 
   // ------------------------------------------
@@ -129,26 +152,6 @@ namespace TORI_NS::detail {
     }
   };
 
-  // ------------------------------------------
-  // has_term
-
-  template <class T, class = void>
-  struct has_term_impl
-  {
-    static constexpr auto value = false_c;
-  };
-
-  template <class T>
-  struct has_term_impl<T, std::void_t<decltype(T::term)>>
-  {
-    static constexpr auto value = true_c;
-  };
-
-  template <class T>
-  constexpr auto has_term()
-  {
-    return has_term_impl<T>::value;
-  }
 
   // ------------------------------------------
   // is_tm_apply
@@ -392,4 +395,38 @@ namespace TORI_NS::detail {
     return term;
   }
 
+  // ------------------------------------------
+  // closure_term_export
+
+  template <class Term, class Target>
+  constexpr auto
+    closure_term_export_impl(meta_type<Term> term, meta_type<Target> target)
+  {
+    if constexpr (is_tm_varvalue(term)) {
+      return subst_term(term, make_tm_var(term.tag()), target);
+    } else if constexpr (is_tm_closure(term)) {
+      if constexpr (term.size() == 1) {
+        return closure_term_export_impl(head(term), target);
+      } else {
+        return closure_term_export_impl(
+          tail(term), closure_term_export_impl(head(term), target));
+      }
+    } else if constexpr (is_tm_apply(term)) {
+      return closure_term_export_impl(
+        term.t2(), closure_term_export_impl(term.t1(), target));
+    } else
+      return target;
+  }
+
+  /// convert varvalue to var
+  template <class Term>
+  constexpr auto closure_term_export(meta_type<Term> term)
+  {
+    return closure_term_export_impl(term, term);
+  }
+
+  constexpr auto closure_term_export(meta_type<tm_closure<>> c)
+  {
+    return c;
+  }
 }

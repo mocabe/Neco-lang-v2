@@ -70,10 +70,10 @@ namespace TORI_NS::detail {
     [[nodiscard]] object_ptr<propagate_const_t<T, U>>
       value_cast(const object_ptr<U>& obj)
     {
-      static_assert(!is_tm_closure(get_term<T>()), "T is not value type");
-
       if (likely(obj && has_type<T>(obj))) {
-        return static_object_cast<propagate_const_t<T, U>>(obj);
+        using To = typename decltype(
+          get_object_type(normalize_specifier(type_c<T>)))::type;
+        return static_object_cast<propagate_const_t<To, U>>(obj);
       }
       throw bad_value_cast(obj ? get_type(obj) : nullptr, object_type<T>());
     }
@@ -86,10 +86,10 @@ namespace TORI_NS::detail {
     [[nodiscard]] object_ptr<propagate_const_t<T, U>>
       value_cast(object_ptr<U>&& obj)
     {
-      static_assert(!is_tm_closure(get_term<T>()), "T is not value type");
-
       if (likely(obj && has_type<T>(obj))) {
-        return static_object_cast<propagate_const_t<T, U>>(std::move(obj));
+        using To = typename decltype(
+          get_object_type(normalize_specifier(type_c<T>)))::type;
+        return static_object_cast<propagate_const_t<To, U>>(std::move(obj));
       }
       throw bad_value_cast(obj ? get_type(obj) : nullptr, object_type<T>());
     }
@@ -102,10 +102,10 @@ namespace TORI_NS::detail {
     [[nodiscard]] object_ptr<propagate_const_t<T, U>>
       value_cast_if(const object_ptr<U>& obj) noexcept
     {
-      static_assert(!is_tm_closure(get_term<T>()), "T is not value type");
-
       if (likely(obj && has_type<T>(obj))) {
-        return static_object_cast<propagate_const_t<T, U>>(obj);
+        using To = typename decltype(
+          get_object_type(normalize_specifier(type_c<T>)))::type;
+        return static_object_cast<propagate_const_t<To, U>>(obj);
       }
       return nullptr;
     }
@@ -118,10 +118,10 @@ namespace TORI_NS::detail {
     [[nodiscard]] object_ptr<propagate_const_t<T, U>>
       value_cast_if(object_ptr<U>&& obj) noexcept
     {
-      static_assert(!is_tm_closure(get_term<T>()), "T is not value type");
-
       if (likely(obj && has_type<T>(obj))) {
-        return static_object_cast<propagate_const_t<T, U>>(std::move(obj));
+        using To = typename decltype(
+          get_object_type(normalize_specifier(type_c<T>)))::type;
+        return static_object_cast<propagate_const_t<To, U>>(std::move(obj));
       }
       return nullptr;
     }
