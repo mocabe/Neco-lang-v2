@@ -5,6 +5,7 @@
 #include <iostream>
 
 using namespace tori;
+using namespace tori::detail;
 
 TEST_CASE("simple function test")
 {
@@ -14,6 +15,8 @@ TEST_CASE("simple function test")
     {
       return_type code() const
       {
+        static_assert(
+          type_c<argument_proxy_t<0>> == type_c<const ObjectProxy<Int>>);
         return arg<0>();
         return eval_arg<0>();
         return eval(arg<0>());
@@ -32,6 +35,9 @@ TEST_CASE("higher order function test")
     {
       return_type code() const
       {
+        static_assert(
+          type_c<argument_proxy_t<0>> ==
+          type_c<const ClosureArgumentProxy<ObjectProxy<Int>, ObjectProxy<Int>>>);
         return arg<0>();
         return eval_arg<0>();
         return eval(arg<0>());
