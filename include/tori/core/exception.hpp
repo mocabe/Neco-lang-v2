@@ -42,6 +42,11 @@ namespace TORI_NS::detail {
 
   } // namespace interface
 
+  object_ptr<Exception> to_Exception(const std::exception& e)
+  {
+    return make_object<Exception>(e.what(), make_object<Unit>());
+  }
+
 } // namespace TORI_NS::detail
 
 // Exception
