@@ -244,23 +244,23 @@ namespace TORI_NS::detail {
     constexpr auto tag = type.tag();
     if constexpr (is_type_missmatch(tag)) {
       static_assert(false_v<T>, "Unification error: Type missmatch");
-      // error info
-      using left = typename decltype(tag)::type::left::_error;
-      using right = typename decltype(tag)::type::right::_error;
-      using other = typename decltype(tag)::type::other::_error;
+      // print error info
+      using left = typename decltype(tag)::type::left::_print_lhs;
+      using right = typename decltype(tag)::type::right::_print__rhs;
+      using other = typename decltype(tag)::type::other::_print_other;
       static_assert(false_v<left, right, other>, "Unification failed.");
     } else if constexpr (is_unsolvable_constraints(tag)) {
       static_assert(false_v<T>, "Unification error: Unsolvable constraints");
-      // error info
-      using left = typename decltype(tag)::type::left::_error;
-      using right = typename decltype(tag)::type::right::_error;
-      using other = typename decltype(tag)::type::other::_error;
+      // print error info
+      using left = typename decltype(tag)::type::left::_print_lhs;
+      using right = typename decltype(tag)::type::right::_print_rhs;
+      using other = typename decltype(tag)::type::other::_print_other;
       static_assert(false_v<left, right, other>, "Unification failed.");
     } else if constexpr (is_circular_constraints(tag)) {
       static_assert(false_v<T>, "Unification error: Circular constraints");
-      // error info
-      using var = typename decltype(tag)::type::var::_error;
-      using other = typename decltype(tag)::type::other::_error;
+      // print error info
+      using var = typename decltype(tag)::type::var::_print_var;
+      using other = typename decltype(tag)::type::other::_print_other;
       static_assert(false_v<var, other>, "Unification failed.");
     } else if constexpr (is_unknown_error(tag)) {
       static_assert(

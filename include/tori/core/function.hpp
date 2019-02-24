@@ -142,8 +142,8 @@ namespace TORI_NS::detail {
   {
     if constexpr (t1 != t2) {
       static_assert(false_v<T1>, "return type does not match.");
-      using _t1 = typename T1::_expected;
-      using _t2 = typename T2::_provided;
+      using _t1 = typename T1::_print_expected;
+      using _t2 = typename T2::_print_provided;
       static_assert(false_v<_t1, _t2>, "compile-time type check failed.");
     }
   }
