@@ -19,20 +19,30 @@ namespace TORI_NS::detail {
       class result_error : public std::runtime_error
       {
       public:
-        result_error(object_ptr<Exception> result)
-          : runtime_error("result_error: Exception detected while evaluation")
-          , m_result {std::move(result)}
+        result_error(const char* msg = "result_error")
+          : runtime_error(msg)
+        {
+        }
+      };
+
+      /// exception_result
+      class exception_result : public result_error
+      {
+      public:
+        exception_result(object_ptr<const Exception> e)
+          : result_error("Exception detected while evaluation")
+          , m_exception {std::move(e)}
         {
         }
 
-        /// result
-        const object_ptr<Exception>& result() const
+        /// exception
+        const object_ptr<const Exception>& exception() const
         {
-          return m_result;
+          return m_exception;
         }
 
       private:
-        object_ptr<Exception> m_result;
+        object_ptr<const Exception> m_exception;
       };
 
     } // namespace result_error

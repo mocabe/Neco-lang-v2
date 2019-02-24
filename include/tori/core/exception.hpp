@@ -17,9 +17,15 @@ namespace TORI_NS::detail {
   struct ExceptionValue
   {
     template <class T>
-    ExceptionValue(object_ptr<const String> msg, object_ptr<T> err) noexcept
-      : message(std::move(msg))
-      , error_value(std::move(err))
+    ExceptionValue(object_ptr<const String> msg, object_ptr<T> err)
+      : message {std::move(msg)}
+      , error_value {std::move(err)}
+    {
+    }
+
+    template <class T>
+    ExceptionValue(const char* msg, object_ptr<T> err)
+      : ExceptionValue(make_object<String>(msg), std::move(err))
     {
     }
 

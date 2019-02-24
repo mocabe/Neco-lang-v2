@@ -11,13 +11,20 @@ namespace TORI_NS::detail {
   // ------------------------------------------
   // Eval errors
 
+  /// eval_error_type
+  enum class eval_error_type : uint64_t
+  {
+    unknown = 0,
+    bad_fix = 1,
+    bad_apply = 2,
+    too_may_arguments = 3,
+  };
+
   /// EvlaErrorValue
   struct EvalErrorValue
   {
-    /// error message
-    object_ptr<const String> msg;
-    /// source node
-    object_ptr<const Object> src;
+    /// error type
+    eval_error_type error_type;
   };
 
   namespace interface {
@@ -37,8 +44,8 @@ namespace TORI_NS::detail {
       public:
         /// Ctor
         template <class T>
-        explicit eval_error(const char* what)
-          : std::runtime_error(what)
+        explicit eval_error(const char* msg = "eval_error")
+          : std::runtime_error(msg)
         {
         }
       };
@@ -47,8 +54,8 @@ namespace TORI_NS::detail {
       class bad_fix : public eval_error
       {
       public:
-        bad_fix(const char* msg)
-          : eval_error(msg)
+        bad_fix()
+          : eval_error("Invalid use of fix operator")
         {
         }
       };
@@ -57,8 +64,8 @@ namespace TORI_NS::detail {
       class bad_apply : public eval_error
       {
       public:
-        bad_apply(const char* msg)
-          : eval_error(msg)
+        bad_apply()
+          : eval_error("Invalid application")
         {
         }
       };
@@ -67,8 +74,8 @@ namespace TORI_NS::detail {
       class too_many_arguments : public eval_error
       {
       public:
-        too_many_arguments(const char* msg)
-          : eval_error(msg)
+        too_many_arguments()
+          : eval_error("Invalid number of arguments")
         {
         }
       };
@@ -76,6 +83,30 @@ namespace TORI_NS::detail {
     } // namespace eval_error
 
   } // namespace interface
+
+  // ------------------------------------------
+  // conversion
+
+  object_ptr<Exception> to_Exception(const eval_error::eval_error& e)
+  {
+    return new Exception(e.what(), new EvalError(eval_error_type::unknown));
+  }
+
+  object_ptr<Exception> to_Exception(const eval_error::bad_fix& e)
+  {
+    return new Exception(e.what(), new EvalError(eval_error_type::bad_fix));
+  }
+
+  object_ptr<Exception> to_Exception(const eval_error::bad_apply& e)
+  {
+    return new Exception(e.what(), new EvalError(eval_error_type::bad_apply));
+  }
+
+  object_ptr<Exception> to_Exception(const eval_error::too_many_arguments& e)
+  {
+    return new Exception(
+      e.what(), new Exception(eval_error_type::too_may_arguments));
+  }
 
 } // namespace TORI_NS::detail
 
