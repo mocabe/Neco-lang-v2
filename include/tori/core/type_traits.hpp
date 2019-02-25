@@ -58,4 +58,10 @@ namespace TORI_NS::detail {
   template <class T, class U>
   using propagate_const_t = typename propagate_const<T, U>::type;
 
+  // ------------------------------------------
+  // concept_checker
+
+  template <auto FP>
+  struct concept_checker;
+
 } // namespace TORI_NS::detail
