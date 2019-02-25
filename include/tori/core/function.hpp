@@ -140,6 +140,12 @@ namespace TORI_NS::detail {
     } catch (const type_error::type_error& e) {
       return to_Exception(e);
 
+      // result_error
+    } catch (const result_error::exception_result& e) {
+      return to_Exception(e);
+    } catch (const result_error::result_error& e) {
+      return to_Exception(e);
+
       // eval_error
     } catch (const eval_error::bad_fix& e) {
       return to_Exception(e);
@@ -148,12 +154,6 @@ namespace TORI_NS::detail {
     } catch (const eval_error::too_many_arguments& e) {
       return to_Exception(e);
     } catch (const eval_error::eval_error& e) {
-      return to_Exception(e);
-
-      // result_error
-    } catch (const result_error::exception_result& e) {
-      return to_Exception(e);
-    } catch (const result_error::result_error& e) {
       return to_Exception(e);
 
       // std::exception
