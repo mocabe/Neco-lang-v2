@@ -122,7 +122,7 @@ namespace TORI_NS::detail {
   object_ptr<const Object> vtbl_code_func(const Closure<>* _this) noexcept
   {
     try {
-      auto r = (static_cast<const T*>(_this)->code()).value();
+      auto r = (static_cast<const T*>(_this)->exception_handler()).value();
       assert(r);
       return r;
 
@@ -207,14 +207,63 @@ namespace TORI_NS::detail {
       check_return_type(return_type, type_of(get_term<U>()));
     }
 
-    /// deleted
-    return_type_checker(nullptr_t) = delete;
-    /// deleted
+    /// copy
+    return_type_checker(const return_type_checker& other)
+      : m_value {other.m_value}
+    {
+    }
+
+    /// move
+    return_type_checker(return_type_checker&& other)
+      : m_value {std::move(other.m_value)}
+    {
+    }
+
+    // deleted
     return_type_checker() = delete;
-    /// deleted
-    return_type_checker(const return_type_checker& other) = delete;
-    /// deleted
-    return_type_checker(return_type_checker&& other) = delete;
+    return_type_checker(nullptr_t) = delete;
+
+    /// value
+    auto&& value() && noexcept
+    {
+      return std::move(m_value);
+    }
+
+  private:
+    object_ptr<const Object> m_value;
+  };
+
+  /// Return type checker
+  template <class T>
+  class exception_handler_return_type_checker
+  {
+  public:
+    /// return_type ctor
+    exception_handler_return_type_checker(return_type_checker<T> e)
+      : m_value {std::move(e).value()}
+    {
+    }
+
+    /// Exception ctor
+    template <class U>
+    exception_handler_return_type_checker(object_ptr<U> e)
+      : m_value {object_ptr<const Exception>(std::move(e))}
+    {
+    }
+
+    /// Exception ctor
+    exception_handler_return_type_checker(const Exception* e)
+      : exception_handler_return_type_checker(object_ptr(e))
+    {
+    }
+
+    // deleted
+    exception_handler_return_type_checker() = delete;
+    exception_handler_return_type_checker(nullptr_t) = delete;
+    exception_handler_return_type_checker(
+      const exception_handler_return_type_checker&) = delete;
+    exception_handler_return_type_checker(
+      exception_handler_return_type_checker&&) = delete;
 
     /// value
     auto&& value() && noexcept
@@ -306,6 +355,11 @@ namespace TORI_NS::detail {
       using return_type =
         return_type_checker<argument_proxy_t<sizeof...(Ts) - 1>>;
 
+      /// return type for exception_handler()
+      using exception_handler_return_type =
+        exception_handler_return_type_checker<
+          argument_proxy_t<sizeof...(Ts) - 1>>;
+
       /// get N'th argument thunk
       template <uint64_t N>
       auto arg() const noexcept
@@ -323,6 +377,13 @@ namespace TORI_NS::detail {
       {
         // workaround: gcc 8.1
         return eval(this->template arg<N>());
+      }
+
+    public:
+      /// default exception handler
+      exception_handler_return_type exception_handler() const
+      {
+        return static_cast<const T*>(this)->code();
       }
 
     private:
