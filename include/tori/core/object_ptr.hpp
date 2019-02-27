@@ -12,11 +12,14 @@ namespace TORI_NS::detail {
 
   namespace interface {
 
+    // ------------------------------------------
+    // object_ptr
+
     /// Smart pointer to manage heap-allocated objects
     template <class T = Object>
     class object_ptr
     {
-      // storage access
+      // internal storage access
       template <class U>
       friend object_ptr_storage& _get_storage(object_ptr<U>&) noexcept;
       template <class U>
@@ -209,6 +212,9 @@ namespace TORI_NS::detail {
     template <class T, size_t N>
     class object_ptr<T[N]>; // = delete
 
+    // ------------------------------------------
+    // object_info_table
+
     /// Object info table
     struct object_info_table
     {
@@ -224,6 +230,9 @@ namespace TORI_NS::detail {
       Object* (*clone)(const Object*) noexcept;
     };
 
+    // ------------------------------------------
+    // object_ptr::~object_ptr()
+
     /// Destructor
     /// \effects Destroy object with vtable function when reference count become
     /// 0
@@ -238,6 +247,9 @@ namespace TORI_NS::detail {
         }
       }
     }
+
+    // ------------------------------------------
+    // operators
 
     /// operator==
     template <class T, class U>
@@ -295,6 +307,13 @@ namespace TORI_NS::detail {
       return obj.m_storage;
     }
 
+    // ------------------------------------------
+    // deduction guides
+
+    // nullptr
+    object_ptr(nullptr_t)->object_ptr<Object>;
+    // default
+    object_ptr()->object_ptr<Object>;
     /// make object
     template <class T, class... Args>
     object_ptr<T> make_object(Args&&... args)
