@@ -13,13 +13,13 @@ namespace TORI_NS::detail {
 
   namespace interface {
 
-  enum class type_error_type : uint64_t
-  {
-    unknown = 0,
-    circular_constraints = 1,
-    type_missmatch = 2,
-    bad_type_check = 3,
-  };
+    enum class type_error_type : uint64_t
+    {
+      unknown = 0,
+      circular_constraints = 1,
+      type_missmatch = 2,
+      bad_type_check = 3,
+    };
 
   }
 
