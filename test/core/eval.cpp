@@ -33,9 +33,9 @@ TEST_CASE("exception")
           if (
             auto err =
               value_cast_if<BadValueCast>(e.exception()->error_value)) {
-            INFO(
-              "bad_value_cast: from=" << to_string(err->from)
-                                      << " to=" << to_string(err->to));
+            std::cout << "bad_value_cast:\n";
+            std::cout << "  from=" << to_string(err->from) << "\n"
+                      << "  to=  " << to_string(err->to) << "\n";
             REQUIRE(true);
             return;
           }
@@ -66,10 +66,9 @@ TEST_CASE("exception")
           if (auto err = value_cast_if<TypeError>(e.exception()->error_value)) {
             switch (err->error_type) {
             case type_error_type::type_missmatch:
-              std::cout << "type_error::type_missmatch" << std::endl;
-              std::cout << "expected=" << to_string(err->expected)
-                        << ",provided=" << to_string(err->provided)
-                        << std::endl;
+              std::cout << "type_error::type_missmatch:\n";
+              std::cout << "  expected=" << to_string(err->expected) << "\n"
+                        << "  provided=" << to_string(err->provided) << "\n";
               REQUIRE(true);
               return;
             default:
@@ -83,11 +82,13 @@ TEST_CASE("exception")
 
     SECTION("result_error")
     {
+      static const char* message = "test message";
+
       struct F : Function<F, Unit, Unit>
       {
         return_type code() const
         {
-          throw std::runtime_error("test message");
+          throw std::runtime_error(message);
         }
       };
 
@@ -107,7 +108,9 @@ TEST_CASE("exception")
           eval(g << (f << unit));
         } catch (result_error::exception_result& e) {
           std::cout << (e.exception()->message->c_str()) << std::endl;
-          REQUIRE(true);
+          REQUIRE(
+            std::string(e.exception()->message->c_str()) ==
+            std::string(message));
           return;
         }
         REQUIRE(false);

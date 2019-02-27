@@ -33,6 +33,17 @@ TEST_CASE("pointer construct")
     REQUIRE(i);
     REQUIRE(*i == 42);
   }
+  SECTION("guided")
+  {
+    {
+      auto p = object_ptr();
+      REQUIRE(!p);
+    }
+    {
+      auto p = object_ptr(nullptr);
+      REQUIRE(!p);
+    }
+  }
   SECTION("make_object")
   {
     auto i = make_object<Int>(42);
