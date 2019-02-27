@@ -21,6 +21,9 @@ TEST_CASE("simple function test")
         return eval_arg<0>();
         return eval(arg<0>());
         return eval(eval_arg<0>());
+        return make_object<Int>();
+        return make_object<const Int>();
+        return new Int();
       }
     };
     auto f = make_object<F>();

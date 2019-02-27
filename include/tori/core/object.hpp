@@ -69,6 +69,8 @@ namespace TORI_NS::detail {
 #endif
     };
 
+    static_assert(std::is_standard_layout_v<Object>);
+
   } // namespace interface
 
 } // namespace TORI_NS::detail

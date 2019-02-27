@@ -1,7 +1,7 @@
-#pragma once
-
 // Copyright (c) 2018 mocabe(https://github.com/mocabe)
 // This code is licensed under MIT license.
+
+#pragma once
 
 /// \file String
 
@@ -18,7 +18,15 @@ namespace TORI_NS::detail {
 
   class StringValue
   {
+    // TODO: support char8_t in C++20
   public:
+    StringValue(const char* str)
+    {
+      size_t s = std::strlen(str);
+      m_ptr = new uint8_t[s + 1];
+      std::copy(str, str + s + 1, m_ptr);
+    }
+
     StringValue(const std::string& str)
     {
       m_ptr = new uint8_t[str.size() + 1];

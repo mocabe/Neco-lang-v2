@@ -3,16 +3,85 @@
 
 #pragma once
 
+#include "../config/config.hpp"
 #include "exception.hpp"
 
 namespace TORI_NS::detail {
 
+  // ------------------------------------------
+  // Type errors
+
   namespace interface {
 
-    // ------------------------------------------
-    // Exceptions
+    enum class type_error_type : uint64_t
+    {
+      unknown = 0,
+      circular_constraints = 1,
+      type_missmatch = 2,
+      bad_type_check = 3,
+    };
+
+  }
+
+  /// TypeErrorValue
+  struct TypeErrorValue
+  {
+    /// type
+    type_error_type error_type;
+
+    // not null(undefined) when:
+    //  type_missmatch
+    //  bad_type_check
+    object_ptr<const Type> expected;
+
+    // not null(undefined) when:
+    //  circular_constraints
+    //  type_missmatch
+    //  bad_type_check
+    object_ptr<const Type> provided;
+  };
+
+  namespace interface {
+
+    // TypeError
+    using TypeError = Box<TypeErrorValue>;
+
+  } // namespace interface
+
+  namespace interface {
 
     namespace type_error {
+
+      /// type_error
+      class type_error : public std::logic_error
+      {
+      public:
+        /// Ctor string
+        template <class T>
+        explicit type_error(const std::string& what, object_ptr<T> src)
+          : std::logic_error(what)
+          , m_src {std::move(src)}
+        {
+        }
+
+        template <class T>
+        /// Ctor const char*
+        explicit type_error(const char* what, object_ptr<T> src)
+          : std::logic_error(what)
+          , m_src {std::move(src)}
+        {
+        }
+
+        /// get source node
+        const object_ptr<const Object>& src() const
+        {
+          return m_src;
+        }
+
+      private:
+        /// source node
+        object_ptr<const Object> m_src;
+      };
 
       /// unification error(circular constraint)
       class circular_constraint : public type_error
@@ -108,4 +177,40 @@ namespace TORI_NS::detail {
 
   } // namespace interface
 
+  // ------------------------------------------
+  // Type errors
+
+  object_ptr<Exception> to_Exception(const type_error::type_error& e)
+  {
+    return make_object<Exception>(
+      e.what(),
+      make_object<TypeError>(type_error_type::unknown, nullptr, nullptr));
+  }
+
+  object_ptr<Exception> to_Exception(const type_error::circular_constraint& e)
+  {
+    return make_object<Exception>(
+      e.what(),
+      make_object<TypeError>(
+        type_error_type::circular_constraints, nullptr, e.var()));
+  }
+
+  object_ptr<Exception> to_Exception(const type_error::type_missmatch& e)
+  {
+    return make_object<Exception>(
+      e.what(),
+      make_object<TypeError>(type_error_type::type_missmatch, e.t1(), e.t2()));
+  }
+
+  object_ptr<Exception> to_Exception(const type_error::bad_type_check& e)
+  {
+    return make_object<Exception>(
+      e.what(),
+      make_object<TypeError>(
+        type_error_type::bad_type_check, e.expected(), e.result()));
+  }
+
 } // namespace TORI_NS::detail
+
+// TypeError
+TORI_DECL_TYPE(TypeError)

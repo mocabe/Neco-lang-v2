@@ -3,14 +3,21 @@
 
 #pragma once
 
-#include "fix.hpp"
-#include "exception.hpp"
-#include "apply.hpp"
-#include "string.hpp"
+#include "offset_of_member.hpp"
 #include "static_typing.hpp"
 #include "dynamic_typing.hpp"
+
+#include "fix.hpp"
+#include "apply.hpp"
+#include "string.hpp"
+
+#include "exception.hpp"
+#include "eval_error.hpp"
+#include "bad_value_cast.hpp"
+#include "result_error.hpp"
+#include "type_error.hpp"
+
 #include "value_cast.hpp"
-#include "offset_of_member.hpp"
 
 /// Size of additional space in closure header
 #if defined(CLOSURE_HEADER_EXTEND_BYTES)
@@ -114,24 +121,61 @@ namespace TORI_NS::detail {
   template <class T>
   object_ptr<const Object> vtbl_code_func(const Closure<>* _this) noexcept
   {
-    try {
-      auto r = (static_cast<const T*>(_this)->code()).value();
-      assert(r);
-      return r;
-    } catch (const bad_value_cast& e) {
-      return new Exception(new BadValueCast(e.from(), e.to()));
-    } catch (const type_error::type_error& e) {
-      return new Exception(new TypeError(new String(e.what()), e.src()));
-    } catch (const eval_error::eval_error& e) {
-      return new Exception(new EvalError(new String(e.what()), e.src()));
-    } catch (const result_error::result_error& e) {
-      return object_ptr<const Object>(e.result());
-    } catch (const std::exception& e) {
-      return new Exception(new String(e.what()));
-    } catch (...) {
-      return new Exception(
-        new String("Unknown exception thrown while evaluation"));
-    }
+    auto ret = [&]() -> object_ptr<const Object> {
+      try {
+        auto r = (static_cast<const T*>(_this)->exception_handler()).value();
+        assert(r);
+        return r;
+
+        // bad_value_cast
+      } catch (const bad_value_cast& e) {
+        return add_exception_tag(to_Exception(e));
+
+        // type_error
+      } catch (const type_error::circular_constraint& e) {
+        return add_exception_tag(to_Exception(e));
+      } catch (const type_error::type_missmatch& e) {
+        return add_exception_tag(to_Exception(e));
+      } catch (const type_error::bad_type_check& e) {
+        return add_exception_tag(to_Exception(e));
+      } catch (const type_error::type_error& e) {
+        return add_exception_tag(to_Exception(e));
+
+        // result_error
+      } catch (const result_error::exception_result& e) {
+        return add_exception_tag(to_Exception(e));
+      } catch (const result_error::result_error& e) {
+        return add_exception_tag(to_Exception(e));
+
+        // eval_error
+      } catch (const eval_error::bad_fix& e) {
+        return add_exception_tag(to_Exception(e));
+      } catch (const eval_error::bad_apply& e) {
+        return add_exception_tag(to_Exception(e));
+      } catch (const eval_error::too_many_arguments& e) {
+        return add_exception_tag(to_Exception(e));
+      } catch (const eval_error::eval_error& e) {
+        return add_exception_tag(to_Exception(e));
+
+        // std::exception
+      } catch (const std::exception& e) {
+        return add_exception_tag(to_Exception(e));
+
+        // unknown
+      } catch (...) {
+        return add_exception_tag(make_object<Exception>(
+          make_object<String>("Unknown exception thrown while evaluation"),
+          object_ptr(nullptr)));
+      }
+    }();
+
+    // vtbl_code_func should not return Undefined value
+    assert(ret);
+    // exception object retuned fron vtbl_code_func should have pointer tag
+    if (!has_exception_tag(ret))
+      assert(!value_cast_if<Exception>(ret));
+
+    return ret;
   }
 
   // ------------------------------------------
@@ -173,14 +217,65 @@ namespace TORI_NS::detail {
       check_return_type(return_type, type_of(get_term<U>()));
     }
 
-    /// deleted
-    return_type_checker(nullptr_t) = delete;
-    /// deleted
+    /// copy
+    return_type_checker(const return_type_checker& other)
+      : m_value {other.m_value}
+    {
+    }
+
+    /// move
+    return_type_checker(return_type_checker&& other)
+      : m_value {std::move(other.m_value)}
+    {
+    }
+
+    // deleted
     return_type_checker() = delete;
-    /// deleted
-    return_type_checker(const return_type_checker& other) = delete;
-    /// deleted
-    return_type_checker(return_type_checker&& other) = delete;
+    return_type_checker(nullptr_t) = delete;
+
+    /// value
+    auto&& value() && noexcept
+    {
+      return std::move(m_value);
+    }
+
+  private:
+    object_ptr<const Object> m_value;
+  };
+
+  /// Return type checker
+  template <class T>
+  class exception_handler_return_type_checker
+  {
+  public:
+    /// return_type ctor
+    exception_handler_return_type_checker(return_type_checker<T> e)
+      : m_value {std::move(e).value()}
+    {
+    }
+
+    /// Exception ctor
+    template <class U>
+    exception_handler_return_type_checker(object_ptr<U> e)
+      : m_value {object_ptr<const Exception>(std::move(e))}
+    {
+      m_value = add_exception_tag(std::move(m_value));
+    }
+
+    /// Exception ctor
+    exception_handler_return_type_checker(const Exception* e)
+      : exception_handler_return_type_checker(object_ptr(e))
+    {
+      m_value = add_exception_tag(std::move(m_value));
+    }
+
+    // deleted
+    exception_handler_return_type_checker() = delete;
+    exception_handler_return_type_checker(nullptr_t) = delete;
+    exception_handler_return_type_checker(
+      const exception_handler_return_type_checker&) = delete;
+    exception_handler_return_type_checker(
+      exception_handler_return_type_checker&&) = delete;
 
     /// value
     auto&& value() && noexcept
@@ -272,11 +367,17 @@ namespace TORI_NS::detail {
       using return_type =
         return_type_checker<argument_proxy_t<sizeof...(Ts) - 1>>;
 
+      /// return type for exception_handler()
+      using exception_handler_return_type =
+        exception_handler_return_type_checker<
+          argument_proxy_t<sizeof...(Ts) - 1>>;
+
       /// get N'th argument thunk
       template <uint64_t N>
       auto arg() const noexcept
       {
         using To = argument_proxy_t<N>;
+        static_assert(std::is_standard_layout_v<To>);
         auto obj = ClosureN<sizeof...(Ts) - 1>::template nth_arg<N>();
         assert(obj);
         return static_object_cast<To>(obj);
@@ -288,6 +389,13 @@ namespace TORI_NS::detail {
       {
         // workaround: gcc 8.1
         return eval(this->template arg<N>());
+      }
+
+    public:
+      /// default exception handler
+      exception_handler_return_type exception_handler() const
+      {
+        return static_cast<const T*>(this)->code();
       }
 
     private:
@@ -315,10 +423,6 @@ namespace TORI_NS::detail {
           std::is_same_v<return_type, decltype(std::declval<const T>().code())>,
           " `return_type code() const` was not found.");
       }
-
-      // instantiate checker function throught pointer
-      template <auto FP>
-      struct concept_checker;
 
       // check_code
       using concept_check_code = concept_checker<&Function::check_code>;

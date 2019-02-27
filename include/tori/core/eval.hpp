@@ -4,47 +4,14 @@
 #pragma once
 
 #include "fix.hpp"
-#include "exception.hpp"
 #include "value_cast.hpp"
 #include "function.hpp"
+#include "eval_error.hpp"
+#include "result_error.hpp"
 
 namespace TORI_NS::detail {
 
   namespace interface {
-
-    namespace eval_error {
-
-      /// bad apply for fix
-      class bad_fix : public eval_error
-      {
-      public:
-        bad_fix(const char* msg, object_ptr<const Object> obj)
-          : eval_error(msg, std::move(obj))
-        {
-        }
-      };
-
-      /// bad apply (apply for value)
-      class bad_apply : public eval_error
-      {
-      public:
-        bad_apply(const char* msg, object_ptr<const Object> obj)
-          : eval_error(msg, std::move(obj))
-        {
-        }
-      };
-
-      /// too many arguments
-      class too_many_arguments : public eval_error
-      {
-      public:
-        too_many_arguments(const char* msg, object_ptr<const Object> obj)
-          : eval_error(msg, std::move(obj))
-        {
-        }
-      };
-
-    } // namespace eval_error
 
     /// copy apply graph
     [[nodiscard]] inline object_ptr<const Object>
@@ -77,28 +44,25 @@ namespace TORI_NS::detail {
       // reduce app
       auto app = eval_impl(apply->app());
       // detect exception
-      if (auto exception = value_cast_if<Exception>(app)) {
-        throw result_error::result_error(exception);
-      }
+      if (has_exception_tag(app))
+        throw result_error::exception_result(std::move(app));
+      // whnf
       const auto& arg = apply->arg();
       // Fix
       if (has_type<Fix>(app)) {
         auto f = eval_impl(arg);
         // detect exception
-        if (auto exception = value_cast_if<Exception>(f)) {
-          throw result_error::result_error(exception);
-        }
+        if (has_exception_tag(f))
+          throw result_error::exception_result(std::move(f));
         // check arg
         if (unlikely(has_value_type(f))) {
-          throw eval_error::bad_fix(
-            "eval_error: Expected closure after Fix", obj);
+          throw eval_error::bad_fix();
         }
         // cast to closure
         auto c = static_cast<const Closure<>*>(f.get());
         // check arity
         if (unlikely(c->arity() == 0)) {
-          throw eval_error::bad_fix(
-            "eval_error: Expected appliable closure after Fix", obj);
+          throw eval_error::bad_fix();
         }
         // process
         auto pap = clone(f);
@@ -115,13 +79,12 @@ namespace TORI_NS::detail {
       }
       // check app
       if (unlikely(has_value_type(app))) {
-        throw eval_error::bad_apply("eval_error: Apply to value type", obj);
+        throw eval_error::bad_apply();
       }
       // too many arguments
       auto c = static_cast<const Closure<>*>(app.get());
       if (unlikely(c->arity() == 0)) {
-        throw eval_error::too_many_arguments(
-          "eval_error: Too many arguments", obj);
+        throw eval_error::too_many_arguments();
       }
       // create pap
       auto pap = clone(app);
@@ -139,9 +102,8 @@ namespace TORI_NS::detail {
       }
     }
     // detect exception
-    if (auto exception = value_cast_if<Exception>(obj)) {
-      throw result_error::result_error(exception);
-    }
+    if (has_exception_tag(obj))
+      throw result_error::exception_result(std::move(obj));
 
     return obj;
   }
