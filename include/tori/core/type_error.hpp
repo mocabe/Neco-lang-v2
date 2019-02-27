@@ -11,6 +11,8 @@ namespace TORI_NS::detail {
   // ------------------------------------------
   // Type errors
 
+  namespace interface {
+
   enum class type_error_type : uint64_t
   {
     unknown = 0,
@@ -19,19 +21,23 @@ namespace TORI_NS::detail {
     bad_type_check = 3,
   };
 
+  }
+
   /// TypeErrorValue
   struct TypeErrorValue
   {
     /// type
     type_error_type error_type;
 
-    // type_missmatch
-    // bad_type_check
+    // not null(undefined) when:
+    //  type_missmatch
+    //  bad_type_check
     object_ptr<const Type> expected;
 
-    // circular_constraints
-    // type_missmatch
-    // bad_type_check
+    // not null(undefined) when:
+    //  circular_constraints
+    //  type_missmatch
+    //  bad_type_check
     object_ptr<const Type> provided;
   };
 

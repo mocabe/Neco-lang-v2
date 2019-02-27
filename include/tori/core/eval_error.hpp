@@ -11,14 +11,18 @@ namespace TORI_NS::detail {
   // ------------------------------------------
   // Eval errors
 
-  /// eval_error_type
-  enum class eval_error_type : uint64_t
-  {
-    unknown = 0,
-    bad_fix = 1,
-    bad_apply = 2,
-    too_may_arguments = 3,
-  };
+  namespace interface {
+
+    /// eval_error_type
+    enum class eval_error_type : uint64_t
+    {
+      unknown = 0,
+      bad_fix = 1,
+      bad_apply = 2,
+      too_may_arguments = 3,
+    };
+
+  } // namespace interface
 
   /// EvlaErrorValue
   struct EvalErrorValue
