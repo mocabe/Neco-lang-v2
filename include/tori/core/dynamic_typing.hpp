@@ -10,6 +10,7 @@
 #include "exception.hpp"
 #include "type_error.hpp"
 #include "utility.hpp"
+#include "undefined.hpp"
 
 #include <vector>
 
@@ -31,11 +32,13 @@ namespace TORI_NS::detail {
     /// \brief get **RAW** type of the object
     /// \notes NO null check.
     /// \notes use type_of() to get actual type of terms.
-    template <class T>
     [[nodiscard]] inline object_ptr<const Type>
-      get_type(const object_ptr<T>& obj)
+      get_type(const object_ptr<const Object>& obj)
     {
-      return obj.info_table()->obj_type;
+      if (obj)
+        return obj.info_table()->obj_type;
+      else
+        return object_type<Undefined>();
     }
 
     /// is_value_type

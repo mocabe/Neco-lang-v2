@@ -388,3 +388,22 @@ TEST_CASE("type_of")
     }
   }
 }
+
+TEST_CASE("Undefined")
+{
+  SECTION("object_type")
+  {
+    auto t = object_type<Undefined>();
+    REQUIRE(t);
+  }
+  SECTION("get_type")
+  {
+    auto t = get_type(nullptr);
+    REQUIRE(same_type(t, object_type<Undefined>()));
+  }
+  SECTION("type_of")
+  {
+    auto t = type_of(nullptr);
+    REQUIRE(same_type(t, object_type<Undefined>()));
+  }
+}
