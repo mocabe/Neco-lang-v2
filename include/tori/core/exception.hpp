@@ -42,10 +42,27 @@ namespace TORI_NS::detail {
 
   } // namespace interface
 
+  // ------------------------------------------
+  // helper
+
+  object_ptr<Exception> add_exception_tag(object_ptr<Exception>&& e)
+  {
+    _get_storage(e).set_pointer_tag(
+      object_ptr_storage::pointer_tags::exception);
+    return std::move(e);
+  }
+
+  bool has_exception_tag(const object_ptr<const Object>& obj)
+  {
+    return _get_storage(obj).is_exception();
+  }
+
+  // ------------------------------------------
+  // conversion
+
   object_ptr<Exception> to_Exception(const std::exception& e)
   {
-    return make_object<Exception>(
-      e.what(), make_object<String>("std::exception instance"));
+    return make_object<Exception>(e.what(), object_ptr(nullptr));
   }
 
 } // namespace TORI_NS::detail

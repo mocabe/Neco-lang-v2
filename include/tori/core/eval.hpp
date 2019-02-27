@@ -44,17 +44,16 @@ namespace TORI_NS::detail {
       // reduce app
       auto app = eval_impl(apply->app());
       // detect exception
-      if (auto exception = value_cast_if<Exception>(app)) {
-        throw result_error::exception_result(std::move(exception));
-      }
+      if (has_exception_tag(app))
+        throw result_error::exception_result(std::move(app));
+      // whnf
       const auto& arg = apply->arg();
       // Fix
       if (has_type<Fix>(app)) {
         auto f = eval_impl(arg);
         // detect exception
-        if (auto exception = value_cast_if<Exception>(f)) {
-          throw result_error::exception_result(std::move(exception));
-        }
+        if (has_exception_tag(f))
+          throw result_error::exception_result(std::move(f));
         // check arg
         if (unlikely(has_value_type(f))) {
           throw eval_error::bad_fix();
@@ -103,9 +102,8 @@ namespace TORI_NS::detail {
       }
     }
     // detect exception
-    if (auto exception = value_cast_if<Exception>(obj)) {
-      throw result_error::exception_result(std::move(exception));
-    }
+    if (has_exception_tag(obj))
+      throw result_error::exception_result(std::move(obj));
 
     return obj;
   }

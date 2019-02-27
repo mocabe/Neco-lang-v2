@@ -121,51 +121,61 @@ namespace TORI_NS::detail {
   template <class T>
   object_ptr<const Object> vtbl_code_func(const Closure<>* _this) noexcept
   {
-    try {
-      auto r = (static_cast<const T*>(_this)->exception_handler()).value();
-      assert(r);
-      return r;
+    auto ret = [&]() -> object_ptr<const Object> {
+      try {
+        auto r = (static_cast<const T*>(_this)->exception_handler()).value();
+        assert(r);
+        return r;
 
-      // bad_value_cast
-    } catch (const bad_value_cast& e) {
-      return to_Exception(e);
+        // bad_value_cast
+      } catch (const bad_value_cast& e) {
+        return add_exception_tag(to_Exception(e));
 
-      // type_error
-    } catch (const type_error::circular_constraint& e) {
-      return to_Exception(e);
-    } catch (const type_error::type_missmatch& e) {
-      return to_Exception(e);
-    } catch (const type_error::bad_type_check& e) {
-      return to_Exception(e);
-    } catch (const type_error::type_error& e) {
-      return to_Exception(e);
+        // type_error
+      } catch (const type_error::circular_constraint& e) {
+        return add_exception_tag(to_Exception(e));
+      } catch (const type_error::type_missmatch& e) {
+        return add_exception_tag(to_Exception(e));
+      } catch (const type_error::bad_type_check& e) {
+        return add_exception_tag(to_Exception(e));
+      } catch (const type_error::type_error& e) {
+        return add_exception_tag(to_Exception(e));
 
-      // result_error
-    } catch (const result_error::exception_result& e) {
-      return to_Exception(e);
-    } catch (const result_error::result_error& e) {
-      return to_Exception(e);
+        // result_error
+      } catch (const result_error::exception_result& e) {
+        return add_exception_tag(to_Exception(e));
+      } catch (const result_error::result_error& e) {
+        return add_exception_tag(to_Exception(e));
 
-      // eval_error
-    } catch (const eval_error::bad_fix& e) {
-      return to_Exception(e);
-    } catch (const eval_error::bad_apply& e) {
-      return to_Exception(e);
-    } catch (const eval_error::too_many_arguments& e) {
-      return to_Exception(e);
-    } catch (const eval_error::eval_error& e) {
-      return to_Exception(e);
+        // eval_error
+      } catch (const eval_error::bad_fix& e) {
+        return add_exception_tag(to_Exception(e));
+      } catch (const eval_error::bad_apply& e) {
+        return add_exception_tag(to_Exception(e));
+      } catch (const eval_error::too_many_arguments& e) {
+        return add_exception_tag(to_Exception(e));
+      } catch (const eval_error::eval_error& e) {
+        return add_exception_tag(to_Exception(e));
 
-      // std::exception
-    } catch (const std::exception& e) {
-      return to_Exception(e);
+        // std::exception
+      } catch (const std::exception& e) {
+        return add_exception_tag(to_Exception(e));
 
-      // unknown
-    } catch (...) {
-      return make_object<Exception>(
-        make_object<String>("Unknown exception thrown while evaluation"),
-        make_object<String>(""));
-    }
+        // unknown
+      } catch (...) {
+        return add_exception_tag(make_object<Exception>(
+          make_object<String>("Unknown exception thrown while evaluation"),
+          object_ptr(nullptr)));
+      }
+    }();
+
+    // vtbl_code_func should not return Undefined value
+    assert(ret);
+    // exception object retuned fron vtbl_code_func should have pointer tag
+    if (!has_exception_tag(ret))
+      assert(!value_cast_if<Exception>(ret));
+
+    return ret;
   }
 
   // ------------------------------------------
@@ -249,12 +259,14 @@ namespace TORI_NS::detail {
     exception_handler_return_type_checker(object_ptr<U> e)
       : m_value {object_ptr<const Exception>(std::move(e))}
     {
+      m_value = add_exception_tag(std::move(m_value));
     }
 
     /// Exception ctor
     exception_handler_return_type_checker(const Exception* e)
       : exception_handler_return_type_checker(object_ptr(e))
     {
+      m_value = add_exception_tag(std::move(m_value));
     }
 
     // deleted
