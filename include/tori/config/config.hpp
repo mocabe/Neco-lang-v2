@@ -19,15 +19,29 @@
 // import SIMD detect macros
 #include "intrin.hpp"
 
-// namespace config
+/// top-level namespace
 namespace TORI_NS {
+
+  /// detail namespace
   namespace detail {
+
     /// interface namespace
-    namespace interface {}
+    namespace interface {
+
+      /// user defined literals
+      namespace literals {
+      }
+
+    } // namespace interface
+
     using namespace interface;
+    using namespace interface::literals;
+
   } // namespace detail
+
   // make interface visible
   using namespace detail::interface;
+
 } // namespace TORI_NS
 
 namespace TORI_NS::detail {
