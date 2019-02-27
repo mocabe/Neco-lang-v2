@@ -174,15 +174,14 @@ namespace TORI_NS::detail {
   // ------------------------------------------
   // Type errors
 
-  const object_ptr<Exception> to_Exception(const type_error::type_error& e)
+  object_ptr<Exception> to_Exception(const type_error::type_error& e)
   {
     return make_object<Exception>(
       e.what(),
       make_object<TypeError>(type_error_type::unknown, nullptr, nullptr));
   }
 
-  const object_ptr<Exception>
-    to_Exception(const type_error::circular_constraint& e)
+  object_ptr<Exception> to_Exception(const type_error::circular_constraint& e)
   {
     return make_object<Exception>(
       e.what(),
@@ -190,14 +189,14 @@ namespace TORI_NS::detail {
         type_error_type::circular_constraints, nullptr, e.var()));
   }
 
-  const object_ptr<Exception> to_Exception(const type_error::type_missmatch& e)
+  object_ptr<Exception> to_Exception(const type_error::type_missmatch& e)
   {
     return make_object<Exception>(
       e.what(),
       make_object<TypeError>(type_error_type::type_missmatch, e.t1(), e.t2()));
   }
 
-  const object_ptr<Exception> to_Exception(const type_error::bad_type_check& e)
+  object_ptr<Exception> to_Exception(const type_error::bad_type_check& e)
   {
     return make_object<Exception>(
       e.what(),
