@@ -36,11 +36,23 @@ TEST_CASE("pointer construct")
   SECTION("guided")
   {
     {
+      // deduction guide for `object_ptr()` does not work on gcc until GCC9.
+      // bug tracker URL: https://gcc.gnu.org/bugzilla/show_bug.cgi?id=81486
+#if !defined(__GNUC__)
       auto p = object_ptr();
+      REQUIRE(!p);
+#endif
+    }
+    {
+      auto p = object_ptr {};
       REQUIRE(!p);
     }
     {
       auto p = object_ptr(nullptr);
+      REQUIRE(!p);
+    }
+    {
+      auto p = object_ptr {nullptr};
       REQUIRE(!p);
     }
   }
