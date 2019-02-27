@@ -69,6 +69,14 @@ endif()
 
 # use UBsan
 if(UNIX AND TORI_COMPILER_LLVM)
+  message(STATUS "UB Sanitizer is enabled")
+  set(TORI_COMPILE_FLAGS ${TORI_COMPILE_FLAGS} -fsanitize=undefined)
+  set(TORI_LINK_FLAGS ${TORI_LINK_FLAGS} -fsanitize=undefined)
+endif()
+
+# use UBsan
+if(UNIX AND TORI_COMPILER_GNU)
+  message(STATUS "UB Sanitizer is enabled")
   set(TORI_COMPILE_FLAGS ${TORI_COMPILE_FLAGS} -fsanitize=undefined)
   set(TORI_LINK_FLAGS ${TORI_LINK_FLAGS} -fsanitize=undefined)
 endif()
