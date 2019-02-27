@@ -203,7 +203,9 @@ namespace TORI_NS::detail {
       constexpr auto spec = normalize_specifier(type_c<T>);
       constexpr auto tp = get_proxy_type(spec);
       // get term through proxy type
-      return object_type_impl(get_term(tp));
+      // TODO: use `consteval` in C++20
+      constexpr auto ptr = object_type_impl(get_term(tp));
+      return ptr;
     }
 
   } // namespace interface

@@ -314,11 +314,15 @@ namespace TORI_NS::detail {
     object_ptr(nullptr_t)->object_ptr<Object>;
     // default
     object_ptr()->object_ptr<Object>;
+
+    // ------------------------------------------
+    // make_object
+
     /// make object
     template <class T, class... Args>
-    object_ptr<T> make_object(Args&&... args)
+    auto make_object(Args&&... args)
     {
-      return new T(std::forward<Args>(args)...);
+      return object_ptr<T>(new T(std::forward<Args>(args)...));
     }
 
   } // namespace interface

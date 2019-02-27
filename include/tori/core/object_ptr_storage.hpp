@@ -45,6 +45,7 @@ namespace TORI_NS::detail {
     /// set new pointer tag flag
     void set_pointer_tag(pointer_tags tag) noexcept
     {
+      // TODO: use std::declare_reachable for tagged pointer?
       uint64_t tmp;
       std::memcpy(&tmp, &m_tag, sizeof(tmp));
       tmp &= static_cast<uint64_t>(pointer_tags::clear_mask);
