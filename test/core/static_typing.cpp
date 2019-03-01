@@ -296,7 +296,7 @@ void test_type_of()
   {
     // fix ((int -> bool) -> (int -> bool)) = int -> bool
     constexpr auto ff = type_c<tm_apply<
-      tm_fix<Fix>,
+      tm_closure<tm_closure<tm_var<class X>, tm_var<class X>>, tm_var<class X>>,
       tm_closure<
         tm_closure<tm_value<int>, tm_value<bool>>,
         tm_value<int>,
