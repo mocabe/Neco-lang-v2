@@ -3,7 +3,6 @@
 
 #pragma once
 
-#include "fix.hpp"
 #include "value_cast.hpp"
 #include "function.hpp"
 #include "eval_error.hpp"
@@ -41,42 +40,13 @@ namespace TORI_NS::detail {
       if (apply->evaluated()) {
         return apply->get_cache();
       }
-      // reduce app
+      // whnf
       auto app = eval_impl(apply->app());
       // detect exception
       if (has_exception_tag(app))
         throw result_error::exception_result(std::move(app));
-      // whnf
+      // arg
       const auto& arg = apply->arg();
-      // Fix
-      if (has_type<Fix>(app)) {
-        auto f = eval_impl(arg);
-        // detect exception
-        if (has_exception_tag(f))
-          throw result_error::exception_result(std::move(f));
-        // check arg
-        if (unlikely(has_value_type(f))) {
-          throw eval_error::bad_fix();
-        }
-        // cast to closure
-        auto c = static_cast<const Closure<>*>(f.get());
-        // check arity
-        if (unlikely(c->arity() == 0)) {
-          throw eval_error::bad_fix();
-        }
-        // process
-        auto pap = clone(f);
-        auto cc = static_cast<const Closure<>*>(pap.get());
-        auto arity = --cc->arity();
-        cc->arg(arity) = obj;
-        if (arity == 0) {
-          auto eval_result = eval_impl(cc->code());
-          apply->set_cache(eval_result);
-          return eval_result;
-        } else {
-          return eval_impl(pap);
-        }
-      }
       // check app
       if (unlikely(has_value_type(app))) {
         throw eval_error::bad_apply();

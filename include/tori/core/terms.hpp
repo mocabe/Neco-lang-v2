@@ -44,12 +44,6 @@ namespace TORI_NS::detail {
   {
   };
 
-  /// tm_fix
-  template <class Tag>
-  struct tm_fix
-  {
-  };
-
   // ------------------------------------------
   // has_term
 
@@ -106,16 +100,6 @@ namespace TORI_NS::detail {
   struct meta_type<tm_value<Tag>>
   {
     using type = tm_value<Tag>;
-    constexpr auto tag() const
-    {
-      return type_c<Tag>;
-    }
-  };
-
-  template <class Tag>
-  struct meta_type<tm_fix<Tag>>
-  {
-    using type = tm_fix<Tag>;
     constexpr auto tag() const
     {
       return type_c<Tag>;
@@ -296,35 +280,6 @@ namespace TORI_NS::detail {
   constexpr auto has_tm_varvalue()
   {
     return is_varvalue(get_term<T>());
-  }
-
-  // ------------------------------------------
-  // is_tm_fix
-
-  template <class T>
-  struct is_tm_fix_impl
-  {
-    static constexpr auto value = false_c;
-  };
-
-  template <class Tag>
-  struct is_tm_fix_impl<tm_fix<Tag>>
-  {
-    static constexpr auto value = true_c;
-  };
-
-  // is_tm_fix
-  template <class T>
-  constexpr auto is_tm_fix(meta_type<T>)
-  {
-    return is_tm_fix_impl<T>::value;
-  }
-
-  // has_tm_fix
-  template <class T>
-  constexpr auto has_tm_fix()
-  {
-    return is_tm_fix(get_term<T>());
   }
 
   // ------------------------------------------

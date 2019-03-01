@@ -6,7 +6,6 @@
 #include "../config/config.hpp"
 #include "box.hpp"
 #include "type_gen.hpp"
-#include "fix.hpp"
 
 namespace TORI_NS::detail {
 

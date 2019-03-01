@@ -7,7 +7,6 @@
 #include "static_typing.hpp"
 #include "dynamic_typing.hpp"
 
-#include "fix.hpp"
 #include "apply.hpp"
 #include "string.hpp"
 

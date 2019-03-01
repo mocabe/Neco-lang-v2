@@ -433,48 +433,29 @@ namespace TORI_NS::detail {
     (void)enable_assert;
 
     if constexpr (is_tm_apply(term)) {
-      if constexpr (is_tm_fix(term.t1())) { // fix
+      // app
+      auto p1 = type_of_impl(term.t1(), gen, enable_assert);
+      auto t1 = p1.first();
+      auto g1 = p1.second();
+      if constexpr (is_error_type(t1)) {
+        return make_pair(t1, g1);
+      } else {
         // arg
-        auto p1 = type_of_impl(term.t2(), gen, enable_assert);
-        auto t1 = p1.first();
-        auto g1 = p1.second();
-        if constexpr (is_error_type(t1)) {
-          return make_pair(t1, g1);
+        auto p2 = type_of_impl(term.t2(), g1, enable_assert);
+        auto t2 = p2.first();
+        auto g2 = p2.second();
+        if constexpr (is_error_type(t2)) {
+          return make_pair(t2, g2);
         } else {
-          auto var = gen_var(g1);
-          auto g2 = nextgen(g1);
-          auto c = make_tuple(make_constr(t1, make_arrow(var, var)));
+          // type check subtree
+          auto var = gen_var(g2);
+          auto g3 = nextgen(g2);
+          auto c = make_tuple(make_constr(t1, make_arrow(t2, var)));
           auto s = unify(c, enable_assert);
           if constexpr (is_error_type(s))
-            return make_pair(s, g2);
+            return make_pair(s, g3);
           else
-            return make_pair(subst_all(s, var), g2);
-        }
-      } else { // general application
-        // app
-        auto p1 = type_of_impl(term.t1(), gen, enable_assert);
-        auto t1 = p1.first();
-        auto g1 = p1.second();
-        if constexpr (is_error_type(t1)) {
-          return make_pair(t1, g1);
-        } else {
-          // arg
-          auto p2 = type_of_impl(term.t2(), g1, enable_assert);
-          auto t2 = p2.first();
-          auto g2 = p2.second();
-          if constexpr (is_error_type(t2)) {
-            return make_pair(t2, g2);
-          } else {
-            // type check subtree
-            auto var = gen_var(g2);
-            auto g3 = nextgen(g2);
-            auto c = make_tuple(make_constr(t1, make_arrow(t2, var)));
-            auto s = unify(c, enable_assert);
-            if constexpr (is_error_type(s))
-              return make_pair(s, g3);
-            else
-              return make_pair(subst_all(s, var), g3);
-          }
+            return make_pair(subst_all(s, var), g3);
         }
       }
     } else if constexpr (is_tm_closure(term)) {

@@ -187,8 +187,6 @@ namespace TORI_NS::detail {
       return var_type_address(term);
     } else if constexpr (is_tm_varvalue(term)) {
       return var_type_address(term);
-    } else if constexpr (is_tm_fix(term)) {
-      return value_type_address(term);
     } else {
       static_assert(false_v<T>);
     }
