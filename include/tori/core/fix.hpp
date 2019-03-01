@@ -7,25 +7,51 @@
 
 #include "box.hpp"
 #include "type_gen.hpp"
+#include "function.hpp"
+#include "eval.hpp"
 
 namespace TORI_NS::detail {
 
-  struct FixValue;
+  class Fix_X;
 
   namespace interface {
 
-    /// Fix object
-    using Fix = Box<FixValue>;
+    // fix: (a -> a) -> a
+    // fix f = let x = f x in x
+    struct Fix : Function<Fix, closure<Fix_X, Fix_X>, Fix_X>
+    {
+      return_type code() const
+      {
+        // deduce argument closure
+        auto f = eval_arg<0>();
+
+        // check arity for safety
+        auto c = static_cast<const Closure<>*>(f.head());
+        if (c->arity() == 0) {
+          throw eval_error::bad_fix();
+        }
+
+        // create return value
+        auto pap = clone(f);
+        auto cc = static_cast<const Closure<>*>(pap.head());
+
+        // build self-referencing closure
+        auto arity = --cc->arity();
+        cc->arg(arity) = pap;
+
+        // avoid memory leak
+        cc->refcount.fetch_sub();
+
+        // eval
+        if (arity == 0)
+          pap = eval_impl(cc->code());
+
+        // return
+        return static_object_cast<const VarValueProxy<Fix_X>>(
+          object_ptr<const Object>(std::move(pap)));
+      }
+    };
 
   } // namespace interface
 
-  struct FixValue
-  {
-    /// overwrite term
-    static constexpr auto term = type_c<tm_fix<Fix>>;
-  };
-
 } // namespace TORI_NS::detail
-
-// Fix
-TORI_DECL_TYPE(Fix)

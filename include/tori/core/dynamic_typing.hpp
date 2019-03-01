@@ -397,20 +397,12 @@ namespace TORI_NS::detail {
   {
     // Apply
     if (auto apply = value_cast_if<const ApplyR>(obj)) {
-      if (auto fix = value_cast_if<const Fix>(apply->app())) {
-        auto _t1 = type_of_func_impl(apply->arg());
-        auto _t = genvar();
-        auto c = std::vector {Constr {_t1, new Type(ArrowType {_t, _t})}};
-        auto s = unify(std::move(c), obj);
-        return subst_type_all(s, _t); // FIXME should use genvar() instead of _t?
-      } else {
-        auto _t1 = type_of_func_impl(apply->app());
-        auto _t2 = type_of_func_impl(apply->arg());
-        auto _t = genvar();
-        auto c = std::vector {Constr {_t1, new Type(ArrowType {_t2, _t})}};
-        auto s = unify(std::move(c), obj);
-        return subst_type_all(s, _t);
-      }
+      auto _t1 = type_of_func_impl(apply->app());
+      auto _t2 = type_of_func_impl(apply->arg());
+      auto _t = genvar();
+      auto c = std::vector {Constr {_t1, new Type(ArrowType {_t2, _t})}};
+      auto s = unify(std::move(c), obj);
+      return subst_type_all(s, _t);
     }
     // value -> value
     if (has_value_type(obj))

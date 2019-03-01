@@ -15,9 +15,9 @@
 #include "core/exception.hpp"
 #include "core/type_error.hpp"
 #include "core/value_cast.hpp"
-#include "core/fix.hpp"
 #include "core/apply.hpp"
 #include "core/eval.hpp"
+#include "core/fix.hpp"
 
 // compatibility check
 #include "config/compatibility.hpp"
