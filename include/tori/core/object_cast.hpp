@@ -13,7 +13,8 @@ namespace TORI_NS::detail {
   template <class T, class U>
   [[nodiscard]] object_ptr<T> static_object_cast(const object_ptr<U>& obj)
   {
-    if (likely(!obj.is_static()))
+    // add refcount
+    if (likely(obj && !obj.is_static()))
       obj.head()->refcount.fetch_add();
 
     if constexpr (std::is_base_of_v<U, T> && sizeof(T) == sizeof(U))
