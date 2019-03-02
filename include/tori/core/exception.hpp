@@ -14,18 +14,18 @@ namespace TORI_NS::detail {
   ///
   /// Exception object holds a pointer to arbitary error value.
   /// This is useful to detect exception object with single type comparison.
-  struct ExceptionValue
+  struct exception_object_value
   {
     template <class T>
-    ExceptionValue(object_ptr<const String> msg, object_ptr<T> err)
+    exception_object_value(object_ptr<const String> msg, object_ptr<T> err)
       : message {std::move(msg)}
       , error_value {std::move(err)}
     {
     }
 
     template <class T>
-    ExceptionValue(const char* msg, object_ptr<T> err)
-      : ExceptionValue(make_object<String>(msg), std::move(err))
+    exception_object_value(const char* msg, object_ptr<T> err)
+      : exception_object_value(make_object<String>(msg), std::move(err))
     {
     }
 
@@ -38,7 +38,7 @@ namespace TORI_NS::detail {
   namespace interface {
 
     /// Exception
-    using Exception = Box<ExceptionValue>;
+    using Exception = Box<exception_object_value>;
 
   } // namespace interface
 
