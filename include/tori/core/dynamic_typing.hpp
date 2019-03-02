@@ -397,8 +397,9 @@ namespace TORI_NS::detail {
   {
     // Apply
     if (auto apply = value_cast_if<const Apply>(obj)) {
-      auto _t1 = type_of_func_impl(apply->app());
-      auto _t2 = type_of_func_impl(apply->arg());
+      auto& apply_storage = _get_storage(*apply);
+      auto _t1 = type_of_func_impl(apply_storage.app());
+      auto _t2 = type_of_func_impl(apply_storage.arg());
       auto _t = genvar();
       auto c = std::vector {Constr {_t1, new Type(arrow_type {_t2, _t})}};
       auto s = unify(std::move(c), obj);

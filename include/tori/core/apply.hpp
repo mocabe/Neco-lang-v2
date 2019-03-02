@@ -9,20 +9,24 @@
 
 namespace TORI_NS::detail {
 
-  /// value of Apply
-  class apply_object_value
+  struct apply_object_value_storage
   {
-  public:
-    template <
-      class App,
-      class Arg,
-      class = std::enable_if_t<
-        !std::is_same_v<std::decay_t<App>, apply_object_value>>>
-    apply_object_value(App&& app, Arg&& arg)
-      : m_app {std::forward<App>(app)}
-      , m_arg {std::forward<Arg>(arg)}
+    apply_object_value_storage(
+      object_ptr<const Object> app,
+      object_ptr<const Object> arg)
+      : m_app {std::move(app)}
+      , m_arg {std::move(arg)}
     {
     }
+
+    // clang-format off
+
+    apply_object_value_storage(const apply_object_value_storage&) = default;
+    apply_object_value_storage(apply_object_value_storage&&) = default;
+    apply_object_value_storage& operator=(const apply_object_value_storage&) = default;
+    apply_object_value_storage& operator=(apply_object_value_storage&&) = default;
+
+    // clang-format on
 
     const auto& app() const
     {
@@ -66,6 +70,39 @@ namespace TORI_NS::detail {
     /// when evaluated: result
     mutable object_ptr<const Object> m_arg;
   };
+
+  /// value of Apply
+  class apply_object_value : apply_object_value_storage
+  {
+    friend const apply_object_value_storage&   //
+      _get_storage(const apply_object_value&); //
+                                               //
+    friend apply_object_value_storage&         //
+      _get_storage(apply_object_value&);       //
+
+    using base = apply_object_value_storage;
+
+  public:
+    template <
+      class App,
+      class Arg,
+      class = std::enable_if_t<
+        !std::is_same_v<std::decay_t<App>, apply_object_value>>>
+    apply_object_value(App&& app, Arg&& arg)
+      : base {std::forward<App>(app), std::forward<Arg>(arg)}
+    {
+    }
+  };
+
+  const apply_object_value_storage& _get_storage(const apply_object_value& v)
+  {
+    return v;
+  }
+
+  apply_object_value_storage& _get_storage(apply_object_value& v)
+  {
+    return v;
+  }
 
   namespace interface {
 

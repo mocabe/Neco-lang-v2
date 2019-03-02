@@ -17,13 +17,15 @@ namespace TORI_NS::detail {
       copy_apply_graph(const object_ptr<const Object>& obj)
     {
       if (auto apply = value_cast_if<Apply>(obj)) {
+        auto& apply_storage = _get_storage(*apply);
         // return cached value
-        if (apply->evaluated()) {
-          return apply->get_cache(apply.head()->spinlock);
+        if (apply_storage.evaluated()) {
+          return apply_storage.get_cache(apply.head()->spinlock);
         }
         // create new apply
         return make_object<Apply>(
-          copy_apply_graph(apply->app()), copy_apply_graph(apply->arg()));
+          copy_apply_graph(apply_storage.app()),
+          copy_apply_graph(apply_storage.arg()));
       }
       return obj;
     }
@@ -36,17 +38,19 @@ namespace TORI_NS::detail {
   {
     // apply
     if (auto apply = value_cast_if<Apply>(obj)) {
+      // internal storage
+      auto& apply_storage = _get_storage(*apply);
       // graph reduction
-      if (apply->evaluated()) {
-        return apply->get_cache(apply.head()->spinlock);
+      if (apply_storage.evaluated()) {
+        return apply_storage.get_cache(apply.head()->spinlock);
       }
       // whnf
-      auto app = eval_impl(apply->app());
+      auto app = eval_impl(apply_storage.app());
       // detect exception
       if (has_exception_tag(app))
         throw result_error::exception_result(std::move(app));
       // arg
-      const auto& arg = apply->arg();
+      const auto& arg = apply_storage.arg();
       // check app
       if (unlikely(has_value_type(app))) {
         throw eval_error::bad_apply();
@@ -66,7 +70,7 @@ namespace TORI_NS::detail {
       if (arity == 0)
         pap = eval_impl(cc->code());
       // set cache
-      apply->set_cache(pap, apply.head()->spinlock);
+      apply_storage.set_cache(pap, apply.head()->spinlock);
       return pap;
     }
     // detect exception
