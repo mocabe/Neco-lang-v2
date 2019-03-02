@@ -44,14 +44,12 @@ namespace TORI_NS::detail {
   static_assert(sizeof(object_info_table) == 32);
   static_assert(offset_of_member(&object_info_table::obj_type) == 0);
   static_assert(offset_of_member(&object_info_table::obj_size) == 8);
-  static_assert(offset_of_member(&object_info_table::obj_ext_bytes) == 12);
   static_assert(offset_of_member(&object_info_table::destroy) == 16);
   static_assert(offset_of_member(&object_info_table::clone) == 24);
 
   // closure_info_table
   static_assert(sizeof(closure_info_table) == 48);
   static_assert(offset_of_member(&closure_info_table::n_args) == 32);
-  static_assert(offset_of_member(&closure_info_table::clsr_ext_bytes) == 36);
   static_assert(offset_of_member(&closure_info_table::code) == 40);
 
 #if !defined(OBJECT_HEADER_EXTEND_BYTES)

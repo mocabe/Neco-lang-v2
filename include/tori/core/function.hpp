@@ -18,17 +18,6 @@
 
 #include "value_cast.hpp"
 
-/// Size of additional space in closure header
-#if defined(CLOSURE_HEADER_EXTEND_BYTES)
-namespace TORI_NS::detail {
-  constexpr uint64_t closure_header_extend_bytes = CLOSURE_HEADER_EXTEND_BYTES;
-}
-#else
-namespace TORI_NS::detail {
-  constexpr uint64_t closure_header_extend_bytes = 0;
-}
-#endif
-
 namespace TORI_NS::detail {
 
   // ------------------------------------------
@@ -45,9 +34,7 @@ namespace TORI_NS::detail {
   struct closure_info_table : object_info_table
   {
     /// Number of arguments
-    const uint32_t n_args;
-    /// Size of extended header
-    const uint32_t clsr_ext_bytes;
+    const uint64_t n_args;
     /// vtable for code
     object_ptr<const Object> (*code)(const Closure<>*) noexcept;
   };
@@ -57,11 +44,6 @@ namespace TORI_NS::detail {
   {
     /// Arity of this closure.
     mutable uint64_t m_arity;
-
-#if defined(CLOSURE_HEADER_EXTEND_BYTES)
-    /// additional buffer storage
-    std::byte clsr_ext_buffer[closure_header_extend_bytes] = {};
-#endif
 
     /// Get number of args
     auto n_args() const noexcept

@@ -18,13 +18,6 @@
 
 namespace TORI_NS::detail {
 
-#if defined(OBJECT_HEADER_EXTEND_BYTES)
-  constexpr uint64_t object_header_extend_bytes = OBJECT_HEADER_EXTEND_BYTES;
-#else
-  /// size of additional buffer in heap object header
-  constexpr uint64_t object_header_extend_bytes = 0;
-#endif
-
   // value type
   struct ValueType;
   // arrow type
@@ -78,14 +71,10 @@ namespace TORI_NS::detail {
       mutable atomic_spinlock<uint8_t> spinlock = {/*false*/};
 
       /* 3byte: padding */
+      std::byte reserved[3] = {};
 
       /// 8byte: pointer to info table
       const object_info_table* info_table;
-
-#if defined(OBJECT_HEADER_EXTEND_BYTES)
-      /// additional buffer storage
-      std::byte obj_ext_buffer[object_header_extend_bytes] = {};
-#endif
     };
 
     static_assert(std::is_standard_layout_v<Object>);
