@@ -44,7 +44,7 @@ namespace TORI_NS::detail {
 
   } // namespace interface
 
-  struct BadValueCastValue
+  struct bad_value_object_value
   {
     /// cast from
     object_ptr<const Type> from;
@@ -55,7 +55,7 @@ namespace TORI_NS::detail {
   namespace interface {
 
     /// Exception object for bad_value_cast exception
-    using BadValueCast = Box<detail::BadValueCastValue>;
+    using BadValueCast = Box<bad_value_object_value>;
 
   } // namespace interface
 
