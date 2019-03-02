@@ -19,7 +19,7 @@ namespace TORI_NS::detail {
       if (auto apply = value_cast_if<ApplyR>(obj)) {
         // return cached value
         if (apply->evaluated()) {
-          return apply->get_cache();
+          return apply->get_cache(apply.head()->spinlock);
         }
         // create new apply
         return new ApplyR(
@@ -38,7 +38,7 @@ namespace TORI_NS::detail {
     if (auto apply = value_cast_if<ApplyR>(obj)) {
       // graph reduction
       if (apply->evaluated()) {
-        return apply->get_cache();
+        return apply->get_cache(apply.head()->spinlock);
       }
       // whnf
       auto app = eval_impl(apply->app());
@@ -64,10 +64,10 @@ namespace TORI_NS::detail {
       cc->arg(arity) = arg;
       if (arity == 0) {
         auto eval_result = eval_impl(cc->code());
-        apply->set_cache(eval_result);
+        apply->set_cache(eval_result, apply.head()->spinlock);
         return eval_result;
       } else {
-        apply->set_cache(pap);
+        apply->set_cache(pap, apply.head()->spinlock);
         return eval_impl(pap);
       }
     }

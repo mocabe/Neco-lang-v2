@@ -40,15 +40,19 @@ namespace TORI_NS::detail {
       return m_app == nullptr;
     }
 
-    const auto& get_cache() const
+    const auto& get_cache(atomic_spinlock<uint8_t>& lock) const
     {
       assert(evaluated());
+      std::lock_guard lg {lock};
       return m_arg;
     }
 
-    void set_cache(const object_ptr<const Object>& obj) const
+    void set_cache(
+      const object_ptr<const Object>& obj,
+      atomic_spinlock<uint8_t>& lock) const
     {
       assert(!evaluated());
+      std::lock_guard lg {lock};
       m_app = nullptr;
       m_arg = obj;
     }
