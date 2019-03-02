@@ -19,11 +19,11 @@
 namespace TORI_NS::detail {
 
   // value type
-  struct ValueType;
+  struct value_type;
   // arrow type
-  struct ArrowType;
+  struct arrow_type;
   // type variable
-  struct VarType;
+  struct var_type;
   // TypeValue
   class type_object_value;
 

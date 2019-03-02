@@ -18,17 +18,17 @@ namespace TORI_NS::detail {
     std::vector<object_ptr<const Type>>& stack)
   {
     if (is_value_type(type))
-      return get<ValueType>(*type).c_str();
+      return get<value_type>(*type).c_str();
     if (is_arrow_type(type))
-      return "(" +                                                   //
-             to_string_impl(get<ArrowType>(*type).captured, stack) + //
-             " -> " +                                                //
-             to_string_impl(get<ArrowType>(*type).returns, stack) +  //
-             ")";                                                    //
-    if (is_vartype(type)) {
-      return "Var[" +                                            //
-             std::to_string(get_if<VarType>(type.value())->id) + //
-             "]";                                                //
+      return "(" +                                                    //
+             to_string_impl(get<arrow_type>(*type).captured, stack) + //
+             " -> " +                                                 //
+             to_string_impl(get<arrow_type>(*type).returns, stack) +  //
+             ")";                                                     //
+    if (is_var_type(type)) {
+      return "Var[" +                                             //
+             std::to_string(get_if<var_type>(type.value())->id) + //
+             "]";                                                 //
     }
 
     assert(false);

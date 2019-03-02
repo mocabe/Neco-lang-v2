@@ -44,7 +44,7 @@ namespace TORI_NS::detail {
     /// is_value_type
     [[nodiscard]] inline bool is_value_type(const object_ptr<const Type>& tp)
     {
-      if (get_if<ValueType>(tp.value()))
+      if (get_if<value_type>(tp.value()))
         return true;
       else
         return false;
@@ -53,16 +53,16 @@ namespace TORI_NS::detail {
     /// is_arrow_type
     [[nodiscard]] inline bool is_arrow_type(const object_ptr<const Type>& tp)
     {
-      if (get_if<ArrowType>(tp.value()))
+      if (get_if<arrow_type>(tp.value()))
         return true;
       else
         return false;
     }
 
-    /// is_vartype
-    [[nodiscard]] inline bool is_vartype(const object_ptr<const Type>& tp)
+    /// is_var_type
+    [[nodiscard]] inline bool is_var_type(const object_ptr<const Type>& tp)
     {
-      if (get_if<VarType>(tp.value()))
+      if (get_if<var_type>(tp.value()))
         return true;
       else
         return false;
@@ -82,10 +82,10 @@ namespace TORI_NS::detail {
       return is_arrow_type(get_type(obj));
     }
 
-    /// has_vartype
-    [[nodiscard]] inline bool has_vartype(const object_ptr<const Object>& obj)
+    /// has_var_type
+    [[nodiscard]] inline bool has_var_type(const object_ptr<const Object>& obj)
     {
-      return is_vartype(get_type(obj));
+      return is_var_type(get_type(obj));
     }
 
   } // namespace interface
@@ -93,13 +93,13 @@ namespace TORI_NS::detail {
   [[nodiscard]] inline object_ptr<const Type>
     copy_type_impl(const object_ptr<const Type>& ptp)
   {
-    if (get_if<ValueType>(ptp.value()))
+    if (get_if<value_type>(ptp.value()))
       return ptp;
-    if (get_if<VarType>(ptp.value()))
+    if (get_if<var_type>(ptp.value()))
       return ptp;
-    if (auto arrow = get_if<ArrowType>(ptp.value())) {
-      auto ret = new Type(ArrowType {copy_type_impl(arrow->captured),
-                                     copy_type_impl(arrow->returns)});
+    if (auto arrow = get_if<arrow_type>(ptp.value())) {
+      auto ret = new Type(arrow_type {copy_type_impl(arrow->captured),
+                                      copy_type_impl(arrow->returns)});
       return ret;
     }
 
@@ -127,21 +127,21 @@ namespace TORI_NS::detail {
     const auto& left = *lhs;
     const auto& right = *rhs;
 
-    if (auto lvar = get_if<ValueType>(&left)) {
-      if (auto rvar = get_if<ValueType>(&right))
-        return ValueType::compare(*lvar, *rvar);
+    if (auto lvar = get_if<value_type>(&left)) {
+      if (auto rvar = get_if<value_type>(&right))
+        return value_type::compare(*lvar, *rvar);
       else
         return false;
     }
-    if (auto larr = get_if<ArrowType>(&left)) {
-      if (auto rarr = get_if<ArrowType>(&right))
+    if (auto larr = get_if<arrow_type>(&left)) {
+      if (auto rarr = get_if<arrow_type>(&right))
         return same_type_impl(larr->captured, rarr->captured) &&
                same_type_impl(larr->returns, rarr->returns);
       else
         return false;
     }
-    if (auto lany = get_if<VarType>(&left)) {
-      if (auto rany = get_if<VarType>(&right))
+    if (auto lany = get_if<var_type>(&left)) {
+      if (auto rany = get_if<var_type>(&right))
         return lany->id == rany->id;
       else
         return false;
@@ -182,21 +182,21 @@ namespace TORI_NS::detail {
   {
     auto& from = ta.from;
     auto& to = ta.to;
-    if (get_if<ValueType>(in.value())) {
+    if (get_if<value_type>(in.value())) {
       if (same_type(in, from))
         return to;
       return in;
     }
-    if (get_if<VarType>(in.value())) {
+    if (get_if<var_type>(in.value())) {
       if (same_type(in, from))
         return to;
       return in;
     }
-    if (auto arrow = get_if<ArrowType>(in.value())) {
+    if (auto arrow = get_if<arrow_type>(in.value())) {
       if (same_type(in, from))
         return to;
-      return new Type(ArrowType {subst_type_impl(ta, arrow->captured),
-                                 subst_type_impl(ta, arrow->returns)});
+      return new Type(arrow_type {subst_type_impl(ta, arrow->captured),
+                                  subst_type_impl(ta, arrow->returns)});
     }
 
     unreachable();
@@ -271,11 +271,11 @@ namespace TORI_NS::detail {
   [[nodiscard]] inline bool
     occurs(const object_ptr<const Type>& x, const object_ptr<const Type>& t)
   {
-    if (get_if<ValueType>(t.value()))
+    if (get_if<value_type>(t.value()))
       return false;
-    if (get_if<VarType>(t.value()))
+    if (get_if<var_type>(t.value()))
       return same_type(x, t);
-    if (auto arrow = get_if<ArrowType>(t.value()))
+    if (auto arrow = get_if<arrow_type>(t.value()))
       return occurs(x, arrow->captured) || occurs(x, arrow->returns);
 
     unreachable();
@@ -291,7 +291,7 @@ namespace TORI_NS::detail {
       cs.pop_back();
       if (same_type(c.t1, c.t2))
         continue;
-      if (is_vartype(c.t2)) {
+      if (is_var_type(c.t2)) {
         if (likely(!occurs(c.t2, c.t1))) {
           auto arr = TyArrow {c.t2, c.t1};
           cs = subst_constr_all(arr, cs);
@@ -300,7 +300,7 @@ namespace TORI_NS::detail {
         }
         throw type_error::circular_constraint(src, c.t1);
       }
-      if (is_vartype(c.t1)) {
+      if (is_var_type(c.t1)) {
         if (likely(!occurs(c.t1, c.t2))) {
           auto arr = TyArrow {c.t1, c.t2};
           cs = subst_constr_all(arr, cs);
@@ -309,8 +309,8 @@ namespace TORI_NS::detail {
         }
         throw type_error::circular_constraint(src, c.t1);
       }
-      if (auto arrow1 = get_if<ArrowType>(c.t1.value())) {
-        if (auto arrow2 = get_if<ArrowType>(c.t2.value())) {
+      if (auto arrow1 = get_if<arrow_type>(c.t1.value())) {
+        if (auto arrow2 = get_if<arrow_type>(c.t2.value())) {
           cs.push_back({arrow1->captured, arrow2->captured});
           cs.push_back({arrow1->returns, arrow2->returns});
           continue;
@@ -337,8 +337,8 @@ namespace TORI_NS::detail {
 
   [[nodiscard]] inline object_ptr<const Type> genvar()
   {
-    auto var = make_object<Type>(VarType {});
-    get_if<VarType>(var.value())->id = uintptr_t(var.get());
+    auto var = make_object<Type>(var_type {});
+    get_if<var_type>(var.value())->id = uintptr_t(var.get());
     return object_ptr<const Type>(var);
   }
 
@@ -348,7 +348,7 @@ namespace TORI_NS::detail {
   {
     if (is_value_type(tp))
       return;
-    if (is_vartype(tp)) {
+    if (is_var_type(tp)) {
       return [&]() {
         for (auto&& v : vars) {
           if (same_type(v, tp))
@@ -358,8 +358,8 @@ namespace TORI_NS::detail {
       }();
     }
     if (is_arrow_type(tp)) {
-      vars_impl(get_if<ArrowType>(tp.value())->captured, vars);
-      vars_impl(get_if<ArrowType>(tp.value())->returns, vars);
+      vars_impl(get_if<arrow_type>(tp.value())->captured, vars);
+      vars_impl(get_if<arrow_type>(tp.value())->returns, vars);
       return;
     }
 
@@ -400,7 +400,7 @@ namespace TORI_NS::detail {
       auto _t1 = type_of_func_impl(apply->app());
       auto _t2 = type_of_func_impl(apply->arg());
       auto _t = genvar();
-      auto c = std::vector {Constr {_t1, new Type(ArrowType {_t2, _t})}};
+      auto c = std::vector {Constr {_t1, new Type(arrow_type {_t2, _t})}};
       auto s = unify(std::move(c), obj);
       return subst_type_all(s, _t);
     }
@@ -408,7 +408,7 @@ namespace TORI_NS::detail {
     if (has_value_type(obj))
       return get_type(obj);
     // var -> var
-    if (has_vartype(obj))
+    if (has_var_type(obj))
       return get_type(obj);
     // arrow -> genpoly arrow
     if (has_arrow_type(obj))

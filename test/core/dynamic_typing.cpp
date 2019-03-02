@@ -21,10 +21,10 @@ TEST_CASE("subst_type")
   {
     auto var = genvar();
     auto tyarrow = TyArrow {var, object_type<Int>()};
-    auto type = make_object<Type>(ArrowType {var, object_type<Int>()});
+    auto type = make_object<Type>(arrow_type {var, object_type<Int>()});
     REQUIRE(same_type(
       subst_type(tyarrow, type),
-      make_object<Type>(ArrowType {object_type<Int>(), object_type<Int>()})));
+      make_object<Type>(arrow_type {object_type<Int>(), object_type<Int>()})));
   }
 }
 
@@ -36,14 +36,14 @@ TEST_CASE("subst_type_all")
     std::vector tyarrows = {TyArrow {X, object_type<Int>()},
                             TyArrow {Y, object_type<Float>()}};
     auto type = make_object<Type>(
-      ArrowType {new Type(ArrowType {Y, X}),
-                 new Type(ArrowType {object_type<Float>(), Y})});
+      arrow_type {new Type(arrow_type {Y, X}),
+                  new Type(arrow_type {object_type<Float>(), Y})});
 
     REQUIRE(same_type(
       subst_type_all(tyarrows, type),
-      make_object<Type>(ArrowType {
-        new Type(ArrowType {object_type<Float>(), object_type<Int>()}),
-        new Type(ArrowType {object_type<Float>(), object_type<Float>()})})));
+      make_object<Type>(arrow_type {
+        new Type(arrow_type {object_type<Float>(), object_type<Int>()}),
+        new Type(arrow_type {object_type<Float>(), object_type<Float>()})})));
   }
 }
 
@@ -107,7 +107,7 @@ TEST_CASE("unify")
   SECTION("[X=Int, Y=X->X]")
   {
     std::vector cs = {Constr {X, object_type<Int>()},
-                      Constr {Y, new Type(ArrowType {X, X})}};
+                      Constr {Y, new Type(arrow_type {X, X})}};
     std::vector result = unify(cs, nullptr);
 
     SECTION("reunify")
@@ -122,8 +122,8 @@ TEST_CASE("unify")
     {
       std::vector ans = {
         TyArrow {X, object_type<Int>()},
-        TyArrow {Y,
-                 new Type(ArrowType {object_type<Int>(), object_type<Int>()})}};
+        TyArrow {
+          Y, new Type(arrow_type {object_type<Int>(), object_type<Int>()})}};
 
       print_tyarrows(result);
       print_tyarrows(ans);
@@ -134,8 +134,8 @@ TEST_CASE("unify")
   SECTION("[Int-Int=X->Y]")
   {
     std::vector cs = {
-      Constr {new Type(ArrowType {object_type<Int>(), object_type<Int>()}),
-              new Type(ArrowType {X, Y})}};
+      Constr {new Type(arrow_type {object_type<Int>(), object_type<Int>()}),
+              new Type(arrow_type {X, Y})}};
     std::vector result = unify(cs, nullptr);
 
     SECTION("reunify")
@@ -159,8 +159,8 @@ TEST_CASE("unify")
   SECTION("[Int->Int=X->Y]")
   {
     std::vector cs = {
-      Constr {new Type(ArrowType {X, Y}), new Type(ArrowType {Y, Z})},
-      Constr {Z, new Type(ArrowType {U, W})}};
+      Constr {new Type(arrow_type {X, Y}), new Type(arrow_type {Y, Z})},
+      Constr {Z, new Type(arrow_type {U, W})}};
     auto result = unify(cs, nullptr);
 
     SECTION("reunify")
@@ -173,9 +173,9 @@ TEST_CASE("unify")
 
     SECTION("eq")
     {
-      std::vector ans = {TyArrow {X, new Type(ArrowType {U, W})},
-                         TyArrow {Y, new Type(ArrowType {U, W})},
-                         TyArrow {Z, new Type(ArrowType {U, W})}};
+      std::vector ans = {TyArrow {X, new Type(arrow_type {U, W})},
+                         TyArrow {Y, new Type(arrow_type {U, W})},
+                         TyArrow {Z, new Type(arrow_type {U, W})}};
       print_tyarrows(result);
       print_tyarrows(ans);
       CHECK(eq_arrows(result, ans));
@@ -194,7 +194,7 @@ TEST_CASE("type_of")
 {
   SECTION("type")
   {
-    auto t = make_object<Type>(ValueType {});
+    auto t = make_object<Type>(value_type {});
     auto type = type_of(t);
     REQUIRE(same_type(type, object_type<Type>()));
   }
@@ -345,20 +345,20 @@ TEST_CASE("type_of")
     };
 
 #if defined(__clang__)
-  class X;
-  class Y;
+    class X;
+    class Y;
 #endif
 
-  struct C : Function<
-               C,
-               closure<forall<class X>, forall<class Y>>,
-               forall<class X>,
-               forall<class Y>>
-  {
-    return_type code() const
+    struct C : Function<
+                 C,
+                 closure<forall<class X>, forall<class Y>>,
+                 forall<class X>,
+                 forall<class Y>>
     {
-    }
-  };
+      return_type code() const
+      {
+      }
+    };
 
     auto a = make_object<A>();
     auto b = make_object<B>();

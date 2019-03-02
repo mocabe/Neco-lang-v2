@@ -357,7 +357,7 @@ namespace TORI_NS::detail {
   }
 
   // ------------------------------------------
-  // is_vartype
+  // is_var_type
 
   template <class T>
   struct is_var_type_impl

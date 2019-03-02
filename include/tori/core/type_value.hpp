@@ -14,7 +14,7 @@ namespace TORI_NS::detail {
   // TypeValue union values
 
   /// Value type
-  struct ValueType
+  struct value_type
   {
     /// Max name length
     static constexpr uint64_t max_name_size = 32;
@@ -30,7 +30,7 @@ namespace TORI_NS::detail {
     }
 
     /// compare two value types
-    static bool compare(const ValueType& lhs, const ValueType& rhs)
+    static bool compare(const value_type& lhs, const value_type& rhs)
     {
       if constexpr (has_AVX2 && max_name_size == 32) {
         // AVX2
@@ -76,7 +76,7 @@ namespace TORI_NS::detail {
   };
 
   /// Arrow type
-  struct ArrowType
+  struct arrow_type
   {
     /// argument type
     object_ptr<const Type> captured;
@@ -85,7 +85,7 @@ namespace TORI_NS::detail {
   };
 
   /// Any type
-  struct VarType
+  struct var_type
   {
     /// unique id for VarTpye object
     uint64_t id;
@@ -101,19 +101,19 @@ namespace TORI_NS::detail {
     type_object_value_storage() = delete;
 
     // initializers
-    type_object_value_storage(ValueType t)
+    type_object_value_storage(value_type t)
       : value {std::move(t)}
       , index {value_index}
     {
     }
 
-    type_object_value_storage(ArrowType t)
+    type_object_value_storage(arrow_type t)
       : arrow {std::move(t)}
       , index {arrow_index}
     {
     }
 
-    type_object_value_storage(VarType t)
+    type_object_value_storage(var_type t)
       : var {std::move(t)}
       , index {var_index}
     {
@@ -141,21 +141,21 @@ namespace TORI_NS::detail {
     {
       // call destructor
       if (index == value_index)
-        value.~ValueType();
+        value.~value_type();
       if (index == arrow_index)
-        arrow.~ArrowType();
+        arrow.~arrow_type();
       if (index == var_index)
-        var.~VarType();
+        var.~var_type();
     }
 
     template <class T>
     static constexpr uint64_t type_index()
     {
-      if constexpr (std::is_same_v<std::decay_t<T>, ValueType>) {
+      if constexpr (std::is_same_v<std::decay_t<T>, value_type>) {
         return value_index;
-      } else if constexpr (std::is_same_v<std::decay_t<T>, ArrowType>) {
+      } else if constexpr (std::is_same_v<std::decay_t<T>, arrow_type>) {
         return arrow_index;
-      } else if constexpr (std::is_same_v<std::decay_t<T>, VarType>) {
+      } else if constexpr (std::is_same_v<std::decay_t<T>, var_type>) {
         return var_index;
       } else {
         static_assert(false_v<T>);
@@ -170,9 +170,9 @@ namespace TORI_NS::detail {
     // 16 byte union
     union
     {
-      ValueType value;
-      ArrowType arrow;
-      VarType var;
+      value_type value;
+      arrow_type arrow;
+      var_type var;
     };
 
     // 8 byte index
@@ -197,26 +197,24 @@ namespace TORI_NS::detail {
     using base = type_object_value_storage;
 
   public:
-
     /// default ctor is disabled
     type_object_value() = delete;
 
     // initializers
-    type_object_value(ValueType t)
+    type_object_value(value_type t)
       : base {t}
     {
     }
 
-    type_object_value(ArrowType t)
+    type_object_value(arrow_type t)
       : base {t}
     {
     }
 
-    type_object_value(VarType t)
+    type_object_value(var_type t)
       : base {t}
     {
     }
-
   };
 
   const type_object_value_storage& _get_storage(const type_object_value& v)

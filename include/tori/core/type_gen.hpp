@@ -93,11 +93,12 @@ namespace TORI_NS::detail {
 
   /// convert constexpr char array to buffer type for value type
   template <uint64_t N>
-  constexpr ValueType::buffer_type create_value_type_name(char const (&name)[N])
+  constexpr value_type::buffer_type
+    create_value_type_name(char const (&name)[N])
   {
-    auto tmp = ValueType::buffer_type {};
+    auto tmp = value_type::buffer_type {};
     // if you want to expand maximum length of type name,
-    // change ValueType::max_name_size and re-compile everything.
+    // change value_type::max_name_size and re-compile everything.
     static_assert(N <= tmp.size(), "Name of value type is too long.");
     for (uint64_t i = 0; i < N; ++i) {
       tmp[i] = name[i];
@@ -114,7 +115,7 @@ namespace TORI_NS::detail {
 
   template <class T>
   const Type value_type_initializer<T>::type {static_construct,
-                                              ValueType {&value_type_name<T>}};
+                                              value_type {&value_type_name<T>}};
 
   // ------------------------------------------
   // arrow type
@@ -140,13 +141,13 @@ namespace TORI_NS::detail {
   template <class T, class... Ts>
   const Type arrow_type_initializer<T, Ts...>::type {
     static_construct,
-    ArrowType {object_type_impl(type_c<T>),
-               &arrow_type_initializer<Ts...>::type}};
+    arrow_type {object_type_impl(type_c<T>),
+                &arrow_type_initializer<Ts...>::type}};
 
   template <class T1, class T2>
   const Type arrow_type_initializer<T1, T2>::type {
     static_construct,
-    ArrowType {object_type_impl(type_c<T1>), object_type_impl(type_c<T2>)}};
+    arrow_type {object_type_impl(type_c<T1>), object_type_impl(type_c<T2>)}};
 
   // ------------------------------------------
   // var type
@@ -171,7 +172,7 @@ namespace TORI_NS::detail {
   template <class T>
   const Type var_type_initializer<T>::type {
     static_construct,
-    VarType {uint64_t {std::uintptr_t(id)}}};
+    var_type {uint64_t {std::uintptr_t(id)}}};
 
   // ------------------------------------------
   // constexpr version of object_type type
@@ -207,7 +208,6 @@ namespace TORI_NS::detail {
     }
 
   } // namespace interface
-
 
   // ------------------------------------------
   // assume_object_type
