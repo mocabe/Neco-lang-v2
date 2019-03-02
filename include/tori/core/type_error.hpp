@@ -23,8 +23,8 @@ namespace TORI_NS::detail {
 
   }
 
-  /// TypeErrorValue
-  struct TypeErrorValue
+  /// type_error_object_value
+  struct type_error_object_value
   {
     /// type
     type_error_type error_type;
@@ -44,7 +44,7 @@ namespace TORI_NS::detail {
   namespace interface {
 
     // TypeError
-    using TypeError = Box<TypeErrorValue>;
+    using TypeError = Box<type_error_object_value>;
 
   } // namespace interface
 
