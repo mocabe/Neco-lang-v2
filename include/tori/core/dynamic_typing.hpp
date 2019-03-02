@@ -396,7 +396,7 @@ namespace TORI_NS::detail {
     type_of_func_impl(const object_ptr<const Object>& obj)
   {
     // Apply
-    if (auto apply = value_cast_if<const ApplyR>(obj)) {
+    if (auto apply = value_cast_if<const Apply>(obj)) {
       auto _t1 = type_of_func_impl(apply->app());
       auto _t2 = type_of_func_impl(apply->arg());
       auto _t = genvar();

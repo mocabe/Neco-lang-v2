@@ -241,9 +241,9 @@ TEST_CASE("type_of")
         REQUIRE(same_type(type, object_type<Double>()));
       }
 
-      SECTION("ApplyR")
+      SECTION("Apply")
       {
-        object_ptr app = make_object<ApplyR>(a, i);
+        object_ptr app = make_object<Apply>(a, i);
         auto type = type_of(app);
         REQUIRE(same_type(type, object_type<Double>()));
       }

@@ -9,7 +9,7 @@
 
 namespace TORI_NS::detail {
 
-  /// value of ApplyR
+  /// value of Apply
   class apply_object_value
   {
   public:
@@ -70,7 +70,7 @@ namespace TORI_NS::detail {
   namespace interface {
 
     /// runtime apply object
-    using ApplyR = Box<apply_object_value>;
+    using Apply = Box<apply_object_value>;
 
   } // namespace interface
 
@@ -78,26 +78,26 @@ namespace TORI_NS::detail {
 
     /// compile time apply object
     template <class App, class Arg>
-    struct Apply : ApplyR
+    struct TApply : Apply
     {
       /// base
-      using base = ApplyR;
+      using base = Apply;
       /// term
       static constexpr auto term =
         make_tm_apply(get_term<App>(), get_term<Arg>());
 
       // clang-format off
 
-      Apply(object_ptr<App> ap, object_ptr<Arg> ar) 
+      TApply(object_ptr<App> ap, object_ptr<Arg> ar) 
         : base(std::move(ap), std::move(ar)) {}
 
-      Apply(App* ap, Arg* ar) 
+      TApply(App* ap, Arg* ar) 
         : base(object_ptr<const Object>(ap), object_ptr<const Object>(ar)) {}
 
-      Apply(App* ap, object_ptr<Arg> ar) 
+      TApply(App* ap, object_ptr<Arg> ar) 
         : base(ap, std::move(ar)) {}
 
-      Apply(object_ptr<App> ap, Arg* ar) 
+      TApply(object_ptr<App> ap, Arg* ar) 
         : base(std::move(ap), ar) {}
 
       // clang-format on
@@ -138,12 +138,12 @@ namespace TORI_NS::detail {
     {
       // use {} to workaround gcc bug (81486?)
       return object_ptr(
-        new Apply {std::forward<T1>(lhs), std::forward<T2>(rhs)});
+        new TApply {std::forward<T1>(lhs), std::forward<T2>(rhs)});
     }
 
   } // namespace interface
 
 } // namespace TORI_NS::detail
 
-// ApplyR
-TORI_DECL_TYPE(ApplyR)
+// Apply
+TORI_DECL_TYPE(Apply)

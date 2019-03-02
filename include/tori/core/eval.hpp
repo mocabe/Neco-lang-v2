@@ -16,13 +16,13 @@ namespace TORI_NS::detail {
     [[nodiscard]] inline object_ptr<const Object>
       copy_apply_graph(const object_ptr<const Object>& obj)
     {
-      if (auto apply = value_cast_if<ApplyR>(obj)) {
+      if (auto apply = value_cast_if<Apply>(obj)) {
         // return cached value
         if (apply->evaluated()) {
           return apply->get_cache(apply.head()->spinlock);
         }
         // create new apply
-        return new ApplyR(
+        return make_object<Apply>(
           copy_apply_graph(apply->app()), copy_apply_graph(apply->arg()));
       }
       return obj;
@@ -35,7 +35,7 @@ namespace TORI_NS::detail {
     eval_impl(const object_ptr<const Object>& obj)
   {
     // apply
-    if (auto apply = value_cast_if<ApplyR>(obj)) {
+    if (auto apply = value_cast_if<Apply>(obj)) {
       // graph reduction
       if (apply->evaluated()) {
         return apply->get_cache(apply.head()->spinlock);
