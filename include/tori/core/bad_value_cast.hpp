@@ -46,7 +46,9 @@ namespace TORI_NS::detail {
 
   struct BadValueCastValue
   {
+    /// cast from
     object_ptr<const Type> from;
+    /// cast to
     object_ptr<const Type> to;
   };
 

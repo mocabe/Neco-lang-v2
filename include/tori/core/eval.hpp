@@ -58,18 +58,16 @@ namespace TORI_NS::detail {
       }
       // create pap
       auto pap = clone(app);
-      // process
       auto cc = static_cast<const Closure<>*>(pap.get());
+      // push argument
       auto arity = --cc->arity();
       cc->arg(arity) = arg;
-      if (arity == 0) {
-        auto eval_result = eval_impl(cc->code());
-        apply->set_cache(eval_result, apply.head()->spinlock);
-        return eval_result;
-      } else {
-        apply->set_cache(pap, apply.head()->spinlock);
-        return eval_impl(pap);
-      }
+      // call code()
+      if (arity == 0)
+        pap = eval_impl(cc->code());
+      // set cache
+      apply->set_cache(pap, apply.head()->spinlock);
+      return pap;
     }
     // detect exception
     if (has_exception_tag(obj))

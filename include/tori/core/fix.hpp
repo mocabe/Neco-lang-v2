@@ -27,7 +27,7 @@ namespace TORI_NS::detail {
 
         // check arity for safety
         auto c = static_cast<const Closure<>*>(f.head());
-        if (c->arity() == 0) {
+        if (unlikely(c->arity() == 0)) {
           throw eval_error::bad_fix();
         }
 
@@ -43,7 +43,7 @@ namespace TORI_NS::detail {
         cc->refcount.fetch_sub();
 
         // eval
-        if (arity == 0)
+        if (unlikely(arity == 0))
           pap = eval_impl(cc->code());
 
         // return

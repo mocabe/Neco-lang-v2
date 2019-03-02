@@ -6,6 +6,7 @@
 #include "../config/config.hpp"
 
 #include "object_ptr.hpp"
+#include "object_cast.hpp"
 
 namespace TORI_NS::detail {
 
@@ -22,10 +23,13 @@ namespace TORI_NS::detail {
     object_ptr<T> clone(const object_ptr<T>& obj)
     {
       assert(obj);
-      auto r = static_cast<T*>(obj.info_table()->clone(obj.get()));
-      if (unlikely(!r))
+
+      object_ptr tmp = obj.info_table()->clone(obj.get());
+
+      if (unlikely(!tmp))
         throw std::bad_alloc();
-      return r;
+
+      return static_object_cast<T>(std::move(tmp));
     }
 
     /// check type
