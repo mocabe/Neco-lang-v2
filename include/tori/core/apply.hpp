@@ -10,14 +10,15 @@
 namespace TORI_NS::detail {
 
   /// value of ApplyR
-  class ApplyRValue
+  class apply_object_value
   {
   public:
     template <
       class App,
       class Arg,
-      class = std::enable_if_t<!std::is_same_v<std::decay_t<App>, ApplyRValue>>>
-    ApplyRValue(App&& app, Arg&& arg)
+      class = std::enable_if_t<
+        !std::is_same_v<std::decay_t<App>, apply_object_value>>>
+    apply_object_value(App&& app, Arg&& arg)
       : m_app {std::forward<App>(app)}
       , m_arg {std::forward<Arg>(arg)}
     {
@@ -69,7 +70,7 @@ namespace TORI_NS::detail {
   namespace interface {
 
     /// runtime apply object
-    using ApplyR = Box<ApplyRValue>;
+    using ApplyR = Box<apply_object_value>;
 
   } // namespace interface
 
