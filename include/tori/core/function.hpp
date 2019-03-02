@@ -289,7 +289,7 @@ namespace TORI_NS::detail {
       Function() noexcept
         : ClosureN<sizeof...(Ts) - 1> {
             {{static_cast<const object_info_table*>(
-                &info_table_initializer::info_table)},
+               &info_table_initializer::info_table)},
              sizeof...(Ts) - 1},
           }
       {
@@ -300,7 +300,7 @@ namespace TORI_NS::detail {
         : ClosureN<sizeof...(Ts) - 1> {
             {
               {static_cast<const object_info_table*>(
-                 &info_table_initializer::info_table)},
+                &info_table_initializer::info_table)},
               other.m_arity,
             },
             other.m_args}
@@ -312,7 +312,7 @@ namespace TORI_NS::detail {
         : ClosureN<sizeof...(Ts) - 1> {
             {
               {static_cast<const object_info_table*>(
-                 &info_table_initializer::info_table)},
+                &info_table_initializer::info_table)},
               std::move(other.m_arity),
             },
             std::move(other.m_args)}
@@ -392,7 +392,7 @@ namespace TORI_NS::detail {
       struct info_table_initializer
       {
         /// static closure info
-        static const closure_info_table info_table;
+        alignas(64) static const closure_info_table info_table;
       };
 
       /// check signature of code()
@@ -409,16 +409,14 @@ namespace TORI_NS::detail {
 
     // Initialize closure infotable
     template <class T, class... Ts>
-    const closure_info_table
-      Function<T, Ts...>::info_table_initializer::info_table = {
-        {object_type<T>(),
-         sizeof(T),
-         object_header_extend_bytes,
-         vtbl_destroy_func<T>,
-         vtbl_clone_func<T>},
-        sizeof...(Ts) - 1,
-        closure_header_extend_bytes,
-        vtbl_code_func<T>};
+    alignas(64) const closure_info_table
+      Function<T, Ts...>::info_table_initializer::info_table = { //
+        {object_type<T>(),                                       //
+         sizeof(T),                                              //
+         vtbl_destroy_func<T>,                                   //
+         vtbl_clone_func<T>},                                    //
+        sizeof...(Ts) - 1,                                       //
+        vtbl_code_func<T>};                                      //
 
   } // namespace interface
 

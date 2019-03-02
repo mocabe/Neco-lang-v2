@@ -88,7 +88,7 @@ namespace TORI_NS::detail {
       struct info_table_initializer
       {
         /// static object info table
-        static const object_info_table info_table;
+        alignas(32) static const object_info_table info_table;
       };
 
       /// Ctor
@@ -154,12 +154,12 @@ namespace TORI_NS::detail {
 
     // Initialize object header
     template <class T>
-    const object_info_table Box<T>::info_table_initializer::info_table = {
-      object_type<Box>(),         //
-      sizeof(Box),                //
-      object_header_extend_bytes, //
-      vtbl_destroy_func<Box>,     //
-      vtbl_clone_func<Box>};      //
+    alignas(32) const
+      object_info_table Box<T>::info_table_initializer::info_table = { //
+        object_type<Box>(),                                            //
+        sizeof(Box),                                                   //
+        vtbl_destroy_func<Box>,                                        //
+        vtbl_clone_func<Box>};                                         //
 
   } // namespace interface
 
