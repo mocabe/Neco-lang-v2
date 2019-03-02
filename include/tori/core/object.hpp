@@ -25,7 +25,7 @@ namespace TORI_NS::detail {
   // type variable
   struct VarType;
   // TypeValue
-  class TypeValue;
+  class type_object_value;
 
   // interface
   namespace interface {
@@ -42,7 +42,7 @@ namespace TORI_NS::detail {
     struct object_info_table;
 
     // heap-allocated runtime type infomation
-    using Type = Box<TypeValue>;
+    using Type = Box<type_object_value>;
 
     /// Base class of heap-allocated objects
     struct Object

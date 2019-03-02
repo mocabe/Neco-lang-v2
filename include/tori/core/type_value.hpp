@@ -95,33 +95,33 @@ namespace TORI_NS::detail {
   // TypeValue
 
   /// Base class for TypeValue
-  class TypeValue
+  class type_object_value
   {
   public:
     /// default ctor is disabled
-    TypeValue() = delete;
+    type_object_value() = delete;
 
     // initializers
-    TypeValue(ValueType t)
+    type_object_value(ValueType t)
       : value {std::move(t)}
       , m_index {value_index}
     {
     }
 
-    TypeValue(ArrowType t)
+    type_object_value(ArrowType t)
       : arrow {std::move(t)}
       , m_index {arrow_index}
     {
     }
 
-    TypeValue(VarType t)
+    type_object_value(VarType t)
       : var {std::move(t)}
       , m_index {var_index}
     {
     }
 
     /// Copy constructor
-    TypeValue(const TypeValue& other)
+    type_object_value(const type_object_value& other)
       : m_index {other.m_index}
     {
       // copy union
@@ -138,7 +138,7 @@ namespace TORI_NS::detail {
     }
 
     /// Destructor
-    ~TypeValue() noexcept
+    ~type_object_value() noexcept
     {
       // call destructor
       if (m_index == value_index)
@@ -189,14 +189,14 @@ namespace TORI_NS::detail {
   template <uint64_t Idx, class TpVal>
   constexpr decltype(auto) TypeValue_access(TpVal&& v)
   {
-    static_assert(std::is_same_v<std::decay_t<TpVal>, TypeValue>);
-    if constexpr (Idx == TypeValue::value_index) {
+    static_assert(std::is_same_v<std::decay_t<TpVal>, type_object_value>);
+    if constexpr (Idx == type_object_value::value_index) {
       auto&& ref = std::forward<TpVal>(v).value;
       return ref;
-    } else if constexpr (Idx == TypeValue::arrow_index) {
+    } else if constexpr (Idx == type_object_value::arrow_index) {
       auto&& ref = std::forward<TpVal>(v).arrow;
       return ref;
-    } else if constexpr (Idx == TypeValue::var_index) {
+    } else if constexpr (Idx == type_object_value::var_index) {
       auto&& ref = std::forward<TpVal>(v).var;
       return ref;
     } else {
@@ -208,7 +208,7 @@ namespace TORI_NS::detail {
   template <uint64_t Idx, class TpVal>
   constexpr decltype(auto) TypeValue_get(TpVal&& v)
   {
-    static_assert(std::is_same_v<std::decay_t<TpVal>, TypeValue>);
+    static_assert(std::is_same_v<std::decay_t<TpVal>, type_object_value>);
     if (v.m_index != Idx)
       throw std::bad_cast();
     return TypeValue_access<Idx>(std::forward<TpVal>(v));
@@ -219,11 +219,11 @@ namespace TORI_NS::detail {
   constexpr uint64_t TypeValue_index()
   {
     if constexpr (std::is_same_v<std::decay_t<T>, ValueType>) {
-      return TypeValue::value_index;
+      return type_object_value::value_index;
     } else if constexpr (std::is_same_v<std::decay_t<T>, ArrowType>) {
-      return TypeValue::arrow_index;
+      return type_object_value::arrow_index;
     } else if constexpr (std::is_same_v<std::decay_t<T>, VarType>) {
-      return TypeValue::var_index;
+      return type_object_value::var_index;
     } else {
       static_assert(false_v<T>);
     }
@@ -231,35 +231,35 @@ namespace TORI_NS::detail {
 
   /// std::get() equivalent
   template <class T>
-  decltype(auto) get(const TypeValue& val)
+  decltype(auto) get(const type_object_value& val)
   {
     return TypeValue_get<TypeValue_index<T>()>(val);
   }
 
   /// std::get() equivalent
   template <class T>
-  decltype(auto) get(const TypeValue&& val)
+  decltype(auto) get(const type_object_value&& val)
   {
     return TypeValue_get<TypeValue_index<T>()>(std::move(val));
   }
 
   /// std::get() equivalent
   template <class T>
-  decltype(auto) get(TypeValue& val)
+  decltype(auto) get(type_object_value& val)
   {
     return TypeValue_get<TypeValue_index<T>()>(val);
   }
 
   /// std::get() equivalent
   template <class T>
-  decltype(auto) get(TypeValue&& val)
+  decltype(auto) get(type_object_value&& val)
   {
     return TypeValue_get<TypeValue_index<T>()>(std::move(val));
   }
 
   /// std::get_if() equivalent
   template <class T>
-  constexpr std::add_pointer_t<const T> get_if(const TypeValue* val)
+  constexpr std::add_pointer_t<const T> get_if(const type_object_value* val)
   {
     constexpr auto Idx = TypeValue_index<T>();
     if (val && Idx == val->index())
@@ -269,7 +269,7 @@ namespace TORI_NS::detail {
 
   /// std::get_if() equivalent
   template <class T>
-  constexpr std::add_pointer_t<T> get_if(TypeValue* val)
+  constexpr std::add_pointer_t<T> get_if(type_object_value* val)
   {
     constexpr auto Idx = TypeValue_index<T>();
     if (val && Idx == val->index())
