@@ -16,44 +16,44 @@
 
 namespace TORI_NS::detail {
 
-  class StringValue
+  class string_object_value
   {
     // TODO: support char8_t in C++20
   public:
-    StringValue(nullptr_t) = delete;
+    string_object_value(nullptr_t) = delete;
 
-    StringValue()
+    string_object_value()
     {
       m_ptr = new uint8_t[1] {'\0'};
     }
 
-    StringValue(const char* str)
+    string_object_value(const char* str)
     {
       size_t s = std::strlen(str);
       m_ptr = new uint8_t[s + 1];
       std::copy(str, str + s + 1, m_ptr);
     }
 
-    StringValue(const std::string& str)
+    string_object_value(const std::string& str)
     {
       m_ptr = new uint8_t[str.size() + 1];
       std::copy(str.c_str(), str.c_str() + str.size() + 1, m_ptr);
     }
 
-    StringValue(const StringValue& other)
+    string_object_value(const string_object_value& other)
     {
       auto len = std::strlen(other.c_str());
       m_ptr = new uint8_t[len + 1];
       std::copy(other.m_ptr, other.m_ptr + len + 1, m_ptr);
     }
 
-    StringValue(StringValue&& other)
+    string_object_value(string_object_value&& other)
     {
       m_ptr = other.m_ptr;
       other.m_ptr = nullptr;
     }
 
-    ~StringValue() noexcept
+    ~string_object_value() noexcept
     {
       delete[] m_ptr;
     }
@@ -73,7 +73,7 @@ namespace TORI_NS::detail {
     /// UTF-8 String object.
     /// Does not guarantee anything about encoding. User must ensure
     /// input byte sequence is null(`0x00`)-terminated UTF-8 string.
-    using String = Box<StringValue>;
+    using String = Box<string_object_value>;
 
     namespace literals {
 
