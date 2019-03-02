@@ -24,8 +24,8 @@ namespace TORI_NS::detail {
 
   } // namespace interface
 
-  /// EvlaErrorValue
-  struct EvalErrorValue
+  /// eval_error_value
+  struct eval_error_object_value
   {
     /// error type
     eval_error_type error_type;
@@ -34,7 +34,7 @@ namespace TORI_NS::detail {
   namespace interface {
 
     /// EvalError
-    using EvalError = Box<EvalErrorValue>;
+    using EvalError = Box<eval_error_object_value>;
 
   } // namespace interface
 
