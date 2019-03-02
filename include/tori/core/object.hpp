@@ -6,7 +6,7 @@
 // config
 #include "../config/config.hpp"
 // refcount
-#include "atomic_refcount.hpp"
+#include "atomic.hpp"
 // term
 #include "terms.hpp"
 
@@ -57,10 +57,29 @@ namespace TORI_NS::detail {
       /// term
       static constexpr auto term = type_c<tm_value<Object>>;
 
-      // reference count
-      mutable atomic_refcount<uint64_t> refcount;
+      /// Ctor
+      constexpr Object(const object_info_table* info)
+        : info_table {info}
+      {
+        /* Default initialize refcount and spinlock */
+      }
 
-      /// pointer to info-table
+      /// Copy ctor
+      constexpr Object(const Object& other)
+        : info_table {other.info_table}
+      {
+        /* Default initialize refcount and spinlock */
+      }
+
+      /// 4byte: reference count
+      mutable atomic_refcount<uint32_t> refcount = {1u};
+
+      /// 1byte: spinlock
+      mutable atomic_spinlock<uint8_t> spinlock = {/*false*/};
+
+      /* 3byte: padding */
+
+      /// 8byte: pointer to info table
       const object_info_table* info_table;
 
 #if defined(OBJECT_HEADER_EXTEND_BYTES)

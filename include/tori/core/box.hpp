@@ -99,7 +99,7 @@ namespace TORI_NS::detail {
           !std::is_same_v<std::decay_t<U>, Box> &&
           !std::is_same_v<std::decay_t<U>, static_construct_t>>>
       constexpr Box(U &&u, Args &&... args)
-        : Object {1u, &info_table_initializer::info_table}
+        : Object {&info_table_initializer::info_table}
         , value {std::forward<U>(u), std::forward<Args>(args)...}
       {
       }
@@ -115,21 +115,21 @@ namespace TORI_NS::detail {
 
       /// Ctor
       constexpr Box()
-        : Object {1u, &info_table_initializer::info_table}
+        : Object {&info_table_initializer::info_table}
         , value {}
       {
       }
 
       /// Copy ctor
       constexpr Box(const Box &obj)
-        : Object {1u, &info_table_initializer::info_table}
+        : Object {&info_table_initializer::info_table}
         , value {obj.value}
       {
       }
 
       /// Move ctor
       constexpr Box(Box &&obj)
-        : Object {1u, &info_table_initializer::info_table}
+        : Object {&info_table_initializer::info_table}
         , value {std::move(obj.value)}
       {
       }

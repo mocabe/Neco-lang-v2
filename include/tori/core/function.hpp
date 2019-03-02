@@ -45,9 +45,9 @@ namespace TORI_NS::detail {
   struct closure_info_table : object_info_table
   {
     /// Number of arguments
-    const uint64_t n_args;
+    const uint32_t n_args;
     /// Size of extended header
-    const uint64_t clsr_ext_bytes;
+    const uint32_t clsr_ext_bytes;
     /// vtable for code
     object_ptr<const Object> (*code)(const Closure<>*) noexcept;
   };
@@ -306,10 +306,10 @@ namespace TORI_NS::detail {
       /// Ctor
       Function() noexcept
         : ClosureN<sizeof...(Ts) - 1> {
-            {{1u,
-              static_cast<const object_info_table*>(
+            {{static_cast<const object_info_table*>(
                 &info_table_initializer::info_table)},
-             sizeof...(Ts) - 1}}
+             sizeof...(Ts) - 1},
+          }
       {
       }
 
@@ -317,8 +317,7 @@ namespace TORI_NS::detail {
       Function(const Function& other) noexcept
         : ClosureN<sizeof...(Ts) - 1> {
             {
-              {1u,
-               static_cast<const object_info_table*>(
+              {static_cast<const object_info_table*>(
                  &info_table_initializer::info_table)},
               other.m_arity,
             },
@@ -330,8 +329,7 @@ namespace TORI_NS::detail {
       Function(Function&& other) noexcept
         : ClosureN<sizeof...(Ts) - 1> {
             {
-              {1u,
-               static_cast<const object_info_table*>(
+              {static_cast<const object_info_table*>(
                  &info_table_initializer::info_table)},
               std::move(other.m_arity),
             },

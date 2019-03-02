@@ -221,9 +221,9 @@ namespace TORI_NS::detail {
       /// pointer to type object
       object_ptr<const Type> obj_type;
       /// total size of object
-      uint64_t obj_size;
+      uint32_t obj_size;
       /// size of additional storage
-      uint64_t obj_ext_bytes;
+      uint32_t obj_ext_bytes;
       /// vtable of delete function
       void (*destroy)(const Object*) noexcept;
       /// vtable of clone function

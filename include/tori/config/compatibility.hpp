@@ -37,21 +37,22 @@ namespace TORI_NS::detail {
   // Object
   static_assert(sizeof(Object) == 16);
   static_assert(offset_of_member(&Object::refcount) == 0);
+  static_assert(offset_of_member(&Object::spinlock) == 4);
   static_assert(offset_of_member(&Object::info_table) == 8);
 
   // object_info_table
-  static_assert(sizeof(object_info_table) == 40);
+  static_assert(sizeof(object_info_table) == 32);
   static_assert(offset_of_member(&object_info_table::obj_type) == 0);
   static_assert(offset_of_member(&object_info_table::obj_size) == 8);
-  static_assert(offset_of_member(&object_info_table::obj_ext_bytes) == 16);
-  static_assert(offset_of_member(&object_info_table::destroy) == 24);
-  static_assert(offset_of_member(&object_info_table::clone) == 32);
+  static_assert(offset_of_member(&object_info_table::obj_ext_bytes) == 12);
+  static_assert(offset_of_member(&object_info_table::destroy) == 16);
+  static_assert(offset_of_member(&object_info_table::clone) == 24);
 
   // closure_info_table
-  static_assert(sizeof(closure_info_table) == 64);
-  static_assert(offset_of_member(&closure_info_table::n_args) == 40);
-  static_assert(offset_of_member(&closure_info_table::clsr_ext_bytes) == 48);
-  static_assert(offset_of_member(&closure_info_table::code) == 56);
+  static_assert(sizeof(closure_info_table) == 48);
+  static_assert(offset_of_member(&closure_info_table::n_args) == 32);
+  static_assert(offset_of_member(&closure_info_table::clsr_ext_bytes) == 36);
+  static_assert(offset_of_member(&closure_info_table::code) == 40);
 
 #if !defined(OBJECT_HEADER_EXTEND_BYTES)
 
