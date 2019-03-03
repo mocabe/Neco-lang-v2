@@ -20,11 +20,13 @@ namespace TORI_NS::detail {
     class object_ptr
     {
       // internal storage access
-      template <class U>
-      friend object_ptr_storage& _get_storage(object_ptr<U>&) noexcept;
-      template <class U>
-      friend const object_ptr_storage&
-        _get_storage(const object_ptr<U>&) noexcept;
+      template <class U>                             //
+      friend object_ptr_storage&                     //
+        _get_storage(object_ptr<U>&) noexcept;       //
+                                                     //
+      template <class U>                             //
+      friend const object_ptr_storage&               //
+        _get_storage(const object_ptr<U>&) noexcept; //
 
     public:
       // value type
@@ -55,7 +57,7 @@ namespace TORI_NS::detail {
       object_ptr(const object_ptr& other) noexcept
         : m_storage {other.m_storage}
       {
-        increment_refcount();
+        m_storage.increment_refcount();
       }
 
       /// Move constructor
@@ -71,7 +73,7 @@ namespace TORI_NS::detail {
       object_ptr(const object_ptr<U>& other) noexcept
         : m_storage {_get_storage(other)}
       {
-        increment_refcount();
+        m_storage.increment_refcount();
       }
 
       /// Move convert constructor
@@ -85,24 +87,11 @@ namespace TORI_NS::detail {
       /// get address of object
       pointer get() const noexcept
       {
-        return static_cast<pointer>(m_storage.ptr());
-      }
-
-      /// get address of header
-      auto* head() const noexcept
-      {
         if constexpr (std::is_const_v<element_type>)
-          return static_cast<const Object*>(m_storage.ptr());
+          return static_cast<pointer>(m_storage.get());
         else
-          return static_cast<Object*>(m_storage.ptr());
-      }
-
-      /// get address of info table
-      /// \requires not null.
-      const object_info_table* info_table() const noexcept
-      {
-        assert(head());
-        return head()->info_table;
+          // remove const when storage is created from non-const pointer
+          return static_cast<pointer>(const_cast<Object*>(m_storage.get()));
       }
 
       /// get address of member `value`
@@ -116,15 +105,14 @@ namespace TORI_NS::detail {
       /// operator bool
       explicit operator bool() const noexcept
       {
-        return m_storage.ptr() != nullptr;
+        return m_storage.get() != nullptr;
       }
 
       /// use_count
       /// \requires not null.
       uint64_t use_count() const noexcept
       {
-        assert(head());
-        return head()->refcount.load();
+        return m_storage.use_count();
       }
 
       /// is_static
@@ -138,7 +126,7 @@ namespace TORI_NS::detail {
       /// \effects get() return nullptr after call
       pointer release() noexcept
       {
-        auto tmp = m_storage.ptr();
+        auto tmp = get();
         m_storage = {nullptr};
         return tmp;
       }
@@ -197,13 +185,6 @@ namespace TORI_NS::detail {
       ~object_ptr() noexcept;
 
     private:
-      void increment_refcount()
-      {
-        if (likely(m_storage.ptr() && !m_storage.is_static()))
-          m_storage.ptr()->refcount.fetch_add();
-      }
-
-    private:
       /// pointer to object
       object_ptr_storage m_storage;
     };
@@ -212,24 +193,38 @@ namespace TORI_NS::detail {
     template <class T, size_t N>
     class object_ptr<T[N]>; // = delete
 
-    // ------------------------------------------
-    // object_info_table
+  } // namespace interface
 
-    /// Object info table
-    struct object_info_table
-    {
-      /// pointer to type object
-      object_ptr<const Type> obj_type;
-      /// total size of object
-      uint64_t obj_size;
-      /// vtable of delete function
-      void (*destroy)(const Object*) noexcept;
-      /// vtable of clone function
-      Object* (*clone)(const Object*) noexcept;
-    };
+  // ------------------------------------------
+  // object_info_table
 
-    // ------------------------------------------
-    // object_ptr::~object_ptr()
+  /// Object info table
+  struct object_info_table
+  {
+    /// pointer to type object
+    object_ptr<const Type> obj_type;
+    /// total size of object
+    uint64_t obj_size;
+    /// vtable of delete function
+    void (*destroy)(const Object*) noexcept;
+    /// vtable of clone function
+    Object* (*clone)(const Object*)noexcept;
+  };
+
+  // ------------------------------------------
+  // object_ptr::~object_ptr()
+
+  void object_ptr_storage::decrement_refcount() noexcept
+  {
+    if (likely(get() && !is_static())) {
+      if (get()->refcount.fetch_sub() == 1) {
+        std::atomic_thread_fence(std::memory_order_acquire);
+        info_table()->destroy(get());
+      }
+    }
+  }
+
+  namespace interface {
 
     /// Destructor
     /// \effects Destroy object with vtable function when reference count become
@@ -237,14 +232,12 @@ namespace TORI_NS::detail {
     template <class T>
     object_ptr<T>::~object_ptr() noexcept
     {
-      if (likely(head() && !is_static())) {
-        // delete object if needed
-        if (head()->refcount.fetch_sub() == 1) {
-          std::atomic_thread_fence(std::memory_order_acquire);
-          info_table()->destroy(head());
-        }
-      }
+      m_storage.decrement_refcount();
     }
+
+  } // namespace interface
+
+  namespace interface {
 
     // ------------------------------------------
     // operators

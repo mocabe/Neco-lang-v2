@@ -24,7 +24,7 @@ namespace TORI_NS::detail {
     {
       assert(obj);
 
-      object_ptr tmp = obj.info_table()->clone(obj.get());
+      object_ptr tmp = _get_storage(obj).info_table()->clone(obj.get());
 
       if (unlikely(!tmp))
         throw std::bad_alloc();

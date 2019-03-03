@@ -26,14 +26,14 @@ namespace TORI_NS::detail {
         auto f = eval_arg<0>();
 
         // check arity for safety
-        auto c = static_cast<const Closure<>*>(f.head());
+        auto c = static_cast<const Closure<>*>(_get_storage(f).get());
         if (unlikely(c->arity() == 0)) {
           throw eval_error::bad_fix();
         }
 
         // create return value
         auto pap = clone(f);
-        auto cc = static_cast<const Closure<>*>(pap.head());
+        auto cc = static_cast<const Closure<>*>(_get_storage(pap).get());
 
         // build self-referencing closure
         auto arity = --cc->arity();

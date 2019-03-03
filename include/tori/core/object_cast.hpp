@@ -15,7 +15,7 @@ namespace TORI_NS::detail {
   {
     // add refcount
     if (likely(obj && !obj.is_static()))
-      obj.head()->refcount.fetch_add();
+      _get_storage(obj).get()->refcount.fetch_add();
 
     if constexpr (std::is_base_of_v<U, T> && sizeof(T) == sizeof(U))
       // downcast to proxy types (empty derived class from Object) using

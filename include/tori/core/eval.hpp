@@ -20,7 +20,7 @@ namespace TORI_NS::detail {
         auto& apply_storage = _get_storage(*apply);
         // return cached value
         if (apply_storage.evaluated()) {
-          return apply_storage.get_cache(apply.head()->spinlock);
+          return apply_storage.get_cache(apply.get()->spinlock);
         }
         // create new apply
         return make_object<Apply>(
@@ -42,7 +42,7 @@ namespace TORI_NS::detail {
       auto& apply_storage = _get_storage(*apply);
       // graph reduction
       if (apply_storage.evaluated()) {
-        return apply_storage.get_cache(apply.head()->spinlock);
+        return apply_storage.get_cache(_get_storage(apply).get()->spinlock);
       }
       // whnf
       auto app = eval_impl(apply_storage.app());
@@ -70,7 +70,7 @@ namespace TORI_NS::detail {
       if (arity == 0)
         pap = eval_impl(cc->code());
       // set cache
-      apply_storage.set_cache(pap, apply.head()->spinlock);
+      apply_storage.set_cache(pap, apply.get()->spinlock);
       return pap;
     }
     // detect exception

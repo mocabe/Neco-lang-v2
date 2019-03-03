@@ -36,7 +36,7 @@ namespace TORI_NS::detail {
       get_type(const object_ptr<const Object>& obj)
     {
       if (obj)
-        return obj.info_table()->obj_type;
+        return _get_storage(obj).info_table()->obj_type;
       else
         return object_type<Undefined>();
     }

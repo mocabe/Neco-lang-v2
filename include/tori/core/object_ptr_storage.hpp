@@ -10,6 +10,8 @@
 
 namespace TORI_NS::detail {
 
+  struct object_info_table; // defined in object_ptr.hpp
+
   /// internal storage of object_ptr
   struct object_ptr_storage
   {
@@ -55,7 +57,7 @@ namespace TORI_NS::detail {
 
     /// get pointer
     /// Ideally, optimized into single AND instruction.
-    Object* ptr() const noexcept
+    const Object* get() const noexcept
     {
       // load as non-pointer
       uint64_t tag;
@@ -63,9 +65,16 @@ namespace TORI_NS::detail {
       // clear pointer tag
       tag &= static_cast<uint64_t>(pointer_tags::clear_mask);
       // cast to pointer
-      Object* ptr;
+      const Object* ptr;
       std::memcpy(&ptr, &tag, sizeof(ptr));
       return ptr;
+    }
+
+    /// get info table pointer
+    const object_info_table* info_table() const noexcept
+    {
+      assert(get());
+      return get()->info_table;
     }
 
     /// apply? (optional)
@@ -83,9 +92,26 @@ namespace TORI_NS::detail {
     /// static?
     bool is_static() const noexcept
     {
-      assert(ptr());
-      return ptr()->refcount.load() == 0;
+      assert(get());
+      return get()->refcount.load() == 0;
     }
+
+    /// use_count
+    uint64_t use_count() const noexcept
+    {
+      assert(get());
+      return get()->refcount.load();
+    }
+
+    /// increment refcount
+    void increment_refcount() noexcept
+    {
+      if (likely(get() && !is_static()))
+        get()->refcount.fetch_add();
+    }
+
+    /// decrement refcount
+    void decrement_refcount() noexcept; // defined in object_ptr.hpp
 
   public:
 

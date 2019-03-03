@@ -27,6 +27,9 @@ namespace TORI_NS::detail {
   // TypeValue
   class type_object_value;
 
+  // object info table
+  struct object_info_table;
+
   // interface
   namespace interface {
 
@@ -38,8 +41,6 @@ namespace TORI_NS::detail {
     template <class>
     class object_ptr;
 
-    // object info table
-    struct object_info_table;
 
     // heap-allocated runtime type infomation
     using Type = Box<type_object_value>;
