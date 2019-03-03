@@ -20,7 +20,7 @@ namespace TORI_NS::detail {
     /// \notes Reference count of new object will be set to 1.
     /// \requires not null.
     template <class T>
-    object_ptr<T> clone(const object_ptr<T>& obj)
+    [[nodiscard]] object_ptr<T> clone(const object_ptr<T>& obj)
     {
       assert(obj);
 

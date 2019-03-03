@@ -222,7 +222,7 @@ namespace TORI_NS::detail {
   }
 
   /// compose substitution
-  void compose_subst(std::vector<TyArrow>& tyarrows, const TyArrow& a)
+  inline void compose_subst(std::vector<TyArrow>& tyarrows, const TyArrow& a)
   {
     for (auto&& ta : tyarrows) {
       ta.to = subst_type(a, ta.to);
@@ -363,7 +363,6 @@ namespace TORI_NS::detail {
       return;
     }
 
-    assert(false);
     unreachable();
   }
 
@@ -415,7 +414,6 @@ namespace TORI_NS::detail {
     if (has_arrow_type(obj))
       return genpoly(get_type(obj));
 
-    assert(false);
     unreachable();
   }
 

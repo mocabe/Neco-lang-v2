@@ -78,7 +78,8 @@ namespace TORI_NS::detail {
     namespace literals {
 
       /// String object literal
-      object_ptr<String> operator"" _S(const char* str, size_t)
+      [[nodiscard]] inline object_ptr<String>
+        operator"" _S(const char* str, size_t)
       {
         return make_object<String>(str);
       }

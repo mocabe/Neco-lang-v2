@@ -94,12 +94,14 @@ namespace TORI_NS::detail {
     }
   };
 
-  const apply_object_value_storage& _get_storage(const apply_object_value& v)
+  [[nodiscard]] inline const apply_object_value_storage&
+    _get_storage(const apply_object_value& v)
   {
     return v;
   }
 
-  apply_object_value_storage& _get_storage(apply_object_value& v)
+  [[nodiscard]] inline apply_object_value_storage&
+    _get_storage(apply_object_value& v)
   {
     return v;
   }

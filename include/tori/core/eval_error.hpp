@@ -90,25 +90,29 @@ namespace TORI_NS::detail {
   // ------------------------------------------
   // conversion
 
-  object_ptr<Exception> to_Exception(const eval_error::eval_error& e)
+  [[nodiscard]] inline object_ptr<Exception>
+    to_Exception(const eval_error::eval_error& e)
   {
     return make_object<Exception>(
       e.what(), make_object<EvalError>(eval_error_type::unknown));
   }
 
-  object_ptr<Exception> to_Exception(const eval_error::bad_fix& e)
+  [[nodiscard]] inline object_ptr<Exception>
+    to_Exception(const eval_error::bad_fix& e)
   {
     return make_object<Exception>(
       e.what(), make_object<EvalError>(eval_error_type::bad_fix));
   }
 
-  object_ptr<Exception> to_Exception(const eval_error::bad_apply& e)
+  [[nodiscard]] inline object_ptr<Exception>
+    to_Exception(const eval_error::bad_apply& e)
   {
     return make_object<Exception>(
       e.what(), make_object<EvalError>(eval_error_type::bad_apply));
   }
 
-  object_ptr<Exception> to_Exception(const eval_error::too_many_arguments& e)
+  [[nodiscard]] inline object_ptr<Exception>
+    to_Exception(const eval_error::too_many_arguments& e)
   {
     return make_object<Exception>(
       e.what(), make_object<EvalError>(eval_error_type::too_may_arguments));

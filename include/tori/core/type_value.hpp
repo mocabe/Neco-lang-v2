@@ -217,28 +217,35 @@ namespace TORI_NS::detail {
     }
   };
 
-  const type_object_value_storage& _get_storage(const type_object_value& v)
+  // ------------------------------------------
+  // _get_storage
+
+  [[nodiscard]] inline const type_object_value_storage&
+    _get_storage(const type_object_value& v)
   {
     return v;
   }
 
-  type_object_value_storage& _get_storage(type_object_value& v)
+  [[nodiscard]] inline type_object_value_storage&
+    _get_storage(type_object_value& v)
   {
     return v;
   }
 
-  const type_object_value_storage&& _get_storage(const type_object_value&& v)
+  [[nodiscard]] inline const type_object_value_storage&&
+    _get_storage(const type_object_value&& v)
   {
     return std::move(v);
   }
 
-  type_object_value_storage&& _get_storage(type_object_value&& v)
+  [[nodiscard]] inline type_object_value_storage&&
+    _get_storage(type_object_value&& v)
   {
     return std::move(v);
   }
 
   // ------------------------------------------
-  // TypeValue utility
+  // primitive utility
 
   template <
     size_t Idx,
@@ -274,6 +281,9 @@ namespace TORI_NS::detail {
       throw std::bad_cast();
     return _access<Idx>(std::forward<T>(v));
   }
+
+  // ------------------------------------------
+  // std::variant like interface
 
   /// std::get() equivalent
   template <class T>
