@@ -13,36 +13,43 @@
 namespace TORI_NS::detail {
 
   /// get string represents type
-  [[nodiscard]] inline std::string to_string_impl(
-    const object_ptr<const Type>& type,
-    std::vector<object_ptr<const Type>>& stack)
+  template <size_t MaxDepth>
+  [[nodiscard]] std::string
+    to_string_impl(const object_ptr<const Type>& type, size_t depth)
   {
-    if (is_value_type(type))
+    if (depth > MaxDepth)
+      return "[...]";
+
+    if (is_value_type(type)) {
       return get<value_type>(*type).c_str();
-    if (is_arrow_type(type))
-      return "(" +                                                    //
-             to_string_impl(get<arrow_type>(*type).captured, stack) + //
-             " -> " +                                                 //
-             to_string_impl(get<arrow_type>(*type).returns, stack) +  //
-             ")";                                                     //
+    }
+
+    if (is_arrow_type(type)) {
+      return "(" + //
+             to_string_impl<MaxDepth>(
+               get<arrow_type>(*type).captured, depth + 1) + //
+             " -> " +                                        //
+             to_string_impl<MaxDepth>(
+               get<arrow_type>(*type).returns, depth + 1) + //
+             ")";                                           //
+    }
+
     if (is_var_type(type)) {
       return "Var[" +                                             //
              std::to_string(get_if<var_type>(type.value())->id) + //
              "]";                                                 //
     }
 
-    assert(false);
     unreachable();
   }
 
   namespace interface {
 
     /// convert type to string
-    [[nodiscard]] inline std::string
-      to_string(const object_ptr<const Type>& type)
+    template <size_t MaxDepth = 48>
+    [[nodiscard]] std::string to_string(const object_ptr<const Type>& type)
     {
-      std::vector<object_ptr<const Type>> stack;
-      return to_string_impl(type, stack);
+      return to_string_impl<MaxDepth>(type, 1);
     }
 
   } // namespace interface
