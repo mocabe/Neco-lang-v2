@@ -24,27 +24,30 @@ namespace TORI_NS::detail {
 
     string_object_value()
     {
-      m_ptr = new uint8_t[1] {'\0'};
+      m_ptr = new char[1] {'\0'};
     }
 
     string_object_value(const char* str)
     {
       size_t s = std::strlen(str);
-      m_ptr = new uint8_t[s + 1];
-      std::copy(str, str + s + 1, m_ptr);
+      auto buff = new char[s + 1];
+      std::copy(str, str + s + 1, buff);
+      m_ptr = buff;
     }
 
     string_object_value(const std::string& str)
     {
-      m_ptr = new uint8_t[str.size() + 1];
-      std::copy(str.c_str(), str.c_str() + str.size() + 1, m_ptr);
+      auto buff = new char[str.size() + 1];
+      std::copy(str.c_str(), str.c_str() + str.size() + 1, buff);
+      m_ptr = buff;
     }
 
     string_object_value(const string_object_value& other)
     {
       auto len = std::strlen(other.c_str());
-      m_ptr = new uint8_t[len + 1];
-      std::copy(other.m_ptr, other.m_ptr + len + 1, m_ptr);
+      auto buff = new char[len + 1];
+      std::copy(other.m_ptr, other.m_ptr + len + 1, buff);
+      m_ptr = buff;
     }
 
     string_object_value(string_object_value&& other)
@@ -65,7 +68,7 @@ namespace TORI_NS::detail {
     }
 
   private:
-    uint8_t* m_ptr;
+    char* m_ptr;
   };
 
   namespace interface {
