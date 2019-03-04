@@ -118,3 +118,26 @@ TEST_CASE("exception")
     }
   }
 }
+
+TEST_CASE("Apply cache")
+{
+  SECTION("cache")
+  {
+    struct F : Function<F, Int, Int, Int>
+    {
+      return_type code() const
+      {
+        return new Int();
+      }
+    };
+
+    auto i = make_object<Int>();
+    auto app = make_object<F>() << i << i;
+
+    check_type<Int>(app);
+    auto result = eval(app);
+
+    REQUIRE(_get_storage(*app).evaluated());
+    REQUIRE(_get_storage(*app).get_cache(app.get()->spinlock) == result);
+  }
+}

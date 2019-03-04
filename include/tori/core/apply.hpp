@@ -57,7 +57,7 @@ namespace TORI_NS::detail {
 
     bool evaluated() const
     {
-      return has_cache_tag(m_app);
+      return has_cache_tag(m_arg);
     }
 
     auto get_cache(atomic_spinlock<uint8_t>& lock) const
