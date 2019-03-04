@@ -407,3 +407,44 @@ TEST_CASE("Undefined")
     REQUIRE(same_type(t, object_type<Undefined>()));
   }
 }
+
+TEST_CASE("copy_type")
+{
+  SECTION("value")
+  {
+    auto tp = object_type<Int>();
+    auto cpy = copy_type(tp);
+    REQUIRE(same_type(tp, cpy));
+  }
+  SECTION("var")
+  {
+    auto tp = genvar();
+    auto cpy = copy_type(tp);
+    REQUIRE(same_type(tp, cpy));
+  }
+  SECTION("arrow")
+  {
+    struct F : Function<F, Double, Int>
+    {
+      return_type code() const
+      {
+      }
+    };
+    auto tp = object_type<F>();
+    auto cpy = copy_type(tp);
+    REQUIRE(same_type(tp, cpy));
+  }
+  SECTION("combined")
+  {
+    struct F : Function<F, closure<class X, Int>, Double, class X>
+    {
+      return_type code() const
+      {
+      }
+    };
+
+    auto tp = object_type<F>();
+    auto cpy = copy_type(tp);
+    REQUIRE(same_type(tp, cpy));
+  }
+}

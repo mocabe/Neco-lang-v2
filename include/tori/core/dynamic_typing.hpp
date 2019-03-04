@@ -30,7 +30,7 @@ namespace TORI_NS::detail {
     // Utils
 
     /// \brief get **RAW** type of the object
-    /// \notes NO null check.
+    /// \notes return type of `Undefined` on null.
     /// \notes use type_of() to get actual type of terms.
     [[nodiscard]] inline object_ptr<const Type>
       get_type(const object_ptr<const Object>& obj)
@@ -93,14 +93,13 @@ namespace TORI_NS::detail {
   [[nodiscard]] inline object_ptr<const Type>
     copy_type_impl(const object_ptr<const Type>& ptp)
   {
-    if (get_if<value_type>(ptp.value()))
-      return ptp;
-    if (get_if<var_type>(ptp.value()))
-      return ptp;
+    if (auto value = get_if<value_type>(ptp.value()))
+      return make_object<Type>(value_type {value->name});
+    if (auto var = get_if<var_type>(ptp.value()))
+      return make_object<Type>(var_type {var->id});
     if (auto arrow = get_if<arrow_type>(ptp.value())) {
-      auto ret = new Type(arrow_type {copy_type_impl(arrow->captured),
-                                      copy_type_impl(arrow->returns)});
-      return ret;
+      return make_object<Type>(arrow_type {copy_type_impl(arrow->captured),
+                                           copy_type_impl(arrow->returns)});
     }
 
     unreachable();
@@ -112,7 +111,10 @@ namespace TORI_NS::detail {
     [[nodiscard]] inline object_ptr<const Type>
       copy_type(const object_ptr<const Type>& tp)
     {
-      return copy_type_impl(tp);
+      if (tp)
+        return copy_type_impl(tp);
+      else
+        return tp;
     }
 
   } // namespace interface
@@ -123,6 +125,9 @@ namespace TORI_NS::detail {
   {
     if (lhs.get() == rhs.get())
       return true;
+
+    if (!lhs || !rhs)
+      return false;
 
     const auto& left = *lhs;
     const auto& right = *rhs;
@@ -166,7 +171,8 @@ namespace TORI_NS::detail {
     {
       if (same_type(get_type(obj), object_type<T>()))
         return true;
-      return false;
+      else
+        return false;
     }
 
   } // namespace interface
@@ -195,8 +201,9 @@ namespace TORI_NS::detail {
     if (auto arrow = get_if<arrow_type>(in.value())) {
       if (same_type(in, from))
         return to;
-      return new Type(arrow_type {subst_type_impl(ta, arrow->captured),
-                                  subst_type_impl(ta, arrow->returns)});
+      return make_object<Type>(
+        arrow_type {subst_type_impl(ta, arrow->captured),
+                    subst_type_impl(ta, arrow->returns)});
     }
 
     unreachable();
@@ -211,12 +218,12 @@ namespace TORI_NS::detail {
 
   /// apply all substitution
   [[nodiscard]] inline object_ptr<const Type> subst_type_all(
-    const std::vector<TyArrow>& tas,
+    const std::vector<TyArrow>& tyarrows,
     const object_ptr<const Type>& ty)
   {
     auto t = ty;
-    for (auto tyArrow : tas) {
-      t = subst_type(tyArrow, t);
+    for (auto ta : tyarrows) {
+      t = subst_type(ta, t);
     }
     return t;
   }
@@ -400,7 +407,8 @@ namespace TORI_NS::detail {
       auto _t1 = type_of_func_impl(apply_storage.app());
       auto _t2 = type_of_func_impl(apply_storage.arg());
       auto _t = genvar();
-      auto c = std::vector {Constr {_t1, new Type(arrow_type {_t2, _t})}};
+      auto c =
+        std::vector {Constr {_t1, make_object<Type>(arrow_type {_t2, _t})}};
       auto s = unify(std::move(c), obj);
       return subst_type_all(s, _t);
     }
