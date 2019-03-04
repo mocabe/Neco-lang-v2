@@ -70,6 +70,6 @@ script:
   - $COMPILER --version
   - mkdir build
   - cd build 
-  - cmake .. -DCMAKE_CXX_COMPILER=$COMPILER
+  - cmake .. -DCMAKE_CXX_COMPILER=$COMPILER -DTORI_BUILD_ALL=ON
   - cmake --build .
   - ctest -V
