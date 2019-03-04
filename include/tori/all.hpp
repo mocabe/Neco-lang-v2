@@ -3,5 +3,5 @@
 
 #pragma once
 
-#include <tori/core.hpp>
-#include <tori/lib.hpp>
+#include "core.hpp"
+#include "lib.hpp"
