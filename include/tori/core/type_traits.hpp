@@ -43,20 +43,20 @@ namespace TORI_NS::detail {
   // propagate_const
 
   template <class T, class U>
-  struct propagate_const
+  struct propagate_const_impl
   {
     using type = T;
   };
 
   template <class T, class U>
-  struct propagate_const<T, const U>
+  struct propagate_const_impl<T, const U>
   {
     using type = std::add_const_t<T>;
   };
 
   /// conditionally add const to T depending on constness of U
   template <class T, class U>
-  using propagate_const_t = typename propagate_const<T, U>::type;
+  using propagate_const_t = typename propagate_const_impl<T, U>::type;
 
   // ------------------------------------------
   // concept_checker

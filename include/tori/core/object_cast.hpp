@@ -19,11 +19,10 @@ namespace TORI_NS::detail {
 
     if constexpr (std::is_base_of_v<U, T> && sizeof(T) == sizeof(U))
       // downcast to proxy types (empty derived class from Object) using
-      // static_cast IS undefined behaviour. But it seems that using
-      // reinterpret_cast is not UB when T and U are layout compatible. Since
-      // empty derived classes from standard layout class (i.e. Object) are also
-      // standard lyaout (and these are layout compatible since no additional
-      // members are introduced), we can use reinterpret_cast here.
+      // static_cast IS undefined behaviour. reinterpret_cast is probably
+      // undefined behaviour too but it works in practice. object_ptr uses
+      // `const Object*` pointer in underlying storage so most of read/write
+      // operations are still done through `const Object*` pointer.
       return reinterpret_cast<T*>(obj.get());
     else
       // it's undefined behavior if `obj` is not an actual object of T.

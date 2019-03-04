@@ -87,11 +87,8 @@ namespace TORI_NS::detail {
       /// get address of object
       pointer get() const noexcept
       {
-        if constexpr (std::is_const_v<element_type>)
-          return static_cast<pointer>(m_storage.get());
-        else
-          // remove const when storage is created from non-const pointer
-          return static_cast<pointer>(const_cast<Object*>(m_storage.get()));
+        return reinterpret_cast<pointer>(
+          const_cast<propagate_const_t<Object*, pointer>>(m_storage.get()));
       }
 
       /// get address of member `value`
