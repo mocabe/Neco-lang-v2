@@ -52,8 +52,6 @@ namespace TORI_NS::detail {
   static_assert(offset_of_member(&closure_info_table::n_args) == 32);
   static_assert(offset_of_member(&closure_info_table::code) == 40);
 
-#if !defined(OBJECT_HEADER_EXTEND_BYTES)
-
   static_assert(offset_of_member(&Box<char>::value) == 16);
   static_assert(offset_of_member(&Box<int>::value) == 16);
   static_assert(offset_of_member(&Box<long>::value) == 16);
@@ -61,16 +59,10 @@ namespace TORI_NS::detail {
 
   static_assert(offset_of_member(&Closure<>::m_arity) == 16);
 
-#  if !defined(CLOSURE_HEADER_EXTEND_BYTES)
-
   static_assert(offset_of_member(&ClosureN<1>::m_args) == 24);
   static_assert(offset_of_member(&ClosureN<2>::m_args) == 24);
   static_assert(offset_of_member(&ClosureN<3>::m_args) == 24);
   static_assert(offset_of_member(&ClosureN<4>::m_args) == 24);
   // ...
-
-#  endif
-
-#endif
 
 }
