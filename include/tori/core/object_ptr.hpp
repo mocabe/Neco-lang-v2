@@ -281,6 +281,9 @@ namespace TORI_NS::detail {
       return static_cast<bool>(p);
     }
 
+    // ------------------------------------------
+    // storage access
+
     /// internal storage accessor
     template <class U>
     object_ptr_storage& _get_storage(object_ptr<U>& obj) noexcept
@@ -314,5 +317,15 @@ namespace TORI_NS::detail {
     }
 
   } // namespace interface
+
+  // ------------------------------------------
+  // misc
+
+  template <class T>
+  [[nodiscard]] object_ptr<T> clear_pointer_tag(object_ptr<T> obj)
+  {
+    _get_storage(obj).clear_pointer_tag();
+    return obj;
+  }
 
 } // namespace TORI_NS::detail

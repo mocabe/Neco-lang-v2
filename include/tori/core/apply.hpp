@@ -9,6 +9,21 @@
 
 namespace TORI_NS::detail {
 
+  // ------------------------------------------
+  // helper
+
+  [[nodiscard]] inline object_ptr<const Object>
+    add_cache_tag(object_ptr<const Object> obj)
+  {
+    _get_storage(obj).set_pointer_tag(object_ptr_storage::pointer_tags::cache);
+    return obj;
+  }
+
+  [[nodiscard]] inline bool has_cache_tag(const object_ptr<const Object>& obj)
+  {
+    return _get_storage(obj).is_cache();
+  }
+
   struct apply_object_value_storage
   {
     apply_object_value_storage(
@@ -30,26 +45,26 @@ namespace TORI_NS::detail {
 
     const auto& app() const
     {
-      assert(m_app != nullptr);
+      assert(!evaluated());
       return m_app;
     }
 
     const auto& arg() const
     {
-      assert(m_app != nullptr);
+      assert(!evaluated());
       return m_arg;
     }
 
     bool evaluated() const
     {
-      return m_app == nullptr;
+      return has_cache_tag(m_app);
     }
 
-    const auto& get_cache(atomic_spinlock<uint8_t>& lock) const
+    auto get_cache(atomic_spinlock<uint8_t>& lock) const
     {
       assert(evaluated());
       std::lock_guard lg {lock};
-      return m_arg;
+      return clear_pointer_tag(m_arg);
     }
 
     void set_cache(
@@ -59,15 +74,13 @@ namespace TORI_NS::detail {
       assert(!evaluated());
       std::lock_guard lg {lock};
       m_app = nullptr;
-      m_arg = obj;
+      m_arg = add_cache_tag(obj);
     }
 
   private:
     /// closure
-    /// when evaluated: nullptr
     mutable object_ptr<const Object> m_app;
     /// argument
-    /// when evaluated: result
     mutable object_ptr<const Object> m_arg;
   };
 

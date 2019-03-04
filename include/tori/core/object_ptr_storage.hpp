@@ -25,9 +25,9 @@ namespace TORI_NS::detail {
       //                        tag (3bit)
       //                        ^^^^^^^^^^
 
-      pointer   = 0x0, //< plain pointer
-      apply     = 0x1, //< pointer to apply (optional)
-      exception = 0x2, //< pointer to exception (optional)
+      pointer   = 0x0, //< pointer
+      cache     = 0x1, //< cache
+      exception = 0x2, //< exception returned from vtbl_code_func
 
       extract_mask = 0x0000000000000007, // 0...0111
       clear_mask   = 0xFFFFFFFFFFFFFFF8, // 1...1000
@@ -55,6 +55,14 @@ namespace TORI_NS::detail {
       std::memcpy(&m_tag, &tmp, sizeof(m_tag));
     }
 
+    void clear_pointer_tag() noexcept
+    {
+      uint64_t tmp;
+      std::memcpy(&tmp, &m_tag, sizeof(tmp));
+      tmp &= static_cast<uint64_t>(pointer_tags::clear_mask);
+      std::memcpy(&m_tag, &tmp, sizeof(m_tag));
+    }
+
     /// get pointer
     /// Ideally, optimized into single AND instruction.
     const Object* get() const noexcept
@@ -78,9 +86,9 @@ namespace TORI_NS::detail {
     }
 
     /// apply? (optional)
-    bool is_apply() const noexcept
+    bool is_cache() const noexcept
     {
-      return get_pointer_tag() == pointer_tags::apply;
+      return get_pointer_tag() == pointer_tags::cache;
     }
 
     /// exception? (optional)

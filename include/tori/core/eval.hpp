@@ -48,7 +48,7 @@ namespace TORI_NS::detail {
       auto app = eval_impl(apply_storage.app());
       // detect exception
       if (has_exception_tag(app))
-        throw result_error::exception_result(std::move(app));
+        throw result_error::exception_result(clear_pointer_tag(std::move(app)));
       // arg
       const auto& arg = apply_storage.arg();
       // check app
@@ -75,7 +75,7 @@ namespace TORI_NS::detail {
     }
     // detect exception
     if (has_exception_tag(obj))
-      throw result_error::exception_result(std::move(obj));
+      throw result_error::exception_result(clear_pointer_tag(std::move(obj)));
 
     return obj;
   }

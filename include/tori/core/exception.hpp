@@ -46,11 +46,11 @@ namespace TORI_NS::detail {
   // helper
 
   [[nodiscard]] inline object_ptr<Exception>
-    add_exception_tag(object_ptr<Exception>&& e)
+    add_exception_tag(object_ptr<Exception> e)
   {
     _get_storage(e).set_pointer_tag(
       object_ptr_storage::pointer_tags::exception);
-    return std::move(e);
+    return e;
   }
 
   [[nodiscard]] inline bool
