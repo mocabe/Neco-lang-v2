@@ -45,13 +45,13 @@ namespace TORI_NS::detail {
 
     const auto& app() const
     {
-      assert(!evaluated());
+      TORI_ASSERT(!evaluated());
       return m_app;
     }
 
     const auto& arg() const
     {
-      assert(!evaluated());
+      TORI_ASSERT(!evaluated());
       return m_arg;
     }
 
@@ -62,7 +62,7 @@ namespace TORI_NS::detail {
 
     auto get_cache(atomic_spinlock<uint8_t>& lock) const
     {
-      assert(evaluated());
+      TORI_ASSERT(evaluated());
       std::lock_guard lg {lock};
       return clear_pointer_tag(m_arg);
     }
@@ -71,7 +71,7 @@ namespace TORI_NS::detail {
       const object_ptr<const Object>& obj,
       atomic_spinlock<uint8_t>& lock) const
     {
-      assert(!evaluated());
+      TORI_ASSERT(!evaluated());
       std::lock_guard lg {lock};
       m_app = nullptr;
       m_arg = add_cache_tag(obj);

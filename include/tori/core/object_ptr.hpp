@@ -95,7 +95,7 @@ namespace TORI_NS::detail {
       /// \requires not null.
       auto* value() const noexcept
       {
-        assert(get());
+        TORI_ASSERT(get());
         return &get()->value;
       }
 
@@ -213,7 +213,7 @@ namespace TORI_NS::detail {
 
   void object_ptr_storage::decrement_refcount() noexcept
   {
-    if (likely(get() && !is_static())) {
+    if (TORI_LIKELY(get() && !is_static())) {
       if (get()->refcount.fetch_sub() == 1) {
         std::atomic_thread_fence(std::memory_order_acquire);
         info_table()->destroy(get());

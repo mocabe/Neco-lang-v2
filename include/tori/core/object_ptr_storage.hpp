@@ -81,7 +81,7 @@ namespace TORI_NS::detail {
     /// get info table pointer
     const object_info_table* info_table() const noexcept
     {
-      assert(get());
+      TORI_ASSERT(get());
       return get()->info_table;
     }
 
@@ -100,21 +100,21 @@ namespace TORI_NS::detail {
     /// static?
     bool is_static() const noexcept
     {
-      assert(get());
+      TORI_ASSERT(get());
       return get()->refcount.load() == 0;
     }
 
     /// use_count
     uint64_t use_count() const noexcept
     {
-      assert(get());
+      TORI_ASSERT(get());
       return get()->refcount.load();
     }
 
     /// increment refcount
     void increment_refcount() noexcept
     {
-      if (likely(get() && !is_static()))
+      if (TORI_LIKELY(get() && !is_static()))
         get()->refcount.fetch_add();
     }
 

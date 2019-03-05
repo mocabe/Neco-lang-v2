@@ -10,6 +10,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <limits>
+#include <cassert>
 
 // namespace
 #ifndef TORI_NS
@@ -71,18 +72,41 @@ namespace TORI_NS::detail {
 #endif
 
 // likely
-#if defined(__GNUC__)
-#  define likely(expr) __builtin_expect(!!(expr), 1)
-#  define unlikely(expr) __builtin_expect(!!(expr), 0)
-#else
-#  define likely(expr) expr
-#  define unlikely(expr) expr
+#if !defined(TORI_LIKELY)
+#  if defined(__GNUC__)
+#    define TORI_LIKELY(expr) __builtin_expect(!!(expr), 1)
+#  else
+#    define TORI_LIKELY(expr) expr
+#  endif
 #endif
 
-#if defined(__GNUC__)
-#  define unreachable() assert(false);__builtin_unreachable()
-#else
-#  define unreachable() assert(false);__assume(0)
+// unlikely
+#if !defined(TORI_UNLIKELY)
+#  if defined(__GNUC__)
+#    define TORI_UNLIKELY(expr) __builtin_expect(!!(expr), 0)
+#  else
+#    define TORI_UNLIKELY(expr) expr
+#  endif
+#endif
+
+// unreachable
+#if !defined(TORI_UNREACHABLE)
+#  if defined(__GNUC__)
+#    define TORI_UNREACHABLE() \
+      assert(false);           \
+      __builtin_unreachable()
+#  elif defined(_MSC_VER)
+#    define TORI_UNREACHABLE() \
+      assert(false);           \
+      __assume(0)
+#  else
+#    define TORI_UNREACHABLE() assert(false)
+#  endif
+#endif
+
+// assert
+#if !defined(TORI_ASSERT)
+#  define TORI_ASSERT(x) assert(x)
 #endif
 
   namespace interface {

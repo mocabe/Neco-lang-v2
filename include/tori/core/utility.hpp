@@ -22,11 +22,11 @@ namespace TORI_NS::detail {
     template <class T>
     [[nodiscard]] object_ptr<T> clone(const object_ptr<T>& obj)
     {
-      assert(obj);
+      TORI_ASSERT(obj);
 
       object_ptr tmp = _get_storage(obj).info_table()->clone(obj.get());
 
-      if (unlikely(!tmp))
+      if (TORI_UNLIKELY(!tmp))
         throw std::bad_alloc();
 
       return static_object_cast<T>(std::move(tmp));
@@ -38,7 +38,7 @@ namespace TORI_NS::detail {
     {
       auto t1 = object_type<T>();
       auto t2 = type_of(obj);
-      if (unlikely(!same_type(t1, t2)))
+      if (TORI_UNLIKELY(!same_type(t1, t2)))
         throw type_error::bad_type_check(t1, t2, obj);
     }
 

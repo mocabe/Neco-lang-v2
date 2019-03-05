@@ -105,7 +105,7 @@ namespace TORI_NS::detail {
     auto ret = [&]() -> object_ptr<const Object> {
       try {
         auto r = (static_cast<const T*>(_this)->exception_handler()).value();
-        assert(r);
+        TORI_ASSERT(r);
         return r;
 
         // bad_value_cast
@@ -151,10 +151,10 @@ namespace TORI_NS::detail {
     }();
 
     // vtbl_code_func should not return Undefined value
-    assert(ret);
+    TORI_ASSERT(ret);
     // exception object retuned fron vtbl_code_func should have pointer tag
     if (!has_exception_tag(ret))
-      assert(!value_cast_if<Exception>(ret));
+      TORI_ASSERT(!value_cast_if<Exception>(ret));
 
     return ret;
   }
@@ -358,7 +358,7 @@ namespace TORI_NS::detail {
         using To = argument_proxy_t<N>;
         static_assert(std::is_standard_layout_v<To>);
         auto obj = ClosureN<sizeof...(Ts) - 1>::template nth_arg<N>();
-        assert(obj);
+        TORI_ASSERT(obj);
         return static_object_cast<To>(obj);
       }
 

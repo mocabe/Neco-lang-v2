@@ -102,7 +102,7 @@ namespace TORI_NS::detail {
                                            copy_type_impl(arrow->returns)});
     }
 
-    unreachable();
+    TORI_UNREACHABLE();
   }
 
   namespace interface {
@@ -152,7 +152,7 @@ namespace TORI_NS::detail {
         return false;
     }
 
-    unreachable();
+    TORI_UNREACHABLE();
   }
 
   namespace interface {
@@ -206,7 +206,7 @@ namespace TORI_NS::detail {
                     subst_type_impl(ta, arrow->returns)});
     }
 
-    unreachable();
+    TORI_UNREACHABLE();
   }
 
   /// emulate type-substitution
@@ -285,7 +285,7 @@ namespace TORI_NS::detail {
     if (auto arrow = get_if<arrow_type>(t.value()))
       return occurs(x, arrow->captured) || occurs(x, arrow->returns);
 
-    unreachable();
+    TORI_UNREACHABLE();
   }
 
   inline void unify_func_impl(
@@ -299,7 +299,7 @@ namespace TORI_NS::detail {
       if (same_type(c.t1, c.t2))
         continue;
       if (is_var_type(c.t2)) {
-        if (likely(!occurs(c.t2, c.t1))) {
+        if (TORI_LIKELY(!occurs(c.t2, c.t1))) {
           auto arr = TyArrow {c.t2, c.t1};
           cs = subst_constr_all(arr, cs);
           compose_subst(ta, arr);
@@ -308,7 +308,7 @@ namespace TORI_NS::detail {
         throw type_error::circular_constraint(src, c.t1);
       }
       if (is_var_type(c.t1)) {
-        if (likely(!occurs(c.t1, c.t2))) {
+        if (TORI_LIKELY(!occurs(c.t1, c.t2))) {
           auto arr = TyArrow {c.t1, c.t2};
           cs = subst_constr_all(arr, cs);
           compose_subst(ta, arr);
@@ -370,7 +370,7 @@ namespace TORI_NS::detail {
       return;
     }
 
-    unreachable();
+    TORI_UNREACHABLE();
   }
 
   // get list of type variables
@@ -422,7 +422,7 @@ namespace TORI_NS::detail {
     if (has_arrow_type(obj))
       return genpoly(get_type(obj));
 
-    unreachable();
+    TORI_UNREACHABLE();
   }
 
   namespace interface {

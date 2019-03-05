@@ -40,7 +40,7 @@ namespace TORI_NS::detail {
              "]";                                                 //
     }
 
-    unreachable();
+    TORI_UNREACHABLE();
   }
 
   namespace interface {

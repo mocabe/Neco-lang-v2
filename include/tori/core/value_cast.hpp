@@ -22,7 +22,7 @@ namespace TORI_NS::detail {
     [[nodiscard]] object_ptr<propagate_const_t<T, U>>
       value_cast(const object_ptr<U>& obj)
     {
-      if (likely(obj && has_type<T>(obj))) {
+      if (TORI_LIKELY(obj && has_type<T>(obj))) {
         using To = typename decltype(
           get_object_type(normalize_specifier(type_c<T>)))::type;
         return static_object_cast<propagate_const_t<To, U>>(obj);
@@ -38,7 +38,7 @@ namespace TORI_NS::detail {
     [[nodiscard]] object_ptr<propagate_const_t<T, U>>
       value_cast(object_ptr<U>&& obj)
     {
-      if (likely(obj && has_type<T>(obj))) {
+      if (TORI_LIKELY(obj && has_type<T>(obj))) {
         using To = typename decltype(
           get_object_type(normalize_specifier(type_c<T>)))::type;
         return static_object_cast<propagate_const_t<To, U>>(std::move(obj));
@@ -54,7 +54,7 @@ namespace TORI_NS::detail {
     [[nodiscard]] object_ptr<propagate_const_t<T, U>>
       value_cast_if(const object_ptr<U>& obj) noexcept
     {
-      if (likely(obj && has_type<T>(obj))) {
+      if (TORI_LIKELY(obj && has_type<T>(obj))) {
         using To = typename decltype(
           get_object_type(normalize_specifier(type_c<T>)))::type;
         return static_object_cast<propagate_const_t<To, U>>(obj);
@@ -70,7 +70,7 @@ namespace TORI_NS::detail {
     [[nodiscard]] object_ptr<propagate_const_t<T, U>>
       value_cast_if(object_ptr<U>&& obj) noexcept
     {
-      if (likely(obj && has_type<T>(obj))) {
+      if (TORI_LIKELY(obj && has_type<T>(obj))) {
         using To = typename decltype(
           get_object_type(normalize_specifier(type_c<T>)))::type;
         return static_object_cast<propagate_const_t<To, U>>(std::move(obj));
