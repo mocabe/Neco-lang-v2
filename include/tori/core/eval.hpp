@@ -36,46 +36,60 @@ namespace TORI_NS::detail {
   [[nodiscard]] inline object_ptr<const Object>
     eval_impl(const object_ptr<const Object>& obj)
   {
+    // detect exception
+    if (TORI_UNLIKELY(has_exception_tag(obj)))
+      throw result_error::exception_result(clear_pointer_tag(obj));
+
     // apply
     if (auto apply = value_cast_if<Apply>(obj)) {
-      // internal storage
+
+      // alias: internal storage
       auto& apply_storage = _get_storage(*apply);
+
       // graph reduction
       if (apply_storage.evaluated()) {
-        return apply_storage.get_cache(_get_storage(apply).get()->spinlock);
+        return apply_storage.get_cache(apply.get()->spinlock);
       }
+
       // whnf
       auto app = eval_impl(apply_storage.app());
-      // detect exception
-      if (has_exception_tag(app))
-        throw result_error::exception_result(clear_pointer_tag(std::move(app)));
-      // arg
+
+      // alias: argument
       const auto& arg = apply_storage.arg();
+
       // check app
-      if (unlikely(has_value_type(app))) {
+      if (TORI_UNLIKELY(has_value_type(app))) {
         throw eval_error::bad_apply();
       }
+
       // too many arguments
-      auto c = static_cast<const Closure<>*>(app.get());
-      if (unlikely(c->arity() == 0)) {
+      auto capp = static_cast<const Closure<>*>(app.get());
+      if (TORI_UNLIKELY(capp->arity() == 0)) {
         throw eval_error::too_many_arguments();
       }
-      // create pap
-      auto pap = clone(app);
-      auto cc = static_cast<const Closure<>*>(pap.get());
-      // push argument
-      auto arity = --cc->arity();
-      cc->arg(arity) = arg;
-      // call code()
-      if (arity == 0)
-        pap = eval_impl(cc->code());
+
+      // clone closure and apply
+      auto ret = [&] {
+        auto pap = clone(app);
+        auto cpap = static_cast<const Closure<>*>(pap.get());
+
+        // push argument
+        auto arity = --cpap->arity();
+        cpap->arg(arity) = arg;
+
+        // call code()
+        if (TORI_UNLIKELY(arity == 0)) {
+          return eval_impl(cpap->code());
+        }
+
+        return pap;
+      }();
+
       // set cache
-      apply_storage.set_cache(pap, apply.get()->spinlock);
-      return pap;
+      apply_storage.set_cache(ret, apply.get()->spinlock);
+
+      return ret;
     }
-    // detect exception
-    if (has_exception_tag(obj))
-      throw result_error::exception_result(clear_pointer_tag(std::move(obj)));
 
     return obj;
   }
@@ -84,10 +98,10 @@ namespace TORI_NS::detail {
 
     /// evaluate each apply node and replace with result
     template <class T>
-    [[nodiscard]] auto eval(const object_ptr<T>& obj)
+    [[nodiscard]] auto eval(object_ptr<T> obj)
     {
-      auto result = eval_impl(object_ptr<const Object>(obj));
-      assert(result);
+      auto result = eval_impl(std::move(obj));
+      TORI_ASSERT(result);
 
       // for gcc 7
       constexpr auto type = type_of(get_term<T>(), false_c);
