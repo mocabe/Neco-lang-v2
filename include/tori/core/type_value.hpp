@@ -17,9 +17,9 @@ namespace TORI_NS::detail {
   struct value_type
   {
     /// Max name length
-    static constexpr uint64_t max_name_size = 32;
+    static constexpr uint64_t buffer_size = 32;
     /// buffer type
-    using buffer_type = std::array<char, max_name_size>;
+    using buffer_type = std::array<char, buffer_size>;
     /// buffer
     const buffer_type* name;
 
@@ -32,7 +32,7 @@ namespace TORI_NS::detail {
     /// compare two value types
     static bool compare(const value_type& lhs, const value_type& rhs)
     {
-      if constexpr (has_AVX2 && max_name_size == 32) {
+      if constexpr (has_AVX2 && buffer_size == 32) {
         // AVX2
         // buffers should be aligned as 32byte
         // load each buffers into 256-bit registers
@@ -47,7 +47,7 @@ namespace TORI_NS::detail {
         // clear upper bits for other SIMD operations
         _mm256_zeroupper();
         return mask == 0xffffffffU;
-      } else if constexpr (has_AVX && max_name_size == 32) {
+      } else if constexpr (has_AVX && buffer_size == 32) {
         // AVX
         // buffers should be aligned as 16byte
         // load buffer into 2 xmm registers
@@ -70,7 +70,7 @@ namespace TORI_NS::detail {
         return std::memcmp(        //
                  lhs.name->data(), //
                  rhs.name->data(), //
-                 max_name_size) == 0;
+                 buffer_size) == 0;
       }
     }
   };

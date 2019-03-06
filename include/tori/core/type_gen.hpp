@@ -97,13 +97,11 @@ namespace TORI_NS::detail {
     create_value_type_name(char const (&name)[N])
   {
     auto tmp = value_type::buffer_type {};
-    // if you want to expand maximum length of type name,
-    // change value_type::max_name_size and re-compile everything.
     static_assert(N <= tmp.size(), "Name of value type is too long.");
     for (uint64_t i = 0; i < N; ++i) {
       tmp[i] = name[i];
     }
-    tmp.back() = 0;
+    tmp.back() = '\0';
     return tmp;
   }
 
@@ -157,10 +155,14 @@ namespace TORI_NS::detail {
   struct var_type_initializer
   {
     static const Type type;
-    // to make distinct address for each tag
-    static constexpr const int _id_gen = 42;
-    /// Id
-    static constexpr const void* const id = &_id_gen;
+    // make distinct address for each tag
+    static constexpr const int id_gen = 0xdeadbeef;
+
+    /// id
+    static constexpr uint64_t get_id()
+    {
+      return uint64_t {uintptr_t(&id_gen)};
+    }
   };
 
   template <class T>
@@ -170,9 +172,8 @@ namespace TORI_NS::detail {
   }
 
   template <class T>
-  const Type var_type_initializer<T>::type {
-    static_construct,
-    var_type {uint64_t {std::uintptr_t(id)}}};
+  const Type var_type_initializer<T>::type {static_construct,
+                                            var_type {get_id()}};
 
   // ------------------------------------------
   // constexpr version of object_type type
