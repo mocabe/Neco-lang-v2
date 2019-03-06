@@ -353,7 +353,7 @@ namespace TORI_NS::detail {
 
       /// get N'th argument thunk
       template <uint64_t N>
-      auto arg() const noexcept
+      [[nodiscard]] auto arg() const noexcept
       {
         using To = argument_proxy_t<N>;
         static_assert(std::is_standard_layout_v<To>);
@@ -364,7 +364,7 @@ namespace TORI_NS::detail {
 
       /// evaluate N'th argument and take result
       template <uint64_t N>
-      auto eval_arg() const
+      [[nodiscard]] auto eval_arg() const
       {
         // workaround: gcc 8.1
         return eval(this->template arg<N>());

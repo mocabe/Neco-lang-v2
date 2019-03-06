@@ -43,7 +43,7 @@ namespace TORI_NS::detail {
 
   /// get offset of member
   template <class T1, class T2>
-  constexpr uint64_t offset_of_member(T1 T2::*member)
+  [[nodiscard]] constexpr uint64_t offset_of_member(T1 T2::*member)
   {
     return offset_of_member_impl<T1, T2>::get(member);
   }

@@ -24,6 +24,9 @@ namespace TORI_NS::detail {
     return _get_storage(obj).is_cache();
   }
 
+  // ------------------------------------------
+  // apply object storage
+
   struct apply_object_value_storage
   {
     apply_object_value_storage(
@@ -33,15 +36,6 @@ namespace TORI_NS::detail {
       , m_arg {std::move(arg)}
     {
     }
-
-    // clang-format off
-
-    apply_object_value_storage(const apply_object_value_storage&) = default;
-    apply_object_value_storage(apply_object_value_storage&&) = default;
-    apply_object_value_storage& operator=(const apply_object_value_storage&) = default;
-    apply_object_value_storage& operator=(apply_object_value_storage&&) = default;
-
-    // clang-format on
 
     const auto& app() const
     {
@@ -85,16 +79,8 @@ namespace TORI_NS::detail {
   };
 
   /// value of Apply
-  class apply_object_value : apply_object_value_storage
+  class apply_object_value
   {
-    friend const apply_object_value_storage&   //
-      _get_storage(const apply_object_value&); //
-                                               //
-    friend apply_object_value_storage&         //
-      _get_storage(apply_object_value&);       //
-
-    using base = apply_object_value_storage;
-
   public:
     template <
       class App,
@@ -102,22 +88,25 @@ namespace TORI_NS::detail {
       class = std::enable_if_t<
         !std::is_same_v<std::decay_t<App>, apply_object_value>>>
     apply_object_value(App&& app, Arg&& arg)
-      : base {std::forward<App>(app), std::forward<Arg>(arg)}
+      : m_storage {std::forward<App>(app), std::forward<Arg>(arg)}
     {
     }
+
+    [[nodiscard]] friend inline const apply_object_value_storage&
+      _get_storage(const apply_object_value& v)
+    {
+      return v.m_storage;
+    }
+
+    [[nodiscard]] friend inline apply_object_value_storage&
+      _get_storage(apply_object_value& v)
+    {
+      return v.m_storage;
+    }
+
+  private:
+    apply_object_value_storage m_storage;
   };
-
-  [[nodiscard]] inline const apply_object_value_storage&
-    _get_storage(const apply_object_value& v)
-  {
-    return v;
-  }
-
-  [[nodiscard]] inline apply_object_value_storage&
-    _get_storage(apply_object_value& v)
-  {
-    return v;
-  }
 
   namespace interface {
 

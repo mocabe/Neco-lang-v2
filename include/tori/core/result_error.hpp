@@ -36,7 +36,7 @@ namespace TORI_NS::detail {
         }
 
         /// exception
-        const object_ptr<const Exception>& exception() const
+        [[nodiscard]] const object_ptr<const Exception>& exception() const
         {
           return m_exception;
         }

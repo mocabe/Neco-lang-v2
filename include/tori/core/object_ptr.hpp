@@ -85,7 +85,7 @@ namespace TORI_NS::detail {
       }
 
       /// get address of object
-      pointer get() const noexcept
+      [[nodiscard]] pointer get() const noexcept
       {
         return reinterpret_cast<pointer>(
           const_cast<propagate_const_t<Object*, pointer>>(m_storage.get()));
@@ -93,35 +93,35 @@ namespace TORI_NS::detail {
 
       /// get address of member `value`
       /// \requires not null.
-      auto* value() const noexcept
+      [[nodiscard]] auto* value() const noexcept
       {
         TORI_ASSERT(get());
         return &get()->value;
       }
 
       /// operator bool
-      explicit operator bool() const noexcept
+      [[nodiscard]] explicit operator bool() const noexcept
       {
         return m_storage.get() != nullptr;
       }
 
       /// use_count
       /// \requires not null.
-      uint64_t use_count() const noexcept
+      [[nodiscard]] uint64_t use_count() const noexcept
       {
         return m_storage.use_count();
       }
 
       /// is_static
       /// \requires not null.
-      bool is_static() const noexcept
+      [[nodiscard]] bool is_static() const noexcept
       {
         return m_storage.is_static();
       }
 
       /// release pointer
       /// \effects get() return nullptr after call
-      pointer release() noexcept
+      [[nodiscard]] pointer release() noexcept
       {
         auto tmp = get();
         m_storage = {nullptr};
@@ -167,13 +167,13 @@ namespace TORI_NS::detail {
       }
 
       /// operator*
-      auto& operator*() const noexcept
+      [[nodiscard]] auto& operator*() const noexcept
       {
         return *value();
       }
 
       /// operator->
-      auto operator-> () const noexcept
+      [[nodiscard]] auto* operator-> () const noexcept
       {
         return value();
       }
@@ -241,42 +241,44 @@ namespace TORI_NS::detail {
 
     /// operator==
     template <class T, class U>
-    bool operator==(const object_ptr<T>& lhs, const object_ptr<U>& rhs) noexcept
+    [[nodiscard]] bool
+      operator==(const object_ptr<T>& lhs, const object_ptr<U>& rhs) noexcept
     {
       return lhs.get() == rhs.get();
     }
 
     /// operator==
     template <class T>
-    bool operator==(nullptr_t, const object_ptr<T>& p) noexcept
+    [[nodiscard]] bool operator==(nullptr_t, const object_ptr<T>& p) noexcept
     {
       return !p;
     }
 
     /// operator==
     template <class T>
-    bool operator==(const object_ptr<T>& p, nullptr_t) noexcept
+    [[nodiscard]] bool operator==(const object_ptr<T>& p, nullptr_t) noexcept
     {
       return !p;
     }
 
     /// operator!=
     template <class T, class U>
-    bool operator!=(const object_ptr<T>& lhs, const object_ptr<U>& rhs) noexcept
+    [[nodiscard]] bool
+      operator!=(const object_ptr<T>& lhs, const object_ptr<U>& rhs) noexcept
     {
       return lhs.get() != rhs.get();
     }
 
     /// operator!=
     template <class T>
-    bool operator!=(nullptr_t, const object_ptr<T>& p) noexcept
+    [[nodiscard]] bool operator!=(nullptr_t, const object_ptr<T>& p) noexcept
     {
       return static_cast<bool>(p);
     }
 
     /// operator!=
     template <class T>
-    bool operator!=(const object_ptr<T>& p, nullptr_t) noexcept
+    [[nodiscard]] bool operator!=(const object_ptr<T>& p, nullptr_t) noexcept
     {
       return static_cast<bool>(p);
     }
@@ -286,14 +288,16 @@ namespace TORI_NS::detail {
 
     /// internal storage accessor
     template <class U>
-    object_ptr_storage& _get_storage(object_ptr<U>& obj) noexcept
+    [[nodiscard]] object_ptr_storage& //
+      _get_storage(object_ptr<U>& obj) noexcept
     {
       return obj.m_storage;
     }
 
     /// internal storage accessor
     template <class U>
-    const object_ptr_storage& _get_storage(const object_ptr<U>& obj) noexcept
+    [[nodiscard]] const object_ptr_storage& //
+      _get_storage(const object_ptr<U>& obj) noexcept
     {
       return obj.m_storage;
     }
@@ -311,7 +315,7 @@ namespace TORI_NS::detail {
 
     /// make object
     template <class T, class... Args>
-    auto make_object(Args&&... args)
+    [[nodiscard]] auto make_object(Args&&... args)
     {
       return object_ptr<T>(new T(std::forward<Args>(args)...));
     }

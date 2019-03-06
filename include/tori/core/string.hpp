@@ -62,7 +62,7 @@ namespace TORI_NS::detail {
     }
 
     /// c_str
-    const char* c_str() const noexcept
+    [[nodiscard]] const char* c_str() const noexcept
     {
       return reinterpret_cast<const char*>(m_ptr);
     }

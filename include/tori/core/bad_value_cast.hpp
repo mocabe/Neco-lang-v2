@@ -24,13 +24,13 @@ namespace TORI_NS::detail {
       }
 
       /// get from
-      const object_ptr<const Type>& from() const
+      [[nodiscard]] const object_ptr<const Type>& from() const
       {
         return m_from;
       }
 
       /// get to
-      const object_ptr<const Type>& to() const
+      [[nodiscard]] const object_ptr<const Type>& to() const
       {
         return m_to;
       }

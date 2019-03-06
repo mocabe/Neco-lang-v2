@@ -73,7 +73,7 @@ namespace TORI_NS::detail {
         }
 
         /// get source node
-        const object_ptr<const Object>& src() const
+        [[nodiscard]] const object_ptr<const Object>& src() const
         {
           return m_src;
         }
@@ -96,7 +96,7 @@ namespace TORI_NS::detail {
         }
 
         /// var
-        const object_ptr<const Type>& var() const
+        [[nodiscard]] const object_ptr<const Type>& var() const
         {
           return m_var;
         }
@@ -120,13 +120,13 @@ namespace TORI_NS::detail {
         }
 
         /// t1
-        const object_ptr<const Type>& t1() const
+        [[nodiscard]] const object_ptr<const Type>& t1() const
         {
           return m_t1;
         }
 
         /// t2
-        const object_ptr<const Type>& t2() const
+        [[nodiscard]] const object_ptr<const Type>& t2() const
         {
           return m_t2;
         }
@@ -155,13 +155,13 @@ namespace TORI_NS::detail {
         }
 
         /// expected
-        const object_ptr<const Type>& expected() const
+        [[nodiscard]] const object_ptr<const Type>& expected() const
         {
           return m_expected;
         }
 
         /// result
-        const object_ptr<const Type>& result() const
+        [[nodiscard]] const object_ptr<const Type>& result() const
         {
           return m_result;
         }
