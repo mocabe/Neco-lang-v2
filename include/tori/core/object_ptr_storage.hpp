@@ -78,11 +78,18 @@ namespace TORI_NS::detail {
       return ptr;
     }
 
+    /// get address of header
+    const Object* head() const noexcept
+    {
+      assert(get());
+      return get();
+    }
+
     /// get info table pointer
     const object_info_table* info_table() const noexcept
     {
       TORI_ASSERT(get());
-      return get()->info_table;
+      return head()->info_table;
     }
 
     /// apply? (optional)
@@ -101,21 +108,21 @@ namespace TORI_NS::detail {
     bool is_static() const noexcept
     {
       TORI_ASSERT(get());
-      return get()->refcount.load() == 0;
+      return head()->refcount.load() == 0;
     }
 
     /// use_count
     uint64_t use_count() const noexcept
     {
       TORI_ASSERT(get());
-      return get()->refcount.load();
+      return head()->refcount.load();
     }
 
     /// increment refcount
     void increment_refcount() noexcept
     {
       if (TORI_LIKELY(get() && !is_static()))
-        get()->refcount.fetch_add();
+        head()->refcount.fetch_add();
     }
 
     /// decrement refcount
