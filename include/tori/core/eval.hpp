@@ -56,21 +56,26 @@ namespace TORI_NS::detail {
 
       // alias: argument
       const auto& arg = apply_storage.arg();
+      // alias: app closure
+      auto capp = static_cast<const Closure<>*>(app.get());
 
-      // check app
-      if (TORI_UNLIKELY(has_value_type(app))) {
+      /*
+        These exceptions should not triggered on well-typed input. Just leaving
+        it here to avoid catastrophic heap corruption when something went
+        totally wrong.
+      */
+      if (TORI_UNLIKELY(!has_arrow_type(app))) {
         throw eval_error::bad_apply();
       }
-
-      // too many arguments
-      auto capp = static_cast<const Closure<>*>(app.get());
       if (TORI_UNLIKELY(capp->arity() == 0)) {
         throw eval_error::too_many_arguments();
       }
 
       // clone closure and apply
       auto ret = [&] {
+        // clone
         auto pap = clone(app);
+        // alias: pap closure
         auto cpap = static_cast<const Closure<>*>(pap.get());
 
         // push argument
