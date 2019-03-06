@@ -54,19 +54,17 @@ namespace TORI_NS::detail {
       return has_cache_tag(m_arg);
     }
 
-    auto get_cache(atomic_spinlock<uint8_t>& lock) const
+    /// get cache of object
+    auto get_cache() const
     {
       TORI_ASSERT(evaluated());
-      std::lock_guard lg {lock};
       return clear_pointer_tag(m_arg);
     }
 
-    void set_cache(
-      const object_ptr<const Object>& obj,
-      atomic_spinlock<uint8_t>& lock) const
+    /// set cache of object
+    void set_cache(const object_ptr<const Object>& obj) const
     {
       TORI_ASSERT(!evaluated());
-      std::lock_guard lg {lock};
       m_app = nullptr;
       m_arg = add_cache_tag(obj);
     }

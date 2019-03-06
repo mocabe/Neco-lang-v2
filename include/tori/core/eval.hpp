@@ -20,7 +20,7 @@ namespace TORI_NS::detail {
         auto& apply_storage = _get_storage(*apply);
         // return cached value
         if (apply_storage.evaluated()) {
-          return apply_storage.get_cache(apply.get()->spinlock);
+          return apply_storage.get_cache();
         }
         // create new apply
         return make_object<Apply>(
@@ -48,7 +48,7 @@ namespace TORI_NS::detail {
 
       // graph reduction
       if (apply_storage.evaluated()) {
-        return apply_storage.get_cache(apply.get()->spinlock);
+        return apply_storage.get_cache();
       }
 
       // whnf
@@ -86,7 +86,7 @@ namespace TORI_NS::detail {
       }();
 
       // set cache
-      apply_storage.set_cache(ret, apply.get()->spinlock);
+      apply_storage.set_cache(ret);
 
       return ret;
     }

@@ -138,6 +138,6 @@ TEST_CASE("Apply cache")
     auto result = eval(app);
 
     REQUIRE(_get_storage(*app).evaluated());
-    REQUIRE(_get_storage(*app).get_cache(app.get()->spinlock) == result);
+    REQUIRE(_get_storage(*app).get_cache() == result);
   }
 }
