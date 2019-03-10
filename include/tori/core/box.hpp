@@ -99,7 +99,8 @@ namespace TORI_NS::detail {
         class = std::enable_if_t<
           !std::is_same_v<std::decay_t<U>, Box> &&
           !std::is_same_v<std::decay_t<U>, static_construct_t>>>
-      constexpr Box(U &&u, Args &&... args)
+      constexpr Box(U &&u, Args &&... args) //
+        noexcept(std::is_nothrow_constructible_v<T, U, Args...>)
         : Object {&info_table_initializer::info_table}
         , value {std::forward<U>(u), std::forward<Args>(args)...}
       {
@@ -107,7 +108,8 @@ namespace TORI_NS::detail {
 
       /// Ctor (static initialization)
       template <class... Args>
-      constexpr Box(static_construct_t, Args &&... args)
+      constexpr Box(static_construct_t, Args &&... args) //
+        noexcept(std::is_nothrow_constructible_v<Box, Args...>)
         : Box(std::forward<Args>(args)...)
       {
         // set refcount ZERO to avoid deletion
@@ -115,35 +117,40 @@ namespace TORI_NS::detail {
       }
 
       /// Ctor
-      constexpr Box()
+      constexpr Box() //
+        noexcept(std::is_nothrow_constructible_v<T>)
         : Object {&info_table_initializer::info_table}
         , value {}
       {
       }
 
       /// Copy ctor
-      constexpr Box(const Box &obj)
+      constexpr Box(const Box &obj) //
+        noexcept(std::is_nothrow_copy_constructible_v<T>)
         : Object {&info_table_initializer::info_table}
         , value {obj.value}
       {
       }
 
       /// Move ctor
-      constexpr Box(Box &&obj)
+      constexpr Box(Box &&obj) //
+        noexcept(std::is_nothrow_move_constructible_v<T>)
         : Object {&info_table_initializer::info_table}
         , value {std::move(obj.value)}
       {
       }
 
       /// operator=
-      constexpr Box &operator=(const Box &obj)
+      constexpr Box &operator=(const Box &obj) //
+        noexcept(std::is_nothrow_copy_assignable_v<T>)
       {
         value = obj.value;
         return *this;
       }
 
       /// operator=
-      constexpr Box &operator=(Box &&obj)
+      constexpr Box &operator=(Box &&obj) //
+        noexcept(std::is_nothrow_move_assignable_v<T>)
       {
         value = std::move(obj.value);
         return *this;
