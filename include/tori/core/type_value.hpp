@@ -123,7 +123,7 @@ namespace TORI_NS::detail {
     }
 
     /// Copy constructor
-    type_object_value_storage(const type_object_value_storage& other)
+    type_object_value_storage(const type_object_value_storage& other) noexcept
       : index {other.index}
     {
       // copy union
@@ -136,7 +136,6 @@ namespace TORI_NS::detail {
       if (other.index == var_index) {
         var = other.var;
       }
-      throw std::bad_cast();
     }
 
     /// Destructor
