@@ -70,7 +70,9 @@ namespace TORI_NS::detail {
 
       /// Copy convert constructor
       /// \effects increases reference count.
-      template <class U, class = std::enable_if_t<std::is_base_of_v<T, U>>>
+      template <
+        class U,
+        class = std::enable_if_t<std::is_convertible_v<U*, T*>>>
       object_ptr(const object_ptr<U>& other) noexcept
         : m_storage {_get_storage(other)}
       {
@@ -78,7 +80,9 @@ namespace TORI_NS::detail {
       }
 
       /// Move convert constructor
-      template <class U, class = std::enable_if_t<std::is_base_of_v<T, U>>>
+      template <
+        class U,
+        class = std::enable_if_t<std::is_convertible_v<U*, T*>>>
       object_ptr(object_ptr<U>&& other) noexcept
         : m_storage {_get_storage(other)}
       {
