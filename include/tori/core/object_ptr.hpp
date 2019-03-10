@@ -3,10 +3,11 @@
 
 #pragma once
 
-#include "../config/config.hpp"
-
-#include "object.hpp"
-#include "object_ptr_storage.hpp"
+#if !defined(TORI_NO_LOCAL_INCLUDE)
+#  include "../config/config.hpp"
+#  include "object.hpp"
+#  include "object_ptr_storage.hpp"
+#endif
 
 namespace TORI_NS::detail {
 

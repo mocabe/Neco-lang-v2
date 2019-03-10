@@ -3,8 +3,10 @@
 
 #pragma once
 
-#include "../config/config.hpp"
-#include "object.hpp"
+#if !defined(TORI_NO_LOCAL_INCLUDE)
+#  include "../config/config.hpp"
+#  include "object.hpp"
+#endif
 
 #include <cstring>
 

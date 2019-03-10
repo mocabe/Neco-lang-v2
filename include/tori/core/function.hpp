@@ -3,20 +3,19 @@
 
 #pragma once
 
-#include "offset_of_member.hpp"
-#include "static_typing.hpp"
-#include "dynamic_typing.hpp"
-
-#include "apply.hpp"
-#include "string.hpp"
-
-#include "exception.hpp"
-#include "eval_error.hpp"
-#include "bad_value_cast.hpp"
-#include "result_error.hpp"
-#include "type_error.hpp"
-
-#include "value_cast.hpp"
+#if !defined(TORI_NO_LOCAL_INCLUDE)
+#  include "offset_of_member.hpp"
+#  include "static_typing.hpp"
+#  include "dynamic_typing.hpp"
+#  include "apply.hpp"
+#  include "string.hpp"
+#  include "exception.hpp"
+#  include "eval_error.hpp"
+#  include "bad_value_cast.hpp"
+#  include "result_error.hpp"
+#  include "type_error.hpp"
+#  include "value_cast.hpp"
+#endif
 
 namespace TORI_NS::detail {
 

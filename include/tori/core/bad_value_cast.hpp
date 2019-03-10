@@ -3,8 +3,10 @@
 
 #pragma once
 
-#include "../config/config.hpp"
-#include "exception.hpp"
+#if !defined(TORI_NO_LOCAL_INCLUDE)
+#  include "../config/config.hpp"
+#  include "exception.hpp"
+#endif
 
 namespace TORI_NS::detail {
 

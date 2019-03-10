@@ -3,8 +3,10 @@
 
 #pragma once
 
-#include "../core.hpp"
-#include "primitive.hpp"
+#if !defined(TORI_NO_LOCAL_INCLUDE)
+#  include "../core.hpp"
+#  include "primitive.hpp"
+#endif
 
 namespace TORI_NS::detail {
 

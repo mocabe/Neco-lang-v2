@@ -3,7 +3,9 @@
 
 #pragma once
 
-#include "../config/config.hpp"
+#if !defined(TORI_NO_LOCAL_INCLUDE)
+#  include "../config/config.hpp"
+#endif
 
 namespace TORI_NS::detail {
 

@@ -3,10 +3,12 @@
 
 #pragma once
 
-#include "value_cast.hpp"
-#include "function.hpp"
-#include "eval_error.hpp"
-#include "result_error.hpp"
+#if !defined(TORI_NO_LOCAL_INCLUDE)
+#  include "value_cast.hpp"
+#  include "function.hpp"
+#  include "eval_error.hpp"
+#  include "result_error.hpp"
+#endif
 
 namespace TORI_NS::detail {
 

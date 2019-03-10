@@ -1,14 +1,13 @@
 // Copyright (c) 2018-2019 mocabe(https://github.com/mocabe)
 // This code is licensed under MIT license.
 
-#pragma once 
+#pragma once
 
-// config
-#include "../config/config.hpp"
-// refcount
-#include "atomic.hpp"
-// term
-#include "terms.hpp"
+#if !defined(TORI_NO_LOCAL_INCLUDE)
+#  include "../config/config.hpp"
+#  include "atomic.hpp"
+#  include "terms.hpp"
+#endif
 
 #include <cstdint>
 #include <atomic>

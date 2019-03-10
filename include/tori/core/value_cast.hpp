@@ -3,10 +3,12 @@
 
 #pragma once
 
-#include "object_ptr.hpp"
-#include "object_cast.hpp"
-#include "dynamic_typing.hpp"
-#include "bad_value_cast.hpp"
+#if !defined(TORI_NO_LOCAL_INCLUDE)
+#  include "object_ptr.hpp"
+#  include "object_cast.hpp"
+#  include "dynamic_typing.hpp"
+#  include "bad_value_cast.hpp"
+#endif
 
 #include <exception>
 

@@ -3,7 +3,10 @@
 
 #pragma once
 
-#include "object_ptr.hpp"
+#if !defined(TORI_NO_LOCAL_INCLUDE)
+#  include "../config/config.hpp"
+#  include "object_ptr.hpp"
+#endif
 
 #include <array>
 #include <cstring>

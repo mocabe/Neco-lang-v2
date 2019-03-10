@@ -3,8 +3,10 @@
 
 #pragma once
 
-#include "box.hpp"
-#include "string.hpp"
+#if !defined(TORI_NO_LOCAL_INCLUDE)
+#  include "box.hpp"
+#  include "string.hpp"
+#endif
 
 #include <exception>
 

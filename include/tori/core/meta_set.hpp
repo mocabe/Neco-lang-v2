@@ -3,8 +3,10 @@
 
 #pragma once
 
-#include "../config/config.hpp"
-#include "meta_tuple.hpp"
+#if !defined(TORI_NO_LOCAL_INCLUDE)
+#  include "../config/config.hpp"
+#  include "meta_tuple.hpp"
+#endif
 
 #include <utility> // make_index_sequence, etc.
 

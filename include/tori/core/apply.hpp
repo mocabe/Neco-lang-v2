@@ -1,11 +1,13 @@
 // Copyright (c) 2018-2019 mocabe(https://github.com/mocabe)
 // This code is licensed under MIT license.
 
-#pragma once 
+#pragma once
 
-#include "../config/config.hpp"
-#include "box.hpp"
-#include "type_gen.hpp"
+#if !defined(TORI_NO_LOCAL_INCLUDE)
+#  include "../config/config.hpp"
+#  include "box.hpp"
+#  include "type_gen.hpp"
+#endif
 
 namespace TORI_NS::detail {
 

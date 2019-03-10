@@ -3,14 +3,15 @@
 
 #pragma once
 
-#include "../config/config.hpp"
-
-#include "type_gen.hpp"
-#include "apply.hpp"
-#include "exception.hpp"
-#include "type_error.hpp"
-#include "utility.hpp"
-#include "undefined.hpp"
+#if !defined(TORI_NO_LOCAL_INCLUDE)
+#  include "../config/config.hpp"
+#  include "type_gen.hpp"
+#  include "apply.hpp"
+#  include "exception.hpp"
+#  include "type_error.hpp"
+#  include "utility.hpp"
+#  include "undefined.hpp"
+#endif
 
 #include <vector>
 

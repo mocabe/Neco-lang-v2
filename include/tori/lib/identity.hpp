@@ -5,7 +5,9 @@
 
 /// \file Identity
 
-#include "../core.hpp"
+#if !defined(TORI_NO_LOCAL_INCLUDE)
+#  include "../core.hpp"
+#endif
 
 namespace TORI_NS::detail {
 

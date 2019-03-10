@@ -3,11 +3,13 @@
 
 #pragma once
 
-#include "object_ptr.hpp"
-#include "type_value.hpp" // clang requires definition of TypeValue to compile.
-
-#include "specifiers.hpp"
-#include "terms.hpp"
+#if !defined(TORI_NO_LOCAL_INCLUDE)
+#  include "object_ptr.hpp"
+#  include "type_value.hpp" // clang requires definition of TypeValue to compile.
+#  include "specifiers.hpp"
+#  include "terms.hpp"
+#  include "allocator.hpp"
+#endif
 
 #include <cassert>
 

@@ -5,7 +5,9 @@
 
 /// \file String
 
-#include "type_gen.hpp"
+#if !defined(TORI_NO_LOCAL_INCLUDE)
+#  include "type_gen.hpp"
+#endif
 
 #include <string>
 #include <cstring>

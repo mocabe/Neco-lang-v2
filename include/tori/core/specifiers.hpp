@@ -3,11 +3,12 @@
 
 #pragma once
 
-#include "../config/config.hpp"
-
-#include "type_traits.hpp"
-#include "meta_type.hpp"
-#include "meta_tuple.hpp"
+#if !defined(TORI_NO_LOCAL_INCLUDE)
+#  include "../config/config.hpp"
+#  include "type_traits.hpp"
+#  include "meta_type.hpp"
+#  include "meta_tuple.hpp"
+#endif
 
 namespace TORI_NS::detail {
 

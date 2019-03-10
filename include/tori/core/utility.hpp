@@ -3,10 +3,11 @@
 
 #pragma once
 
-#include "../config/config.hpp"
-
-#include "object_ptr.hpp"
-#include "object_cast.hpp"
+#if !defined(TORI_NO_LOCAL_INCLUDE)
+#  include "../config/config.hpp"
+#  include "object_ptr.hpp"
+#  include "object_cast.hpp"
+#endif
 
 namespace TORI_NS::detail {
 

@@ -3,12 +3,13 @@
 
 #pragma once
 
-#include "../config/config.hpp"
-
-#include "box.hpp"
-#include "type_gen.hpp"
-#include "function.hpp"
-#include "eval.hpp"
+#if !defined(TORI_NO_LOCAL_INCLUDE)
+#  include "../config/config.hpp"
+#  include "box.hpp"
+#  include "type_gen.hpp"
+#  include "function.hpp"
+#  include "eval.hpp"
+#endif
 
 namespace TORI_NS::detail {
 

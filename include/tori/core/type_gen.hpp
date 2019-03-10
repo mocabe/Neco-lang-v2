@@ -3,10 +3,12 @@
 
 #pragma once
 
-#include "../config/config.hpp"
-#include "box.hpp"
-#include "type_value.hpp"
-#include "specifiers.hpp"
+#if !defined(TORI_NO_LOCAL_INCLUDE)
+#  include "../config/config.hpp"
+#  include "box.hpp"
+#  include "type_value.hpp"
+#  include "specifiers.hpp"
+#endif
 
 #include <cstring>
 #include <string>

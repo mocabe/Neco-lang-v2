@@ -6,19 +6,22 @@
 
 #pragma once
 
+// namespace
+#ifndef TORI_NS
+#  define TORI_NS tori
+#endif
+
+#if !defined(TORI_NO_LOCAL_INCLUDE)
+// import SIMD detect macros
+#  include "intrin.hpp"
+
+#endif
 #include <climits>
 #include <cstddef>
 #include <cstdint>
 #include <limits>
 #include <cassert>
 
-// namespace
-#ifndef TORI_NS
-#  define TORI_NS tori
-#endif
-
-// import SIMD detect macros
-#include "intrin.hpp"
 
 /// top-level namespace
 namespace TORI_NS {
