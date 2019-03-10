@@ -24,7 +24,7 @@ namespace TORI_NS::detail {
       return_type code() const
       {
         // reduce argument closure
-        auto f = eval_arg<0>();
+        object_ptr<const Object> f = eval_arg<0>();
 
         // check arity for safety
         auto c = static_cast<const Closure<>*>(_get_storage(f).get());
@@ -32,24 +32,27 @@ namespace TORI_NS::detail {
           throw eval_error::bad_fix();
         }
 
-        // create return value
-        auto pap = clone(f);
-        auto cc = static_cast<const Closure<>*>(_get_storage(pap).get());
+        auto ret = [&] {
+          // create return value
+          auto pap = clone(f);
+          auto cc = static_cast<const Closure<>*>(_get_storage(pap).get());
 
-        // build self-referencing closure
-        auto arity = --cc->arity();
-        cc->arg(arity) = pap;
+          // build self-referencing closure
+          auto arity = --cc->arity();
+          cc->arg(arity) = pap;
 
-        // avoid memory leak
-        cc->refcount.fetch_sub();
+          // avoid memory leak
+          cc->refcount.fetch_sub();
 
-        // eval
-        if (TORI_UNLIKELY(arity == 0))
-          pap = eval_impl(cc->code());
+          // eval
+          if (TORI_UNLIKELY(arity == 0))
+            return eval_impl(cc->code());
+
+          return pap;
+        }();
 
         // return
-        return static_object_cast<const VarValueProxy<Fix_X>>(
-          object_ptr<const Object>(std::move(pap)));
+        return static_object_cast<const VarValueProxy<Fix_X>>(std::move(ret));
       }
     };
 

@@ -6,6 +6,7 @@
 #if !defined(TORI_NO_LOCAL_INCLUDE)
 #  include "box.hpp"
 #  include "string.hpp"
+#  include "object_cast.hpp"
 #endif
 
 #include <exception>
@@ -59,6 +60,13 @@ namespace TORI_NS::detail {
     has_exception_tag(const object_ptr<const Object>& obj)
   {
     return _get_storage(obj).is_exception();
+  }
+
+  [[nodiscard]] inline object_ptr<const Exception>
+    get_tagged_exception(const object_ptr<const Object>& obj)
+  {
+    assert(has_exception_tag(obj));
+    return static_object_cast<const Exception>(obj);
   }
 
   // ------------------------------------------

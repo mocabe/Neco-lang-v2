@@ -40,7 +40,8 @@ namespace TORI_NS::detail {
   {
     // detect exception
     if (TORI_UNLIKELY(has_exception_tag(obj)))
-      throw result_error::exception_result(clear_pointer_tag(obj));
+      throw result_error::exception_result(
+        clear_pointer_tag(get_tagged_exception(obj)));
 
     // apply
     if (auto apply = value_cast_if<Apply>(obj)) {
