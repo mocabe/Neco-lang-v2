@@ -55,7 +55,7 @@ namespace TORI_NS::detail {
   {
     try {
       auto p = static_cast<const T *>(obj);
-      return new T {*p};
+      return new (std::nothrow) T {*p};
     } catch (...) {
       // TODO: return Exception object
       return nullptr;
