@@ -91,6 +91,18 @@ TEST_CASE("pointer construct")
     REQUIRE(i == j);
     REQUIRE(!(i != j));
   }
+  SECTION("conversion")
+  {
+    // clang-format off
+    static_assert(std::is_constructible_v<object_ptr<const Object>, object_ptr<Object>>);
+    static_assert(std::is_constructible_v<object_ptr<Object>, object_ptr<Int>>);
+    static_assert(std::is_constructible_v<object_ptr<const Object>, object_ptr<const Int>>);
+    static_assert(std::is_constructible_v<object_ptr<const Object>, object_ptr<Int>>);
+    static_assert(!std::is_constructible_v<object_ptr<Object>, object_ptr<const Object>>);
+    static_assert(!std::is_constructible_v<object_ptr<Object>, object_ptr<const Int>>);
+    static_assert(!std::is_constructible_v<object_ptr<Int>, object_ptr<Object>>);
+    // clang-format on
+  }
 }
 
 TEST_CASE("operator bool")
