@@ -14,8 +14,8 @@
 #if !defined(TORI_NO_LOCAL_INCLUDE)
 // import SIMD detect macros
 #  include "intrin.hpp"
-
 #endif
+
 #include <climits>
 #include <cstddef>
 #include <cstdint>
