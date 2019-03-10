@@ -123,7 +123,7 @@ namespace TORI_NS::detail {
     }
 
     /// Copy constructor
-    type_object_value_storage(const type_object_value_storage& other) noexcept
+    type_object_value_storage(const type_object_value_storage& other)
       : index {other.index}
     {
       // copy union
@@ -202,19 +202,23 @@ namespace TORI_NS::detail {
     /// default ctor is disabled
     type_object_value() = delete;
 
-    // initializers
-    type_object_value(value_type t)
+    type_object_value(value_type t) noexcept
       : base {t}
     {
     }
 
-    type_object_value(arrow_type t)
+    type_object_value(arrow_type t) noexcept
       : base {t}
     {
     }
 
-    type_object_value(var_type t)
+    type_object_value(var_type t) noexcept
       : base {t}
+    {
+    }
+
+    type_object_value(const type_object_value& other) noexcept
+      : base {other}
     {
     }
   };
